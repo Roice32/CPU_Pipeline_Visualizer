@@ -1,0 +1,256 @@
+#Example
+#Instruction: 
+#  mnemonic: <instruction mnemonic>
+#  opcode: <6 bits, hex as yaml does not do binary>
+#  src1: <reg/imm/addr/addr_reg/null/simd/stack_base/sp/stack_size (one or more)>
+#  src2: <reg/imm/addr/addr_reg/null/simd/stack_base/sp/stack_size (one or more)>
+
+- mnemonic: add
+  opcode: 0x1
+  src1:
+    - reg
+    - addr
+    - addr_reg
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+  src2:
+    - reg
+    - imm
+    - addr
+    - addr_reg
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+
+- mnemonic: sub
+  opcode: 0x2
+  src1:
+    - reg
+    - addr
+    - addr_reg
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+  src2:
+    - reg
+    - imm
+    - addr
+    - addr_reg
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+
+- mnemonic: mov
+  opcode: 0x3
+  src1:
+    - reg
+    - addr
+    - addr_reg
+    - sp:
+      - reg
+      - addr
+      - addr_reg
+      - imm
+    - stack_base:
+      - reg
+      - addr
+      - addr_reg
+      - imm
+    - stack_size:
+      - reg
+      - addr
+      - addr_reg
+      - imm
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+  src2:
+    - reg
+    - addr
+    - addr_reg
+    - imm
+    - sp:
+      - reg
+      - addr
+      - addr_reg
+    - stack_base:
+      - reg
+      - addr
+      - addr_reg
+    - stack_size:
+      - reg
+      - addr
+      - addr_reg
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+
+- mnemonic: mul
+  opcode: 0x4
+  src1:
+    - reg
+    - addr
+    - addr_reg
+    - imm
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+  src2:
+    - reg
+    - addr
+    - addr_reg
+    - imm
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+
+- mnemonic: div
+  opcode: 0x5
+  src1:
+    - reg
+    - addr
+    - addr_reg
+    - imm
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+  src2:
+    - reg
+    - addr
+    - addr_reg
+    - imm
+    - simd:
+      - simd
+      - addr
+      - addr_reg
+
+- mnemonic: cmp
+  opcode: 0x6
+  src1:
+    - reg
+    - imm
+    - addr_reg
+    - addr
+  src2:
+    - reg
+    - imm
+    - addr_reg
+    - addr
+
+- mnemonic: jmp
+  opcode: 0x7
+  src1:
+    - reg
+    - imm
+    - addr
+    - addr_reg
+
+- mnemonic: je
+  opcode: 0x9
+  src1:
+    - reg
+    - imm
+    - addr
+    - addr_reg
+
+- mnemonic: jl
+  opcode: 0xA
+  src1:
+    - reg
+    - imm
+    - addr
+    - addr_reg
+
+- mnemonic: jg
+  opcode: 0xB
+  src1:
+    - reg
+    - imm
+    - addr
+    - addr_reg
+
+- mnemonic: jz
+  opcode: 0xC
+  src1:
+    - reg
+    - imm
+    - addr
+    - addr_reg
+
+- mnemonic: call
+  opcode: 0xD
+  src1:
+    - reg
+    - imm
+    - addr
+    - addr_reg
+
+- mnemonic: ret
+  opcode: 0xE
+
+- mnemonic: end_sim
+  opcode: 0xF
+
+- mnemonic: push
+  opcode: 0x10
+  src1:
+    - reg
+    - addr
+    - imm
+    - addr_reg
+
+- mnemonic: pop
+  opcode: 0x11
+  src1:
+    - reg
+    - addr
+    - addr_reg
+    - 'null'
+
+- mnemonic: dw
+  opcode: null
+  src1:
+    - imm
+
+- mnemonic: dblock
+  opcode: null
+  src1:
+    - imm
+  src2:
+    - imm
+
+- mnemonic: excp_exit
+  opcode: 0x12
+
+- mnemonic: brk
+  opcode: 0x13
+
+- mnemonic: sti
+  opcode: 0x14
+
+- mnemonic: cli
+  opcode: 0x15
+
+- mnemonic: gather
+  opcode: 0x16
+  src1:
+    - simd
+  src2:
+    - simd
+
+- mnemonic: scatter
+  opcode: 0x17
+  src1:
+    - simd
+  src2:
+    - simd
