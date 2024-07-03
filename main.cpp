@@ -1,7 +1,7 @@
-#include "headers/Hello.h"
+#include <iostream>
 
-int main(int, char**){
-    Hello hi(5);
-
-    fnc();
+int main(int, char**)
+{
+    std::cout << sizeof(short);
+    return 0;
 }
