@@ -1,5 +1,6 @@
 #pragma once
 
-#define ADDR_WIDTH 16
-#define MEM_SIZE 65535
-#define REG_COUNT 8
+#define ADDRESS_WIDTH 16
+#define MEMORY_SIZE 65535
+#define REGISTER_COUNT 8
+#define FETCH_WINDOW_BYTES 8

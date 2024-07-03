@@ -3,7 +3,7 @@
 
 Memory::Memory()
 {
-    data = new unsigned char[MEM_SIZE];
+    data = new unsigned char[MEMORY_SIZE];
 }
 
 unsigned char Memory::getMemoryCell(unsigned short addr)
