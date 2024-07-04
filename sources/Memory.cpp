@@ -1,17 +1,18 @@
 #include "../headers/Memory.h"
 #include "../Config.h"
 
-Memory::Memory()
+Memory::Memory(char* hexSourceFilePath)
 {
-    data = new unsigned char[MEMORY_SIZE];
+    
+    data = new byte[MEMORY_SIZE];
 }
 
-unsigned char Memory::getMemoryCell(unsigned short addr)
+byte Memory::getMemoryCell(address addr)
 {
     return data[addr];
 }
 
-void Memory::setMemoryCell(unsigned short addr, unsigned char value)
+void Memory::setMemoryCell(address addr, byte value)
 {
     data[addr] = value;
 }

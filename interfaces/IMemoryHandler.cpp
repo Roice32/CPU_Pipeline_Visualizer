@@ -1,4 +1,5 @@
 #include "../headers/Memory.h"
+#include "../Config.h"
 
 class IMemoryHandler
 {
@@ -7,9 +8,9 @@ protected:
 public:
     IMemoryHandler(Memory* target): target(target) {};
     
-    virtual unsigned char loadFrom(unsigned short addr) = 0;
-    virtual unsigned int bufferedLoadFrom(unsigned short addr) = 0;
-    virtual void storeAt(unsigned short addr, unsigned char value) = 0;
+    virtual byte loadFrom(address addr) = 0;
+    virtual fetch_window bufferedLoadFrom(address addr) = 0;
+    virtual void storeAt(address addr, byte value) = 0;
     
     ~IMemoryHandler()
     {

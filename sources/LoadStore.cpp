@@ -1,15 +1,15 @@
 #include "../headers/LoadStore.h"
 #include "../Config.h"
 
-unsigned char LoadStore::loadFrom(unsigned short addr)
+byte LoadStore::loadFrom(unsigned short addr)
 {
     return target->getMemoryCell(addr);
 }
 
-unsigned int LoadStore::bufferedLoadFrom(unsigned short addr)
+fetch_window LoadStore::bufferedLoadFrom(address addr)
 {
-    unsigned int bufferedFetchResult = 0;
-    for (unsigned char currByte = 0; currByte < FETCH_WINDOW_BYTES; ++currByte)
+    fetch_window bufferedFetchResult = 0;
+    for (byte currByte = 0; currByte < FETCH_WINDOW_BYTES; ++currByte)
     {
         bufferedFetchResult |= target->getMemoryCell(addr + currByte);
         bufferedFetchResult <<= 8;
@@ -17,7 +17,7 @@ unsigned int LoadStore::bufferedLoadFrom(unsigned short addr)
     return bufferedFetchResult;
 }
 
-void LoadStore::storeAt(unsigned short addr, unsigned char value)
+void LoadStore::storeAt(address addr, byte value)
 {
     target->setMemoryCell(addr, value);
 }

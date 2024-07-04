@@ -4,7 +4,7 @@ class LoadStore : public IMemoryHandler
 {
 public:
     LoadStore(Memory* simulatedMemory): IMemoryHandler(simulatedMemory) {};
-    unsigned char loadFrom(unsigned short addr);
-    unsigned int bufferedLoadFrom(unsigned short addr);
-    void storeAt(unsigned short addr, unsigned char value);
+    byte loadFrom(address addr);
+    fetch_window bufferedLoadFrom(address addr);
+    void storeAt(address addr, byte value);
 };

@@ -1,11 +1,13 @@
+#include "../Config.h"
+
 class Memory
 {
 private:
-    unsigned char* data;
+    byte* data;
 
 public:
-    Memory();
-    unsigned char getMemoryCell(unsigned short addr);
-    void setMemoryCell(unsigned short addr, unsigned char value);
+    Memory(char* hexSourceFilePath);
+    byte getMemoryCell(address addr);
+    void setMemoryCell(address addr, byte value);
     ~Memory();
 };
