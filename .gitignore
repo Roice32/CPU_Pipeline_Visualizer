@@ -1,15 +1,12 @@
 # Directories
-.cache/
-build/
-CMakeFiles/
+.cache/*
+build/*
+program_files/*
 
 # Singular files
 utils/pyasm.exe
-cmake_install.cmake
-CMakeCache.txt
-compile_commands.json
-cpp_processor_model
-Makefile
 
 # To be kept
 !build/CMakeLists.txt
+!program_files/*.asm
+!program_files/*.hex
