@@ -6,7 +6,9 @@
 class Decode
 {
 private:
-    byte getExpectedParamCount(byte opCode);
+    static byte getExpectedParamCount(byte opCode);
+    static bool argumentsMatchExpectedNumber(byte opCode, byte src1, byte src2);
+    static bool argumentsMatchExpectedTypes(byte opCode, byte src1, byte src2);
     Instruction decodeInstructionHeader(word header);
 
 public:
