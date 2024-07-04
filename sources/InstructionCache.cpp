@@ -2,6 +2,10 @@
 
 InstructionCache::InstructionCache(LoadStore* lsModuleRef, register_16b* ip): IFetchWindowRequester(lsModuleRef), IP(ip) {};
 
-fetch_window InstructionCache::requestFetchWindow(address addr) {
-    return LSModule->bufferedLoadFrom(*IP);
+void InstructionCache::requestFetchWindow(address addr) {
+    currBatch = LSModule->bufferedLoadFrom(*IP);
+}
+
+void InstructionCache::passForDecode() {
+    DEModule->processFetchWindow(currBatch);
 }
