@@ -1,10 +1,11 @@
-#include "../headers/Memory.h"
-#include "../Config.h"
+#include "Memory.h"
+#include "Config.h"
 
 class IMemoryHandler
 {
 protected:
     Memory* target;
+    
 public:
     IMemoryHandler(Memory* target): target(target) {};
     

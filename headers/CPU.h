@@ -1,10 +1,16 @@
-#include "Memory.h"
-#include "../Config.h"
+#pragma once
+
+#include "LoadStore.h"
+#include "InstructionCache.h"
+#include "Config.h"
 
 class CPU
 {
 private:
     const Memory* memoryUnit;
+    const LoadStore LSModule;
+    const InstructionCache ICModule;
+
     register_16b registers[8];
     register_16b IP;
     register_16b flags;

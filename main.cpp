@@ -1,7 +1,7 @@
-#include <iostream>
+#include "Memory.h"
 
 int main(int, char**)
 {
-    std::cout << sizeof(short);
+    Memory mem("program_files/basicTest.hex");
     return 0;
 }

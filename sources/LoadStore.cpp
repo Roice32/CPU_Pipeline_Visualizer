@@ -1,7 +1,7 @@
-#include "../headers/LoadStore.h"
-#include "../Config.h"
+#include "LoadStore.h"
+#include "Config.h"
 
-byte LoadStore::loadFrom(unsigned short addr)
+byte LoadStore::loadFrom(address addr)
 {
     return target->getMemoryCell(addr);
 }

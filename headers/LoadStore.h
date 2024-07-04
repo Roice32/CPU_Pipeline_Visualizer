@@ -1,4 +1,6 @@
-#include "../interfaces/IMemoryHandler.cpp"
+#pragma once
+
+#include "IMemoryHandler.cpp"
 
 class LoadStore : public IMemoryHandler
 {
