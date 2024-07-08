@@ -1,18 +1,18 @@
 #include "Execute.h"
 #include "Config.h"
 
-Execute::Execute(LoadStore* lsModule, register_16b* ip, InstructionCache* icModule): IMemoryAccesser(lsModule)
+Execute::Execute(LoadStore* lsModule, CPURegisters* registers, InstructionCache* icModule): IMemoryAccesser(lsModule)
 {
-    IP = ip;
+    this->registers = registers;
     ICModule = icModule;
 }
 
 word Execute::requestDataAt(word addr)
 {
     word result = 0;
-    result = LSModule->bufferedLoadFrom(addr);
+    result = LSModule->loadFrom(addr);
     result <<= 8;
-    result |= LSModule->bufferedLoadFrom(addr + 8);
+    result |= LSModule->loadFrom(addr + 8);
     return result;
 }
 
@@ -24,10 +24,60 @@ void Execute::storeDataAt(word addr, word data)
 
 void Execute::executeInstruction(Instruction instr)
 {
-    if (instr.opCode == END_SIM)
-        *IP = 0xffff;
-    // Made to work only for jumps to labels fttb
-    if (instr.opCode == JMP)
-        *IP = instr.param1;
+    switch (instr.opCode)
+    {
+        case ADD:
+            // WIP
+        break;
+        case SUB:
+            // WIP
+        break;
+        case MOV:
+            // WIP
+        break;
+        case MUL:
+            // WIP
+        break;
+        case DIV:
+            // WIP
+        break;
+        case CMP:
+            // WIP
+        break;
+        case JMP:
+            // Made to work only for jumps to labels fttb
+            registers->IP = instr.param1;
+        break;
+        case JE:
+            // WIP
+        break;
+        case JL:
+            // WIP
+        break;
+        case JG:
+            // WIP
+        break;
+        case JZ:
+            // WIP
+        break;
+        case CALL:
+            // WIP
+        break;
+        case RET:
+            // WIP
+        break; 
+        case END_SIM:
+            registers->IP = 0xffff;
+        break;
+        case PUSH:
+            // WIP
+        break;
+        case POP:
+            // WIP
+        break;
+        default:
+            throw "Undefined instruction";
+    }
+
     ICModule->requestFetchWindow();
 }

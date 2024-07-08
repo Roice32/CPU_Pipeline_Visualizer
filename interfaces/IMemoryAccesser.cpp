@@ -1,3 +1,5 @@
+#pragma once
+
 #include "LoadStore.h"
 
 class IMemoryAccesser

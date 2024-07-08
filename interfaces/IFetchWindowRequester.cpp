@@ -1,5 +1,6 @@
+#pragma once
+
 #include "LoadStore.h"
-#include "Config.h"
 
 class IFetchWindowRequester
 {

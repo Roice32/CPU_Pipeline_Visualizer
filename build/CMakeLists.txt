@@ -3,7 +3,7 @@ project(cpp_processor_model VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "../sources/*.cpp")
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "../sources/*.cpp" "../sources/modules/*.cpp" "../sources/execution_strategies/*.cpp")
 
 add_executable(cpp_processor_model "../main.cpp" ${SOURCES})
 
