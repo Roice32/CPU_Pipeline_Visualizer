@@ -21,11 +21,31 @@ bool Decode::argumentsMatchExpectedNumber(byte opCode, byte src1, byte src2)
 
 bool Decode::argumentsMatchExpectedTypes(byte opCode, byte src1, byte src2)
 {
-    if((opCode == ADD || opCode == SUB) && src1 == IMM)
+    if (opCode < JMP &&
+        (src1 * src2 == NULL_VAL))
         return false;
-    if(opCode == DIV && src2 == NULL_VAL)
+
+    if (opCode < MUL &&
+        src1 == IMM)
         return false;
-    // WIP
+    
+    if (opCode == MOV &&
+        (src1 >= SP_REG && src1 <= ST_SIZE &&
+            src2 >= SP_REG && src2 <= ST_SIZE))
+        return false;
+
+    if ((opCode >= JMP && opCode <= CALL || opCode == PUSH) &&
+        (src1 == NULL_VAL || src2 != NULL_VAL))
+        return false;
+
+    if ((opCode == RET || opCode == END_SIM) &&
+        (src1 + src2 != NULL_VAL))
+        return false;
+
+    if (opCode == POP &&
+        src1 == IMM)
+        return false;
+
     return true;
 }
 
