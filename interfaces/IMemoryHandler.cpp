@@ -13,8 +13,5 @@ public:
     virtual fetch_window bufferedLoadFrom(address addr) = 0;
     virtual void storeAt(address addr, byte value) = 0;
     
-    ~IMemoryHandler()
-    {
-        delete target;
-    }
+    virtual ~IMemoryHandler() {};
 };

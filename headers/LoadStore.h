@@ -9,4 +9,5 @@ public:
     byte loadFrom(address addr);
     fetch_window bufferedLoadFrom(address addr);
     void storeAt(address addr, byte value);
+    ~LoadStore();
 };

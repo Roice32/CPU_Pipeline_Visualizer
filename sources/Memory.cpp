@@ -1,12 +1,11 @@
 #include <fstream>
-#include <iostream>
 
 #include "Memory.h"
 #include "Config.h"
 
 byte Memory::hexCharToDec(const char digit)
 {
-    return digit - (digit >= 'a' ? 'a' - 1 : '0');
+    return digit - (digit >= 'a' ? 'a' - 10 : '0');
 }
 
 void Memory::jumpToNewAddr(address& currAddr, const byte* newAddr)
@@ -60,7 +59,7 @@ void Memory::setMemoryCell(address addr, byte value)
     data[addr] = value;
 }
 
-void Memory::dumpMemoryContents(const char* outputFile)
+void Memory::dumpMemoryContents(char* outputFile)
 {
     std::ofstream output(outputFile);
     

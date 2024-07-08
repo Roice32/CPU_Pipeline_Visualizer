@@ -1,7 +1,8 @@
 #pragma once
 
 #include "IFetchWindowRequester.cpp"
-#include "Decode.h"
+
+class Decode;
 
 class InstructionCache : public IFetchWindowRequester
 {
@@ -12,6 +13,7 @@ private:
 
 public:
     InstructionCache(LoadStore* lsModuleRef, register_16b* ip);
-    void requestFetchWindow(address addr);
+    void requestFetchWindow();
     void passForDecode();
+    void setDEModule(Decode* deModuleRef);
 };

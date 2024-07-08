@@ -8,5 +8,5 @@ protected:
 
 public:
     IFetchWindowRequester(LoadStore* lsModule): LSModule(lsModule) {};
-    virtual void requestFetchWindow(address addr) = 0;
+    virtual void requestFetchWindow() = 0;
 };

@@ -6,7 +6,7 @@
 class InstructionMetadata
 {
 public:
-    const char* name;
+    char* name;
     const byte paramsCount;
     const ParameterMetadata* const params;
 

@@ -11,8 +11,9 @@ fetch_window LoadStore::bufferedLoadFrom(address addr)
     fetch_window bufferedFetchResult = 0;
     for (byte currByte = 0; currByte < FETCH_WINDOW_BYTES; ++currByte)
     {
-        bufferedFetchResult |= target->getMemoryCell(addr + currByte);
+        byte readByte = target->getMemoryCell(addr + currByte);
         bufferedFetchResult <<= 8;
+        bufferedFetchResult |= readByte;
     }
     return bufferedFetchResult;
 }
@@ -20,4 +21,9 @@ fetch_window LoadStore::bufferedLoadFrom(address addr)
 void LoadStore::storeAt(address addr, byte value)
 {
     target->setMemoryCell(addr, value);
+}
+
+LoadStore::~LoadStore()
+{
+    delete target;
 }

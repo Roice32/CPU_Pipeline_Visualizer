@@ -35,7 +35,7 @@ enum OpCodes
 
 enum TypeCodes
 {
-    NULL = 0x0,
+    NULL_VAL = 0x0,
     IMM,
     ADDR,
     SP_REG,

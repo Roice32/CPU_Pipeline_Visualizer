@@ -15,6 +15,6 @@ public:
     Memory(const char* hexSourceFilePath);
     byte getMemoryCell(address addr);
     void setMemoryCell(address addr, byte value);
-    void dumpMemoryContents(const char* outputFile);
+    void dumpMemoryContents(char* outputFile);
     ~Memory();
 };
