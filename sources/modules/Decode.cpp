@@ -28,11 +28,6 @@ bool Decode::argumentsMatchExpectedTypes(byte opCode, byte src1, byte src2)
     if (opCode < MUL &&
         src1 == IMM)
         return false;
-    
-    if (opCode == MOV &&
-        (src1 >= SP_REG && src1 <= ST_SIZE &&
-            src2 >= SP_REG && src2 <= ST_SIZE))
-        return false;
 
     if ((opCode >= JMP && opCode <= CALL || opCode == PUSH) &&
         (src1 == NULL_VAL || src2 != NULL_VAL))
@@ -49,6 +44,15 @@ bool Decode::argumentsMatchExpectedTypes(byte opCode, byte src1, byte src2)
     return true;
 }
 
+bool Decode::argumentsAreNotMutuallyExclusive(byte opCode, byte src1, byte src2)
+{
+    if (opCode == MOV &&
+        (src1 >= SP_REG && src1 <= ST_SIZE &&
+            src2 >= SP_REG && src2 <= ST_SIZE))
+        return false;
+    return true;
+}
+
 Instruction Decode::decodeInstructionHeader(word instruction)
 {
     byte opCode = instruction >> 10;
@@ -58,12 +62,13 @@ Instruction Decode::decodeInstructionHeader(word instruction)
     byte src2 = instruction & 0b11111;
     
     if (!argumentsMatchExpectedNumber(opCode, src1, src2))
-        throw "Wrong arguments count";
+        throw "Wrong number of arguments for this operation";
     
     if (!argumentsMatchExpectedTypes(opCode, src1, src2))
-        throw "Wrong arguments types";
-    
-    // Also check for incompatible arguments
+        throw "Wrong arguments' types for this operation";
+
+    if (!argumentsAreNotMutuallyExclusive(opCode, src1, src2))
+        throw "Arguments are mutually exclusive for this operation";
 
     return Instruction(opCode, src1, src2);
 }
@@ -75,6 +80,9 @@ void Decode::moveIP(byte const paramsCount)
 
 void Decode::processFetchWindow(fetch_window newBatch)
 {
+    if (*IP % 2 != 0)
+        throw "IP register misaligned";
+
     Instruction instr = decodeInstructionHeader(word (newBatch >> 48));
     byte paramsCount = 0;
     if (instr.src1 == IMM || instr.src1 == ADDR)
