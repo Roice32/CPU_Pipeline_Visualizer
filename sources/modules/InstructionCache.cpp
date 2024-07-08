@@ -1,6 +1,5 @@
 #include "InstructionCache.h"
 #include "Decode.h"
-#include <cstdio>
 
 InstructionCache::InstructionCache(LoadStore* lsModuleRef, register_16b* ip): IFetchWindowRequester(lsModuleRef), IP(ip) {};
 

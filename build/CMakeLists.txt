@@ -7,6 +7,6 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "../sources/*.cpp")
 
 add_executable(cpp_processor_model "../main.cpp" ${SOURCES})
 
-target_include_directories(cpp_processor_model PUBLIC "../headers/")
-target_include_directories(cpp_processor_model PUBLIC "../interfaces/")
+target_include_directories(cpp_processor_model PUBLIC "../headers" "../headers/modules")
+target_include_directories(cpp_processor_model PUBLIC "../interfaces")
 
