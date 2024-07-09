@@ -1,5 +1,6 @@
 #include "Execute.h"
 #include "Config.h"
+#include <cstdio>
 
 Execute::Execute(LoadStore* lsModule, CPURegisters* registers, InstructionCache* icModule): IMemoryAccesser(lsModule)
 {
@@ -24,10 +25,11 @@ void Execute::storeDataAt(word addr, word data)
 
 void Execute::executeInstruction(Instruction instr)
 {
+    printf("Instruction: %hu %hu %hu %hu %hu\n", instr.opCode, instr.src1, instr.src2, instr.param1, instr.param2);
     switch (instr.opCode)
     {
         case ADD:
-            // WIP
+            
         break;
         case SUB:
             // WIP

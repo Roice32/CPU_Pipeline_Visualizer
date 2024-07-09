@@ -4,7 +4,7 @@
 
 CPU::CPU(Memory* memory): memoryUnit(memory)
 {
-
+    registers = new CPURegisters();
     LSModule = new LoadStore(memory);
     ICModule = new InstructionCache(LSModule, &registers->IP);
     DEModule = new Decode(&registers->IP);
