@@ -35,11 +35,8 @@ void Execute::executeInstruction(Instruction instr)
         case MOV:
             // WIP
         break;
-        case MUL:
-            // WIP
-        break;
-        case DIV:
-            // WIP
+        case MUL: case DIV:
+            execStrategies->mulOrDiv->executeInstruction(instr);
         break;
         case CMP:
             // WIP

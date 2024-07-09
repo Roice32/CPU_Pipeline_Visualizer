@@ -2,7 +2,8 @@
 
 ExecutionStrategyPool::ExecutionStrategyPool(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers)
 {
-    addOrSub = new ExecuteSimpleMathOp(lsModule, icModule, registers);
+    addOrSub = new ExecSimpleMathOp(lsModule, icModule, registers);
+    mulOrDiv = new ExecComplexMathOp(lsModule, icModule, registers);
     // Add more as I progress
 }
 

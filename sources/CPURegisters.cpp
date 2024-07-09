@@ -11,5 +11,6 @@ void CPURegisters::reset()
         registers[reg] = 0;
     IP = 0xfff0;
     stackBase = stackPointer = 0xffed;
-    stackSize = 128; 
+    stackSize = 128;
+    flags = 0;
 }

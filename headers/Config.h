@@ -58,3 +58,10 @@ enum TypeCodes
     ADDR_R6,
     ADDR_R7,
 };
+
+enum Flags
+{
+    ZERO = 0x8000,
+    EQUAL = 0x4000,
+    GREATER = 0x2000
+};
