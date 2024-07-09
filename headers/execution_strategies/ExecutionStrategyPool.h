@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ExecJumpOp.h"
+#include "ExecPop.h"
 #include "ExecPush.h"
 #include "ExecSimpleMathOp.h"
 #include "ExecComplexMathOp.h"
@@ -16,6 +17,7 @@ public:
     ExecCmp* cmp;
     ExecJumpOp* jmpOp;
     ExecPush* push;
+    ExecPop* pop;
 
     ExecutionStrategyPool(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers);
     ~ExecutionStrategyPool();

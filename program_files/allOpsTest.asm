@@ -38,15 +38,26 @@ main:
 
 ;endSimLabel:
 
-    mov r0, 5
-    push r0
-    push 50
-    mov r2, 0x2000
-    mov [r2], 2
-    mul [r2], r0
-    push r1
-    push 0
+    ;mov r0, 5
+    ;push r0
+    ;push 50
+    ;mov r2, 0x2000
+    ;mov [r2], 2
+    ;mul [r2], r0
+    ;push r1
+    ;push 0
 
-    end_sim
+    ;mov r0, 3
+    ;mov [0x2000], 500
+    ;push r0
+    ;push [0x2000]
+    ;push 25
+    ;pop [0x1000]
+    ;pop
+    ;pop r3
+    ;mul r3, [0x1000]
+    ;push r1
+    ;pop r1
+    ;end_sim
 
 .data

@@ -11,5 +11,4 @@ void ExecPush::executeInstruction(Instruction instr)
     regs->stackPointer -= 2;
     word newSP = regs->stackBase + regs->stackPointer;
     storeDataAt(newSP, actualParam);
-    printf("\tNew SP: %hu Value at stack's top: %hu\n", regs->stackPointer, getFinalArgValue(ADDR, newSP));
 }

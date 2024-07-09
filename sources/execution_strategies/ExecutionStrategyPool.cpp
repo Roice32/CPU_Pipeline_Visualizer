@@ -8,6 +8,7 @@ ExecutionStrategyPool::ExecutionStrategyPool(LoadStore* lsModule, InstructionCac
     cmp = new ExecCmp(lsModule, icModule, registers);
     jmpOp = new ExecJumpOp(lsModule, icModule, registers);
     push = new ExecPush(lsModule, icModule, registers);
+    pop = new ExecPop(lsModule, icModule, registers);
     // Add more as I progress
 }
 
@@ -19,5 +20,6 @@ ExecutionStrategyPool::~ExecutionStrategyPool()
     delete cmp;
     delete jmpOp;
     delete push;
+    delete pop;
     // Also remember to delete them here
 }

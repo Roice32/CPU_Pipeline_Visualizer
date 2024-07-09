@@ -57,7 +57,7 @@ void Execute::executeInstruction(Instruction instr)
             execStrategies->push->executeInstruction(instr);
         break;
         case POP:
-            // WIP
+            execStrategies->pop->executeInstruction(instr);
         break;
         default:
             throw "Undefined instruction";
