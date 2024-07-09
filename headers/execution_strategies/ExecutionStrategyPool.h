@@ -1,12 +1,12 @@
 #pragma once
 
-#include "ExecuteADD.h"
+#include "ExecuteSimpleMathOp.h"
 
 class ExecutionStrategyPool
 {
 public:
-    ExecuteADD* add;
+    ExecuteSimpleMathOp* addOrSub;
 
-    ExecutionStrategyPool();
+    ExecutionStrategyPool(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers);
     ~ExecutionStrategyPool();
 };

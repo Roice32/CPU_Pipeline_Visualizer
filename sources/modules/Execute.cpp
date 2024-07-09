@@ -6,6 +6,7 @@ Execute::Execute(LoadStore* lsModule, CPURegisters* registers, InstructionCache*
 {
     this->registers = registers;
     ICModule = icModule;
+    execStrategies = new ExecutionStrategyPool(lsModule, icModule, registers);
 }
 
 word Execute::requestDataAt(word addr)
@@ -28,11 +29,8 @@ void Execute::executeInstruction(Instruction instr)
     printf("Instruction: %hu %hu %hu %hu %hu\n", instr.opCode, instr.src1, instr.src2, instr.param1, instr.param2);
     switch (instr.opCode)
     {
-        case ADD:
-            
-        break;
-        case SUB:
-            // WIP
+        case ADD: case SUB:
+            execStrategies->addOrSub->executeInstruction(instr);
         break;
         case MOV:
             // WIP
