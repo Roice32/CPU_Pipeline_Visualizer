@@ -12,7 +12,6 @@ void ExecPop::executeInstruction(Instruction instr)
         word topOfStack = regs->stackBase + regs->stackPointer;
         word valueOnTop = requestDataAt(topOfStack);
         storeResultAtDest(valueOnTop, instr.src1, instr.param1);
-        printf("\tNew SP: %hu \tPopped: %hu\n", regs->stackPointer, valueOnTop);
     }
     regs->stackPointer += 2;
 }

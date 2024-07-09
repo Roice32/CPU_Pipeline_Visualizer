@@ -58,6 +58,17 @@ main:
     ;mul r3, [0x1000]
     ;push r1
     ;pop r1
-    ;end_sim
+    
+first:
+    mov r0, 2 
+    call method
+    mov r2, [0x1000]
+    end_sim
 
+method:
+    mov r0, 10
+    mul r0, 10
+    mov [0x1000], r1
+    ret
+    
 .data

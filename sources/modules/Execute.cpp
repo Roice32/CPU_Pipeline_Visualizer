@@ -27,6 +27,7 @@ void Execute::storeDataAt(word addr, word data)
 void Execute::executeInstruction(Instruction instr)
 {
     printf("Instruction: %hu %hu %hu %hu %hu\n", instr.opCode, instr.src1, instr.src2, instr.param1, instr.param2);
+    printf("Current state of [0x1000]: %hu, R0: %hu, and SP: %hu\n", requestDataAt(0x1000), registers->registers[0], registers->stackPointer);
     switch (instr.opCode)
     {
         case ADD: case SUB:
@@ -45,13 +46,13 @@ void Execute::executeInstruction(Instruction instr)
             execStrategies->jmpOp->executeInstruction(instr);
         break;
         case CALL:
-            // WIP
+            execStrategies->call->executeInstruction(instr);
         break;
         case RET:
-            // WIP
+            execStrategies->ret->executeInstruction(instr);
         break; 
         case END_SIM:
-            registers->IP = 0xffff;
+            registers->IP = 0xffff; //
         break;
         case PUSH:
             execStrategies->push->executeInstruction(instr);

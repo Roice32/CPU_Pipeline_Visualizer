@@ -6,7 +6,7 @@
 #include "ExecutionStrategyPool.h"
 #include "IMemoryAccesser.cpp"
 
-class Execute: public IMemoryAccesser
+class Execute: public IMemoryAccesser // Need to get rid of this inheritance
 {
 private:
     CPURegisters* registers;
