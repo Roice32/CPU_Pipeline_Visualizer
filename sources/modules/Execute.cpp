@@ -39,7 +39,7 @@ void Execute::executeInstruction(Instruction instr)
             execStrategies->mulOrDiv->executeInstruction(instr);
         break;
         case CMP:
-            // WIP
+            execStrategies->cmp->executeInstruction(instr);
         break;
         case JMP:
             // Made to work only for jumps to labels fttb
