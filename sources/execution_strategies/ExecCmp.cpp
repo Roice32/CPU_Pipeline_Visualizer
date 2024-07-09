@@ -14,5 +14,4 @@ void ExecCmp::executeInstruction(Instruction instr)
         regs->flags |= EQUAL;
     if (actualParam1 > actualParam2)
         regs->flags |= GREATER;
-    printf("\tZ: %hu E: %hu G: %hu\n", regs->flags & ZERO, regs->flags & EQUAL, regs->flags & GREATER);
 }

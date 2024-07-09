@@ -41,21 +41,8 @@ void Execute::executeInstruction(Instruction instr)
         case CMP:
             execStrategies->cmp->executeInstruction(instr);
         break;
-        case JMP:
-            // Made to work only for jumps to labels fttb
-            registers->IP = instr.param1;
-        break;
-        case JE:
-            // WIP
-        break;
-        case JL:
-            // WIP
-        break;
-        case JG:
-            // WIP
-        break;
-        case JZ:
-            // WIP
+        case JMP: case JE: case JL: case JG: case JZ:
+            execStrategies->jmpOp->executeInstruction(instr);
         break;
         case CALL:
             // WIP

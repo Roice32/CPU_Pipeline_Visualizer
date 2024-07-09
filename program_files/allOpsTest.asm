@@ -20,6 +20,23 @@ main:
     cmp r1, 200
     cmp [0x1000], 20
     cmp 0, 0
+
+    mov r1, 2
+testingLabel:
+    mov r2, r1
+    mul r1, r1
+    cmp r1, r2
+    jl finalLabel2
+    je finalLabel1
+    jmp testingLabel
+
+finalLabel1:
+    jmp endSimLabel
+
+finalLabel2:
+    mov r0, 2024
+
+endSimLabel:
     end_sim
 
 .data
