@@ -12,7 +12,6 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
         unsigned int result = ((unsigned int) actualParam1) * actualParam2;
         if (result == 0)
             regs->flags |= ZERO;
-        printf("\t%hu * %hu = %u (FLAG.Z = %hu)\n", actualParam1, actualParam2, result, regs->flags);
         storeResultAtDest(result >> 16, R0);
         storeResultAtDest((result << 16) >> 16, R1);
     }
@@ -22,7 +21,6 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
         word modulus = actualParam1 % actualParam2;
         if (ratio == 0 && modulus == 0)
             regs->flags |= ZERO;
-        printf("\t%hu / %hu = %hu mod %hu\n", actualParam1, actualParam2, ratio, modulus);
         storeResultAtDest(ratio, R0);
         storeResultAtDest(modulus, R1);
     }

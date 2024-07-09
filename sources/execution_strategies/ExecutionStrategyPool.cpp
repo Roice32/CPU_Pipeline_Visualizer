@@ -4,6 +4,7 @@ ExecutionStrategyPool::ExecutionStrategyPool(LoadStore* lsModule, InstructionCac
 {
     addOrSub = new ExecSimpleMathOp(lsModule, icModule, registers);
     mulOrDiv = new ExecComplexMathOp(lsModule, icModule, registers);
+    mov = new ExecMov(lsModule, icModule, registers);
     // Add more as I progress
 }
 

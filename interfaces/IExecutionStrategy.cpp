@@ -33,7 +33,7 @@ protected:
         throw "Wrong or unimplemented argument type";
     }
 
-    void storeResultAtDest(word result, byte destType, byte destLocation = 0)
+    void storeResultAtDest(word result, byte destType, word destLocation = 0)
     {
         if (destType == ADDR)
             storeDataAt(destLocation, result);
@@ -61,13 +61,13 @@ public:
         word result = 0;
         result = LSModule->loadFrom(addr);
         result <<= 8;
-        result |= LSModule->loadFrom(addr + 8);
+        result |= LSModule->loadFrom(addr + 1);
         return result;
     }
     void storeDataAt(word addr, word data)
     {
         LSModule->storeAt(addr, data >> 8);
-        LSModule->storeAt(addr + 8, (data << 8) >> 8);
+        LSModule->storeAt(addr + 1, (data << 8) >> 8);
     }
     virtual void executeInstruction(Instruction instr) = 0;
     void log(Instruction instr)

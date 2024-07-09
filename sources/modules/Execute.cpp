@@ -33,7 +33,7 @@ void Execute::executeInstruction(Instruction instr)
             execStrategies->addOrSub->executeInstruction(instr);
         break;
         case MOV:
-            // WIP
+            execStrategies->mov->executeInstruction(instr);
         break;
         case MUL: case DIV:
             execStrategies->mulOrDiv->executeInstruction(instr);
