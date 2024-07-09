@@ -10,7 +10,8 @@ void CPURegisters::reset()
     for (byte reg = 0; reg < 8; ++reg)
         registers[reg] = 0;
     IP = 0xfff0;
-    stackBase = stackPointer = 0xffed;
-    stackSize = 128;
+    stackBase = 0xefee;
+    stackPointer = 4096;
+    stackSize = 4096;
     flags = 0;
 }

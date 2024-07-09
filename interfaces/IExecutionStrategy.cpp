@@ -29,7 +29,7 @@ protected:
         if (src >= R0 && src <= R7)
             return regs->registers[src - R0];
         if (src >= ADDR_R0 && src <= ADDR_R7)
-            return requestDataAt(regs->registers[src - R0]);
+            return requestDataAt(regs->registers[src - ADDR_R0]);
         throw "Wrong or unimplemented argument type";
     }
 

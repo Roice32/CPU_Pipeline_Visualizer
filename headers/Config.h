@@ -49,7 +49,7 @@ enum TypeCodes
     R5,
     R6,
     R7,
-    ADDR_R0 = 0x11,
+    ADDR_R0 = 0x18,
     ADDR_R1,
     ADDR_R2,
     ADDR_R3,

@@ -54,7 +54,7 @@ void Execute::executeInstruction(Instruction instr)
             registers->IP = 0xffff;
         break;
         case PUSH:
-            // WIP
+            execStrategies->push->executeInstruction(instr);
         break;
         case POP:
             // WIP
