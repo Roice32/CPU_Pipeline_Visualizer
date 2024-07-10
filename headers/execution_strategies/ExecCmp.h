@@ -7,4 +7,5 @@ class ExecCmp: public IExecutionStrategy
 public:
     ExecCmp(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers);
     void executeInstruction(Instruction instr);
+    ~ExecCmp();
 };

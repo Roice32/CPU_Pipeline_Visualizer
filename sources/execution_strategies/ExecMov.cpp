@@ -9,3 +9,5 @@ void ExecMov::executeInstruction(Instruction instr)
     log(instr, 0, movedValue); 
     storeResultAtDest(movedValue, instr.src1, instr.param1);
 }
+
+ExecMov::~ExecMov() {};

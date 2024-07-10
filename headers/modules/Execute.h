@@ -3,20 +3,21 @@
 #include "CPURegisters.h"
 #include "Instruction.h"
 #include "InstructionCache.h"
-#include "ExecutionStrategyPool.h"
+#include "IExecutionStrategy.cpp"
 
-class Execute// Need to get rid of this inheritance
+class Execute
 {
 private:
     CPURegisters* registers;
     InstructionCache* ICModule;
-    ExecutionStrategyPool* execStrategies;
+    std::unordered_map<OpCode, IExecutionStrategy*> execStrategies;
 
 public:
     Execute(LoadStore* lsModule, CPURegisters* registers, InstructionCache* icModule);
     word requestDataAt(word addr);
     void storeDataAt(word addr, word data);
     void executeInstruction(Instruction instr);
+    ~Execute();
 
     friend class IExecutionStrategy;
 };

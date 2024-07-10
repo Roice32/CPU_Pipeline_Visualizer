@@ -11,4 +11,5 @@ private:
 public:
     ExecRet(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers, ExecPop* helper);
     void executeInstruction(Instruction instr);
+    ~ExecRet();
 };

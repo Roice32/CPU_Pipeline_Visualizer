@@ -8,4 +8,5 @@ public:
     ExecPop(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers);
     void executeInstruction(Instruction instr);
     void executeInstructionNoLog(Instruction instr);
+    ~ExecPop();
 };

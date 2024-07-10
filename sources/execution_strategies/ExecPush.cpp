@@ -19,3 +19,5 @@ void ExecPush::executeInstructionNoLog(Instruction instr)
     word newSP = regs->stackBase + regs->stackPointer;
     storeDataAt(newSP, actualParam);
 }
+
+ExecPush::~ExecPush() {};

@@ -11,4 +11,5 @@ private:
 public:
     ExecCall(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers, ExecPush* helper);
     void executeInstruction(Instruction instr);
+    ~ExecCall();
 };

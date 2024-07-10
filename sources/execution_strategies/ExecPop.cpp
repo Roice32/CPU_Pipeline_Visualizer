@@ -21,3 +21,5 @@ void ExecPop::executeInstructionNoLog(Instruction instr)
     }
     regs->stackPointer += 2;
 }
+
+ExecPop::~ExecPop() {};

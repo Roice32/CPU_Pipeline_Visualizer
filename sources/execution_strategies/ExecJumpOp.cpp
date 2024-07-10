@@ -22,3 +22,5 @@ void ExecJumpOp::executeInstruction(Instruction instr)
     else
         printf(" (no)\n");
 }
+
+ExecJumpOp::~ExecJumpOp() {};

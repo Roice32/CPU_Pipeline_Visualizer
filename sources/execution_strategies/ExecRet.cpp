@@ -20,3 +20,5 @@ void ExecRet::executeInstruction(Instruction instr)
     regs->IP = requestDataAt(currentSP);
     popHelper->executeInstructionNoLog(Instruction(POP, NULL_VAL));
 }
+
+ExecRet::~ExecRet() {};

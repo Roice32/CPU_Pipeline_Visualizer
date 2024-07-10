@@ -72,4 +72,6 @@ public:
     }
 
     virtual void executeInstruction(Instruction instr) = 0;
+
+    virtual ~IExecutionStrategy() {};
 };

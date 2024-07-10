@@ -16,3 +16,5 @@ void ExecCmp::executeInstruction(Instruction instr)
     if (actualParam1 > actualParam2)
         regs->flags |= GREATER;
 }
+
+ExecCmp::~ExecCmp() {};

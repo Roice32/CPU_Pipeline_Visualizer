@@ -26,3 +26,5 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
         storeResultAtDest(modulus, R1);
     }
 }
+
+ExecComplexMathOp::~ExecComplexMathOp() {};
