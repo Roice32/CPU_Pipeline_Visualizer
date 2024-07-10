@@ -9,6 +9,11 @@ echo "    > Building project executable with Makefile"
 make
 
 echo "    > Running Program"
-./cpp_processor_model
+if [ $# != 1 ]
+then
+    echo "Usage: run.sh <.hex source code file>"
+else
+    ./cpp_processor_model $1
+fi
 
 cd ../

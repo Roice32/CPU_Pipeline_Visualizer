@@ -3,11 +3,11 @@
 #include "headers/Memory.h"
 #include "CPU.h"
 
-int main(int, char**)
+int main(int argc, char** argv)
 {
     try
     {
-        Memory* mem = new Memory(INPUT_FILE_PATH);
+        Memory* mem = new Memory(argv[1]);
         CPU cpu(mem);
         cpu.run();
     }

@@ -7,8 +7,6 @@
 #define REGISTER_COUNT 8
 #define FETCH_WINDOW_BYTES 8
 
-#define INPUT_FILE_PATH "../program_files/allOpsTest.hex"
-
 using byte = uint8_t;
 using register_16b = uint16_t;
 using address = uint16_t;
