@@ -6,7 +6,7 @@ ExecEndSim::ExecEndSim(LoadStore* lsModule, InstructionCache* icModule, CPURegis
 void ExecEndSim::executeInstruction(Instruction instr)
 {
     log(instr);
-    // Temp termination condition until multithreading is implemented
+    // TO DO: Proper termination condition via signals when multithreading is implemented
     regs->IP = 0xffff;
 }
 

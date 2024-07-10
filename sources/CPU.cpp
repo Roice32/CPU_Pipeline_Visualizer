@@ -17,7 +17,7 @@ void CPU::run() { ICModule->requestFetchWindow(); }
 
 CPU::~CPU()
 {
-    // delete LSModule; This won't work for some reason.
+    delete LSModule;
     delete ICModule;
     delete DEModule;
     delete EXModule;

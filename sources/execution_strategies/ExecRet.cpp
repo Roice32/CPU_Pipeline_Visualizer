@@ -9,7 +9,7 @@ ExecRet::ExecRet(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* 
 void ExecRet::executeInstruction(Instruction instr)
 {
     log(instr);
-    for (byte reg = 7; reg < 8; --reg)
+    for (byte reg = 7; reg < REGISTER_COUNT; --reg)
         popHelper->executeInstructionNoLog(Instruction(POP, R0 + reg));
     
     word currentSP = regs->stackBase + regs->stackPointer;

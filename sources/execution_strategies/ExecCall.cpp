@@ -15,7 +15,7 @@ void ExecCall::executeInstruction(Instruction instr)
     pushHelper->executeInstructionNoLog(pushInstr);
     pushInstr.param1 = regs->flags;
     pushHelper->executeInstructionNoLog(pushInstr);
-    for (byte reg = 0; reg < 8; ++reg)
+    for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
         pushHelper->executeInstructionNoLog(Instruction(PUSH, R0 + reg));
     regs->IP = methodAddress;
 }

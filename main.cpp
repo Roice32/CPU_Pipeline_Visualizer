@@ -7,8 +7,8 @@ int main(int, char**)
 {
     try
     {
-        Memory mem(INPUT_FILE_PATH);
-        CPU cpu(&mem);
+        Memory* mem = new Memory(INPUT_FILE_PATH);
+        CPU cpu(mem);
         cpu.run();
     }
     catch (int except)
