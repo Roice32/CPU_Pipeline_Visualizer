@@ -2,9 +2,9 @@
 
 byte Decode::getExpectedParamCount(byte opCode)
 {
-    if (opCode < 7)
+    if (opCode < JMP)
         return 2;
-    if (opCode == 14 || opCode == 15)
+    if (opCode == RET || opCode == END_SIM)
         return 0;
     return 1;
 }
@@ -56,7 +56,7 @@ bool Decode::argumentsAreNotMutuallyExclusive(byte opCode, byte src1, byte src2)
 Instruction Decode::decodeInstructionHeader(word instruction)
 {
     byte opCode = instruction >> 10;
-    if (opCode == 8 || opCode > POP)
+    if (opCode == UNDEFINED || opCode > POP)
         throw "Unknown operation code";
     byte src1 = (instruction >> 5) & 0b11111;
     byte src2 = instruction & 0b11111;
@@ -73,6 +73,7 @@ Instruction Decode::decodeInstructionHeader(word instruction)
     return Instruction(opCode, src1, src2);
 }
 
+// TO DO: fetch window aliniat la 64b
 void Decode::moveIP(byte const paramsCount)
 {
     *IP += (paramsCount + 1) * 2;

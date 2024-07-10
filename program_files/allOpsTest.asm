@@ -1,74 +1,29 @@
 .boot
-    jmp main ; this jumps to a label in code
+    jmp main
 
 .code
 main:
-;    add r0, 2
-;    add r0, 4
-;    sub r0, 1
-
-;    mul r0, 2
-;    div r1, 3
-;    mul r5, 4
-    
-;    mov r1, 100
-;    mov [0x1000], r1
-;    add r1, [0x1000]
-;    mov r1, r1
-    
-;    cmp 0, 1
-;    cmp r1, 200
-;    cmp [0x1000], 20
-;    cmp 0, 0
-
-;    mov r1, 2
-;testingLabel:
-;    mov r2, r1
-;    mul r1, r1
-;    cmp r1, r2
-;    jl finalLabel2
-;    je finalLabel1
-;    jmp testingLabel
-
-;finalLabel1:
-;    jmp endSimLabel
-
-;finalLabel2:
-;    mov r0, 2024
-
-;endSimLabel:
-
-    ;mov r0, 5
-    ;push r0
-    ;push 50
-    ;mov r2, 0x2000
-    ;mov [r2], 2
-    ;mul [r2], r0
-    ;push r1
-    ;push 0
-
-    ;mov r0, 3
-    ;mov [0x2000], 500
-    ;push r0
-    ;push [0x2000]
-    ;push 25
-    ;pop [0x1000]
-    ;pop
-    ;pop r3
-    ;mul r3, [0x1000]
-    ;push r1
-    ;pop r1
     
 first:
     mov r0, 2 
     call method
-    mov r2, [0x1000]
+    mov r0, [0x2000]
+    add [someVar], 1
+    cmp [someVar], r1
+    jg first
+    jz final
     end_sim
 
 method:
     mov r0, 10
     mul r0, 10
-    mov [0x1000], r1
+    mov [0x2000], r1
     ret
     
+final:
+    push 0x0000
+    end_sim
+
 .data
+someVar:
+dw 0xffff

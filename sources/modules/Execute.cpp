@@ -1,33 +1,11 @@
 #include "Execute.h"
 #include "Config.h"
-#include <cstdio>
 
-Execute::Execute(LoadStore* lsModule, CPURegisters* registers, InstructionCache* icModule): IMemoryAccesser(lsModule)
-{
-    this->registers = registers;
-    ICModule = icModule;
-    execStrategies = new ExecutionStrategyPool(lsModule, icModule, registers);
-}
-
-word Execute::requestDataAt(word addr)
-{
-    word result = 0;
-    result = LSModule->loadFrom(addr);
-    result <<= 8;
-    result |= LSModule->loadFrom(addr + 8);
-    return result;
-}
-
-void Execute::storeDataAt(word addr, word data)
-{
-    LSModule->storeAt(addr, data >> 8);
-    LSModule->storeAt(addr + 8, (data << 8) >> 8);
-}
+Execute::Execute(LoadStore* lsModule, CPURegisters* registers, InstructionCache* icModule):
+    registers(registers), ICModule(icModule), execStrategies(new ExecutionStrategyPool(lsModule, icModule, registers)) {};
 
 void Execute::executeInstruction(Instruction instr)
 {
-    printf("Instruction: %hu %hu %hu %hu %hu\n", instr.opCode, instr.src1, instr.src2, instr.param1, instr.param2);
-    printf("Current state of [0x1000]: %hu, R0: %hu, and SP: %hu\n", requestDataAt(0x1000), registers->registers[0], registers->stackPointer);
     switch (instr.opCode)
     {
         case ADD: case SUB:
@@ -52,7 +30,7 @@ void Execute::executeInstruction(Instruction instr)
             execStrategies->ret->executeInstruction(instr);
         break; 
         case END_SIM:
-            registers->IP = 0xffff; //
+            registers->IP = 0xffff; // WIP
         break;
         case PUSH:
             execStrategies->push->executeInstruction(instr);

@@ -2,6 +2,7 @@
 
 #include "Config.h"
 
+// TO DO: Make it be able to hold bigger memory loads
 class Memory
 {
 private:

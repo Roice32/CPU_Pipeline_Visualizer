@@ -4,9 +4,8 @@
 #include "Instruction.h"
 #include "InstructionCache.h"
 #include "ExecutionStrategyPool.h"
-#include "IMemoryAccesser.cpp"
 
-class Execute: public IMemoryAccesser // Need to get rid of this inheritance
+class Execute// Need to get rid of this inheritance
 {
 private:
     CPURegisters* registers;

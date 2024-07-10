@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Instruction.h"
 #include "InstructionCache.h"
 #include "CPURegisters.h"
+#include "ExecutionLogger.h"
 #include "IMemoryAccesser.cpp"
-#include <cstdio>
 
-class IExecutionStrategy: public IMemoryAccesser
+class IExecutionStrategy: public IMemoryAccesser, public ExecutionLogger
 {
 protected:
     InstructionCache* ICModule;
@@ -51,11 +50,12 @@ protected:
     }
 
 public:
-    IExecutionStrategy(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers): IMemoryAccesser(lsModule)
+    IExecutionStrategy(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers): IMemoryAccesser(lsModule), ExecutionLogger()
     {
         ICModule = icModule;
         regs = registers;
     }
+
     word requestDataAt(word addr)
     {
         word result = 0;
@@ -64,14 +64,12 @@ public:
         result |= LSModule->loadFrom(addr + 1);
         return result;
     }
+
     void storeDataAt(word addr, word data)
     {
         LSModule->storeAt(addr, data >> 8);
         LSModule->storeAt(addr + 1, (data << 8) >> 8);
     }
+
     virtual void executeInstruction(Instruction instr) = 0;
-    void log(Instruction instr)
-    {
-        // Later
-    }
 };

@@ -5,6 +5,13 @@ ExecPush::ExecPush(LoadStore* lsModule, InstructionCache* icModule, CPURegisters
 
 void ExecPush::executeInstruction(Instruction instr)
 {
+    word actualParam = getFinalArgValue(instr.src1, instr.param1);
+    log(instr, actualParam);
+    executeInstructionNoLog(instr);
+}
+
+void ExecPush::executeInstructionNoLog(Instruction instr)
+{
     if (regs->stackPointer < 2)
         throw "Upper limit of the stack exceeded";
     word actualParam = getFinalArgValue(instr.src1, instr.param1);

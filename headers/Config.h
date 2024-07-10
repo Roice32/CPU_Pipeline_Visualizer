@@ -7,13 +7,15 @@
 #define REGISTER_COUNT 8
 #define FETCH_WINDOW_BYTES 8
 
-#define byte uint8_t
-#define register_16b uint16_t
-#define address uint16_t
-#define word uint16_t
-#define fetch_window uint64_t
+#define INPUT_FILE_PATH "../program_files/allOpsTest.hex"
 
-enum OpCodes
+using byte = uint8_t;
+using register_16b = uint16_t;
+using address = uint16_t;
+using word = uint16_t;
+using fetch_window = uint64_t;
+
+enum OpCode
 {
     ADD = 0x1,
     SUB, 
@@ -22,7 +24,8 @@ enum OpCodes
     DIV,
     CMP,
     JMP,
-    JE = 0x9,
+    UNDEFINED,
+    JE,
     JL,
     JG,
     JZ,
@@ -33,7 +36,7 @@ enum OpCodes
     POP
 };
 
-enum TypeCodes
+enum TypeCode
 {
     NULL_VAL = 0x0,
     IMM,

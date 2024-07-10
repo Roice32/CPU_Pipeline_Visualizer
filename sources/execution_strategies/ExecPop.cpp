@@ -5,6 +5,12 @@ ExecPop::ExecPop(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* 
 
 void ExecPop::executeInstruction(Instruction instr)
 {
+    log(instr);
+    executeInstructionNoLog(instr);
+}
+
+void ExecPop::executeInstructionNoLog(Instruction instr)
+{
     if (regs->stackSize - regs->stackPointer < 2)
         throw "Lower limit of the stack exceeded";
     if (instr.src1 != NULL_VAL)

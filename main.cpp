@@ -7,7 +7,7 @@ int main(int, char**)
 {
     try
     {
-        Memory mem("../program_files/allOpsTest.hex");
+        Memory mem(INPUT_FILE_PATH);
         CPU cpu(&mem);
         cpu.run();
     }

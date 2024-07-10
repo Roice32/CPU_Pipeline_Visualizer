@@ -8,16 +8,15 @@ ExecRet::ExecRet(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* 
 
 void ExecRet::executeInstruction(Instruction instr)
 {
+    log(instr);
     for (byte reg = 7; reg < 8; --reg)
-        popHelper->executeInstruction(Instruction(POP, R0 + reg));
+        popHelper->executeInstructionNoLog(Instruction(POP, R0 + reg));
     
     word currentSP = regs->stackBase + regs->stackPointer;
     regs->flags = requestDataAt(currentSP);
-    popHelper->executeInstruction(Instruction(POP, NULL_VAL));
+    popHelper->executeInstructionNoLog(Instruction(POP, NULL_VAL));
     currentSP += 2;
     
-    printf("\tReturning from IP: %hu\n", regs->IP);
     regs->IP = requestDataAt(currentSP);
-    popHelper->executeInstruction(Instruction(POP, NULL_VAL));
-    printf("\tReturned to IP: %hu\n", regs->IP);
+    popHelper->executeInstructionNoLog(Instruction(POP, NULL_VAL));
 }

@@ -6,5 +6,6 @@ ExecMov::ExecMov(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* 
 void ExecMov::executeInstruction(Instruction instr)
 {
     word movedValue = getFinalArgValue(instr.src2, instr.param2);
-    storeResultAtDest(movedValue, instr.src1, instr.param1); //
+    log(instr, 0, movedValue); 
+    storeResultAtDest(movedValue, instr.src1, instr.param1);
 }

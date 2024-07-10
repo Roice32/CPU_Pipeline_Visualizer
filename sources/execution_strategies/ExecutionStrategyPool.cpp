@@ -25,5 +25,6 @@ ExecutionStrategyPool::~ExecutionStrategyPool()
     delete pop;
     delete call;
     delete pop;
+    delete ret;
     // Also remember to delete them here
 }
