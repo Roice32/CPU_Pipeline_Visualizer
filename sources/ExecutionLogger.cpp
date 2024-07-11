@@ -56,17 +56,19 @@ bool ExecutionLogger::canBeReplacedByValue(byte src)
     return src != NULL_VAL && src != IMM;
 }
 
-void ExecutionLogger::printPlainArg(byte src, word param)
+void ExecutionLogger::printPlainArg(byte src, word param, bool spaced)
 {
+    if (spaced)
+        printf(" ");
     if (mustDisplayParamValue(src))
     {
         if (src == IMM)
-            printf(" %hu", param);
+            printf("%hu", param);
         else
-            printf(" [%hu]", param);
+            printf("[%hu]", param);
     }
     else
-        printf(" %s", typeNames.at((TypeCode) src));
+        printf("%s", typeNames.at((TypeCode) src));
 }
 
 void ExecutionLogger::printPlainInstruction(Instruction instr)
@@ -80,7 +82,7 @@ void ExecutionLogger::printPlainInstruction(Instruction instr)
 
 void ExecutionLogger::printInstructionWithParamsReplaced(Instruction instr, word actualParam1, word actualParam2)
 {
-    printf(" (aka: %s", opNames.at((OpCode) instr.opCode));
+    printf(" (%s", opNames.at((OpCode) instr.opCode));
     if (canBeReplacedByValue(instr.src1) && instr.opCode != MOV)
         printf(" %hu", actualParam1);
     else
@@ -104,4 +106,18 @@ void ExecutionLogger::log(Instruction instr, word actualParam1, word actualParam
         printInstructionWithParamsReplaced(instr, actualParam1, actualParam2);
     if (newLine)
         printf("\n");
+}
+
+void ExecutionLogger::printFlagsChange(register_16b oldFlagsState, register_16b newFlagsState, bool initSpace)
+{
+    if (oldFlagsState == newFlagsState)
+        return;
+    if (initSpace)
+        printf(" ");
+    if ((oldFlagsState & ZERO) != (newFlagsState & ZERO))
+        printf("Flags.Z=%c ", (newFlagsState & ZERO) ? '1' : '0');
+    if ((oldFlagsState & EQUAL) != (newFlagsState & EQUAL))
+        printf("Flags.E=%c ", (newFlagsState & EQUAL) ? '1' : '0');
+    if ((oldFlagsState & GREATER) != (newFlagsState & GREATER))
+        printf("Flags.G=%c ", (newFlagsState & GREATER) ? '1' : '0');
 }

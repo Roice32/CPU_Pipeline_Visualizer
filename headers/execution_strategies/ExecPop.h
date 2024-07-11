@@ -6,7 +6,7 @@ class ExecPop: public IExecutionStrategy
 {
 public:
     ExecPop(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers);
-    void executeInstruction(Instruction instr);
+    void executeInstruction(Instruction instr) override;
     void executeInstructionNoLog(Instruction instr);
     ~ExecPop();
 };

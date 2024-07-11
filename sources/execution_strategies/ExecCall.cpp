@@ -20,4 +20,17 @@ void ExecCall::executeInstruction(Instruction instr)
     regs->IP = methodAddress;
 }
 
+void ExecCall::log(Instruction instr, word actualparam1, word actualParam2, bool newLine)
+{
+    printf(">");
+    printPlainInstruction(instr);
+    printf("\nSaved state:\n");
+    printf("\tIP = %hu\n\t", regs->IP);
+    printFlagsChange(~regs->flags, regs->flags, false);
+    printf("\n\tRegisters:");
+    for (byte reg = 0; reg < 8; ++reg)
+        printf(" %s=%hu", typeNames.at(TypeCode (R0 + reg)), regs->registers[R0 + reg]);
+    printf("\n");
+}
+
 ExecCall::~ExecCall() {};

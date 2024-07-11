@@ -10,4 +10,13 @@ void ExecMov::executeInstruction(Instruction instr)
     storeResultAtDest(movedValue, instr.src1, instr.param1);
 }
 
+void ExecMov::log(Instruction instr, word actualParam1, word actualParam2, bool newLine)
+{
+    printf(">");
+    printPlainInstruction(instr);
+    printf(" (");
+    printPlainArg(instr.src1, instr.param1, false);
+    printf(" = %hu)\n", actualParam2);
+}
+
 ExecMov::~ExecMov() {};
