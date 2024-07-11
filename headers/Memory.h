@@ -6,6 +6,7 @@
 class Memory
 {
 private:
+    // hashmap<3
     byte* data;
 
     static byte hexCharToDec(const char digit);

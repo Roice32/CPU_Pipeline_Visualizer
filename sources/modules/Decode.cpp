@@ -81,6 +81,7 @@ void Decode::moveIP(byte const paramsCount)
 
 void Decode::processFetchWindow(fetch_window newBatch)
 {
+    // assert
     if (*IP % 2 != 0)
         throw "IP register misaligned";
 
