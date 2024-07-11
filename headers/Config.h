@@ -5,6 +5,7 @@
 #define ADDRESS_WIDTH 16
 #define MEMORY_SIZE 65535
 #define REGISTER_COUNT 8
+#define WORD_BYTES 2
 #define FETCH_WINDOW_BYTES 8
 
 using byte = uint8_t;

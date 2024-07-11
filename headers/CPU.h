@@ -20,7 +20,8 @@ private:
     CommQueue<fetch_window> LStoIC;
     CommQueue<fetch_window> ICtoDE;
     CommQueue<Instruction> DEtoEX;
-    CommQueue<word> EXtoAndFromLS;
+    CommQueue<word> EXtoLS;
+    CommQueue<word> LStoEX;
 
 public:
     CPU(Memory* memory);

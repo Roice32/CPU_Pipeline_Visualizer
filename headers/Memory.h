@@ -2,12 +2,12 @@
 
 #include "Config.h"
 
-// TO DO: Make it be able to hold bigger memory loads
+#include <unordered_map>
+
 class Memory
 {
 private:
-    // hashmap<3
-    byte* data;
+    std::unordered_map<address, byte> data;
 
     static byte hexCharToDec(const char digit);
     static void jumpToNewAddr(address& currAddr, const byte* newAddr);
@@ -17,6 +17,6 @@ public:
     Memory(const char* hexSourceFilePath);
     byte getMemoryCell(address addr);
     void setMemoryCell(address addr, byte value);
-    void dumpMemoryContents(char* outputFile);
+    void dumpMemoryContents(const char* outputFile);
     ~Memory();
 };
