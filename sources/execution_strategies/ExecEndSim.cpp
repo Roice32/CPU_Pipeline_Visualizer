@@ -8,6 +8,7 @@ void ExecEndSim::executeInstruction(Instruction instr)
     log(instr);
     // TO DO: Proper termination condition via signals when multithreading is implemented
     regs->IP = 0xffff;
+    regs->flags &= ~RUNNING;
 }
 
 ExecEndSim::~ExecEndSim() {};

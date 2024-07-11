@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CPURegisters.h"
-#include "CommQueue.h"
 #include "LoadStore.h"
 #include "InstructionCache.h"
 #include "Execute.h"
@@ -17,11 +16,7 @@ private:
     Decode* DEModule;
     Execute* EXModule;
 
-    CommQueue<fetch_window> LStoIC;
-    CommQueue<fetch_window> ICtoDE;
-    CommQueue<Instruction> DEtoEX;
-    CommQueue<word> EXtoLS;
-    CommQueue<word> LStoEX;
+    InterThreadCommPipe<address, fetch_window>* ICtoLS;
 
 public:
     CPU(Memory* memory);

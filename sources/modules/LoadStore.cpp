@@ -1,5 +1,13 @@
 #include "LoadStore.h"
 #include "Config.h"
+#include <thread>
+
+LoadStore::LoadStore(Memory* simulatedMemory, InterThreadCommPipe<address, fetch_window>* commPipeWithIC, register_16b* flagsReg):
+    IMemoryHandler(simulatedMemory)
+{
+    requestsFromIC = commPipeWithIC;
+    flags = flagsReg;
+}
 
 byte LoadStore::loadFrom(address addr)
 {
@@ -21,6 +29,20 @@ fetch_window LoadStore::bufferedLoadFrom(address addr)
 void LoadStore::storeAt(address addr, byte value)
 {
     target->setMemoryCell(addr, value);
+}
+
+void LoadStore::run()
+{
+    address currRequest;
+    fetch_window currResponse;
+    while (*flags & RUNNING)
+    {
+        if (!requestsFromIC->pendingRequest())
+            continue;
+        currRequest = requestsFromIC->getRequest();
+        currResponse = bufferedLoadFrom(currRequest);
+        requestsFromIC->sendResponse(currResponse);
+    }
 }
 
 LoadStore::~LoadStore()

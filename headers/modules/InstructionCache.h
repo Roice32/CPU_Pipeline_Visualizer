@@ -1,18 +1,20 @@
 #pragma once
 
-#include "IFetchWindowRequester.cpp"
+#include "Config.h"
+#include "InterThreadCommPipe.h"
 
 class Decode;
 
-class InstructionCache : public IFetchWindowRequester
+class InstructionCache
 {
 private:
+    InterThreadCommPipe<address, fetch_window>* requestsToLS;
     fetch_window currBatch;
-    register_16b* const IP;
+    register_16b* IP;
     Decode* DEModule;
 
 public:
-    InstructionCache(LoadStore* lsModuleRef, register_16b* ip);
+    InstructionCache(InterThreadCommPipe<address, fetch_window>* commPipeWithLS, register_16b* ip);
     void requestFetchWindow();
     void passForDecode();
     void setDEModule(Decode* deModuleRef);

@@ -12,16 +12,19 @@ private:
 
 public:
     CommQueue() {};
+
     void push(T elem)
     {
         std::lock_guard<std::mutex> lock(guard);
         container.push(elem);
     }
+
     bool isEmpty()
     {
         std::lock_guard<std::mutex> lock(guard);
         return container.empty();
     }
+    
     T pop()
     {
         std::lock_guard<std::mutex> lock(guard);
@@ -29,5 +32,6 @@ public:
         container.pop();
         return data;
     }
+
     ~CommQueue() {};
 };
