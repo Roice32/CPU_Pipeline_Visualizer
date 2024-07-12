@@ -18,6 +18,7 @@ private:
 
     InterThreadCommPipe<address, fetch_window>* ICtoLS;
     InterThreadCommPipe<address, fetch_window>* DEtoIC;
+    InterThreadCommPipe<byte, Instruction>* EXtoDE;
     InterThreadCommPipe<MemoryAccessRequest, word>* EXtoLS;
 
 public:

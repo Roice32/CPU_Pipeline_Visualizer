@@ -6,7 +6,7 @@ echo "    > Removing old executable"
 rm cpp_processor_model
 
 echo "    > Generating build files with CMake"
-cmake build .
+cmake build . -DCMAKE_BUILD_TYPE=Debug
 
 echo "    > Building project executable with Makefile"
 make

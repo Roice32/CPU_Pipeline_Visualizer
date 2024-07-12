@@ -1,6 +1,7 @@
 #include "Decode.h"
 
-Decode::Decode(InterThreadCommPipe<address, fetch_window>* commPipeWithIC, register_16b* ip): requestsToIC(commPipeWithIC), IP(ip) {};
+Decode::Decode(InterThreadCommPipe<address, fetch_window>* commPipeWithIC, InterThreadCommPipe<byte, Instruction>* commPipeWithEX, register_16b* ip):
+    requestsToIC(commPipeWithIC), requestsFromEX(commPipeWithEX), IP(ip) {};
 
 byte Decode::getExpectedParamCount(byte opCode)
 {
@@ -100,7 +101,7 @@ void Decode::processFetchWindow(fetch_window newBatch)
         ++paramsCount;
     }
     moveIP(paramsCount);
-    EXModule->executeInstruction(instr);
+    requestsFromEX->sendResponse(instr);
 }
 
 void Decode::run()
@@ -109,15 +110,14 @@ void Decode::run()
     // TO DO: Proper loop by checking RUNNING flag
     while(*IP != 0xffff)
     {
+        // TO DO: Future
+        if (!requestsFromEX->pendingRequest())
+            continue;
+        requestsFromEX->getRequest();
         requestsToIC->sendRequest(*IP);
         // TO DO
         while(!requestsToIC->pendingResponse()) ;
         newBatch = requestsToIC->getResponse();
         processFetchWindow(newBatch);
     }
-}
-
-void Decode::setEXModule(Execute* exModuleRef)
-{
-    EXModule = exModuleRef;
 }

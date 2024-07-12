@@ -11,8 +11,8 @@
 #include "ExecPop.h"
 #include "Config.h"
 
-Execute::Execute(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
-    requestsToLS(commPipeWithLS), registers(registers)
+Execute::Execute(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, InterThreadCommPipe<byte, Instruction>* commPipeWithDE, CPURegisters* registers):
+    requestsToLS(commPipeWithLS), requestsToDE(commPipeWithDE), registers(registers)
 {
     ExecSimpleMathOp* addOrSub = new ExecSimpleMathOp(commPipeWithLS, registers);
     execStrategies.insert({ADD, addOrSub});
@@ -48,6 +48,17 @@ void Execute::executeInstruction(Instruction instr)
     if (foundStrategy == execStrategies.end())
         throw "Undefined instruction";
     foundStrategy->second->executeInstruction(instr);
+}
+
+void Execute::run()
+{
+    while(registers->flags & RUNNING)
+    {
+        requestsToDE->sendRequest(registers->IP);
+        while (!requestsToDE->pendingResponse()) ;
+        Instruction currInstr = requestsToDE->getResponse();
+        executeInstruction(currInstr);
+    }
 }
 
 Execute::~Execute()
