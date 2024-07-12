@@ -1,6 +1,5 @@
 #include "LoadStore.h"
 #include "Config.h"
-#include <thread>
 
 LoadStore::LoadStore(Memory* simulatedMemory, InterThreadCommPipe<address, fetch_window>* commPipeWithIC, register_16b* flagsReg):
     IMemoryHandler(simulatedMemory)
@@ -37,6 +36,7 @@ void LoadStore::run()
     fetch_window currResponse;
     while (*flags & RUNNING)
     {
+        // TO DO: When Clock is implemented, turn this into futures
         if (!requestsFromIC->pendingRequest())
             continue;
         currRequest = requestsFromIC->getRequest();

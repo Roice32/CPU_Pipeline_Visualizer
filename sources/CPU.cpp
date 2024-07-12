@@ -6,13 +6,13 @@
 CPU::CPU(Memory* memory): memoryUnit(memory)
 {
     ICtoLS = new InterThreadCommPipe<address, fetch_window>();
+    DEtoIC = new InterThreadCommPipe<address, fetch_window>();
 
     registers = new CPURegisters();
     LSModule = new LoadStore(memory, ICtoLS, &registers->flags);
-    ICModule = new InstructionCache(ICtoLS, &registers->IP);
-    DEModule = new Decode(&registers->IP);
+    ICModule = new InstructionCache(ICtoLS, DEtoIC, &registers->flags);
+    DEModule = new Decode(DEtoIC, &registers->IP);
     EXModule = new Execute(LSModule, registers, ICModule);
-    ICModule->setDEModule(DEModule);
     DEModule->setEXModule(EXModule);
 
     registers->flags |= RUNNING;
@@ -21,13 +21,16 @@ CPU::CPU(Memory* memory): memoryUnit(memory)
 void CPU::run()
 {
     std::thread lsThread(&LoadStore::run, LSModule);
-    ICModule->requestFetchWindow();
+    std::thread icThread(&InstructionCache::run, ICModule);
+    DEModule->run();
     lsThread.join();
+    icThread.join();
 }
 
 CPU::~CPU()
 {
     delete ICtoLS;
+    delete DEtoIC;
 
     delete LSModule;
     delete ICModule;

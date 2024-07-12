@@ -9,13 +9,12 @@ class InstructionCache
 {
 private:
     InterThreadCommPipe<address, fetch_window>* requestsToLS;
-    fetch_window currBatch;
-    register_16b* IP;
-    Decode* DEModule;
+    InterThreadCommPipe<address, fetch_window>* requestsFromDE;
+    register_16b* flags;
 
 public:
-    InstructionCache(InterThreadCommPipe<address, fetch_window>* commPipeWithLS, register_16b* ip);
-    void requestFetchWindow();
-    void passForDecode();
-    void setDEModule(Decode* deModuleRef);
+    InstructionCache(InterThreadCommPipe<address, fetch_window>* commPipeWithLS, InterThreadCommPipe<address, fetch_window>* commPipeWithDE, register_16b* flags);
+    fetch_window getFetchWindowFromLS(address addr);
+    void passForDecode(fetch_window currBatch);
+    void run();
 };

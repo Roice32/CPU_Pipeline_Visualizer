@@ -17,6 +17,7 @@ private:
     Execute* EXModule;
 
     InterThreadCommPipe<address, fetch_window>* ICtoLS;
+    InterThreadCommPipe<address, fetch_window>* DEtoIC;
 
 public:
     CPU(Memory* memory);

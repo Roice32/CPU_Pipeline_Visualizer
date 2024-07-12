@@ -48,7 +48,6 @@ void Execute::executeInstruction(Instruction instr)
     if (foundStrategy == execStrategies.end())
         throw "Undefined instruction";
     foundStrategy->second->executeInstruction(instr);
-    ICModule->requestFetchWindow();
 }
 
 Execute::~Execute()

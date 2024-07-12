@@ -6,6 +6,7 @@
 class Decode
 {
 private:
+    InterThreadCommPipe<address, fetch_window>* requestsToIC;
     register_16b* const IP;
     Execute* EXModule;
 
@@ -17,8 +18,9 @@ private:
     void moveIP(byte const paramsCount);
 
 public:
-    Decode(register_16b* const IP): IP(IP) {};
+    Decode(InterThreadCommPipe<address, fetch_window>* commPipeWithIC, register_16b* const IP);
     void processFetchWindow(fetch_window newBatch);
     void setEXModule(Execute* exModuleRef);
     void printReceived(word newBatch);
+    void run();
 };

@@ -1,25 +1,27 @@
 #include "InstructionCache.h"
-#include "Decode.h"
 
-InstructionCache::InstructionCache(InterThreadCommPipe<address, fetch_window>* commPipeWithLS, register_16b* ip): 
-    requestsToLS(commPipeWithLS), IP(ip) {};
+InstructionCache::InstructionCache(InterThreadCommPipe<address, fetch_window>* commPipeWithLS, InterThreadCommPipe<address, fetch_window>* commPipeWithDE, register_16b* flags): 
+    requestsToLS(commPipeWithLS), requestsFromDE(commPipeWithDE), flags(flags) {};
 
-void InstructionCache::requestFetchWindow() {
-    if (*IP == 0xffff)
-        return;
-    requestsToLS->sendRequest(*IP);
+fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
+    requestsToLS->sendRequest(addr);
+    //requestsToLS->sendRequest(addr / 4 * 4); <- Sth like this when IC is snapped to 64b
     // TO DO: replace this with promises in the future
     while (!requestsToLS->pendingResponse()) ;
-    currBatch = requestsToLS->getResponse();
-    // temp
-    passForDecode();
+    return requestsToLS->getResponse();
 }
 
-void InstructionCache::passForDecode() {
-    DEModule->processFetchWindow(currBatch);
-}
-
-void InstructionCache::setDEModule(Decode* deModuleRef)
+void InstructionCache::run()
 {
-    DEModule = deModuleRef;
+    address reqAddress;
+    fetch_window currBatch;
+    while (*flags & RUNNING)
+    {
+        // TO DO: Futures
+        if (!requestsFromDE->pendingRequest())
+            continue;
+        reqAddress = requestsFromDE->getRequest();
+        currBatch = getFetchWindowFromLS(reqAddress);
+        requestsFromDE->sendResponse(currBatch);
+    }
 }
