@@ -1,7 +1,7 @@
 #include "ExecSimpleMathOp.h"
 
-ExecSimpleMathOp::ExecSimpleMathOp(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers):
-    IExecutionStrategy(lsModule, icModule, registers) {};
+ExecSimpleMathOp::ExecSimpleMathOp(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+    IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecSimpleMathOp::executeInstruction(Instruction instr)
 {

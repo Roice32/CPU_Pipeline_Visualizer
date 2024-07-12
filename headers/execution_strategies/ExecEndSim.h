@@ -5,7 +5,7 @@
 class ExecEndSim: public IExecutionStrategy
 {
 public:
-    ExecEndSim(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers);
+    ExecEndSim(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers);
     void executeInstruction(Instruction instr) override;
     ~ExecEndSim();
 };

@@ -1,7 +1,7 @@
 #include "ExecPush.h"
 
-ExecPush::ExecPush(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers):
-    IExecutionStrategy(lsModule, icModule, registers) {};
+ExecPush::ExecPush(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+    IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecPush::executeInstruction(Instruction instr)
 {

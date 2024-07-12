@@ -1,7 +1,7 @@
 #include "ExecPop.h"
 
-ExecPop::ExecPop(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers):
-    IExecutionStrategy(lsModule, icModule, registers) {};
+ExecPop::ExecPop(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+    IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecPop::executeInstruction(Instruction instr)
 {

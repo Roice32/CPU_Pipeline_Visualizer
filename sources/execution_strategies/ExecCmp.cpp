@@ -1,7 +1,7 @@
 #include "ExecCmp.h"
 
-ExecCmp::ExecCmp(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers):
-    IExecutionStrategy(lsModule, icModule, registers) {};
+ExecCmp::ExecCmp(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+    IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecCmp::executeInstruction(Instruction instr)
 {

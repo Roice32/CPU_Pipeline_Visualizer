@@ -2,6 +2,9 @@
 
 cd ./build
 
+echo "    > Removing old executable"
+rm cpp_processor_model
+
 echo "    > Generating build files with CMake"
 cmake build .
 

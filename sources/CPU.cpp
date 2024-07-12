@@ -7,12 +7,13 @@ CPU::CPU(Memory* memory): memoryUnit(memory)
 {
     ICtoLS = new InterThreadCommPipe<address, fetch_window>();
     DEtoIC = new InterThreadCommPipe<address, fetch_window>();
+    EXtoLS = new InterThreadCommPipe<MemoryAccessRequest, word>();
 
     registers = new CPURegisters();
-    LSModule = new LoadStore(memory, ICtoLS, &registers->flags);
+    LSModule = new LoadStore(memory, ICtoLS, EXtoLS, &registers->flags);
     ICModule = new InstructionCache(ICtoLS, DEtoIC, &registers->flags);
     DEModule = new Decode(DEtoIC, &registers->IP);
-    EXModule = new Execute(LSModule, registers, ICModule);
+    EXModule = new Execute(EXtoLS, registers);
     DEModule->setEXModule(EXModule);
 
     registers->flags |= RUNNING;

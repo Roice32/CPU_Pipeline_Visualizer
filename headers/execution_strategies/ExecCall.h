@@ -9,7 +9,7 @@ private:
     ExecPush* pushHelper;
 
 public:
-    ExecCall(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers, ExecPush* helper);
+    ExecCall(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers, ExecPush* helper);
     void executeInstruction(Instruction instr) override;
     void log(Instruction instr, word actualParam1 = 0, word actualParam2 = 0, bool newLine = true) override;
     ~ExecCall();

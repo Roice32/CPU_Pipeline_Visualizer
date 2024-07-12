@@ -1,6 +1,5 @@
 #pragma once
 
-#include "InstructionCache.h"
 #include "CPURegisters.h"
 #include "ExecutionLogger.h"
 #include "IMemoryAccesser.cpp"
@@ -8,7 +7,6 @@
 class IExecutionStrategy: public IMemoryAccesser, public ExecutionLogger
 {
 protected:
-    InstructionCache* ICModule;
     CPURegisters* regs;
 
     word getFinalArgValue(byte src, word param = 0)
@@ -50,25 +48,26 @@ protected:
     }
 
 public:
-    IExecutionStrategy(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers): IMemoryAccesser(lsModule), ExecutionLogger()
-    {
-        ICModule = icModule;
-        regs = registers;
-    }
+    IExecutionStrategy(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+        IMemoryAccesser(commPipeWithLS), ExecutionLogger(), regs(registers) {};
 
     word requestDataAt(word addr)
     {
-        word result = 0;
-        result = LSModule->loadFrom(addr);
-        result <<= 8;
-        result |= LSModule->loadFrom(addr + 1);
-        return result;
+        MemoryAccessRequest newReq(addr);
+        requestsToLS->sendRequest(newReq);
+        // TO DO somehow else
+        while (!requestsToLS->pendingResponse()) ;
+        return requestsToLS->getResponse();
     }
 
     void storeDataAt(word addr, word data)
     {
-        LSModule->storeAt(addr, data >> 8);
-        LSModule->storeAt(addr + 1, (data << 8) >> 8);
+        MemoryAccessRequest newReq(addr, true, data);
+        requestsToLS->sendRequest(newReq);
+        // TO DO
+        while (!requestsToLS->pendingResponse()) ;
+        requestsToLS->getResponse();
+        return;
     }
 
     virtual void executeInstruction(Instruction instr) = 0;

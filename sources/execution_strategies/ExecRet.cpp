@@ -1,7 +1,7 @@
 #include "ExecRet.h"
 
-ExecRet::ExecRet(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers, ExecPop* helper):
-    IExecutionStrategy(lsModule, icModule, registers)
+ExecRet::ExecRet(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers, ExecPop* helper):
+    IExecutionStrategy(commPipeWithLS, registers)
 {
     popHelper = helper;
 };

@@ -2,18 +2,17 @@
 
 #include "CPURegisters.h"
 #include "Instruction.h"
-#include "InstructionCache.h"
 #include "IExecutionStrategy.cpp"
 
 class Execute
 {
 private:
-    CPURegisters* registers;
-    InstructionCache* ICModule;
+    InterThreadCommPipe<MemoryAccessRequest, word>* requestsToLS;
     std::unordered_map<OpCode, IExecutionStrategy*> execStrategies;
+    CPURegisters* registers;
 
 public:
-    Execute(LoadStore* lsModule, CPURegisters* registers, InstructionCache* icModule);
+    Execute(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers);
     word requestDataAt(word addr);
     void storeDataAt(word addr, word data);
     void executeInstruction(Instruction instr);

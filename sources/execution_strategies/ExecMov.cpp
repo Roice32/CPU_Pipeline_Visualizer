@@ -1,7 +1,7 @@
 #include "ExecMov.h"
 
-ExecMov::ExecMov(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers):
-    IExecutionStrategy(lsModule, icModule, registers) {};
+ExecMov::ExecMov(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+    IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecMov::executeInstruction(Instruction instr)
 {

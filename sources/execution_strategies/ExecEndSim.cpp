@@ -1,7 +1,7 @@
 #include "ExecEndSim.h"
 
-ExecEndSim::ExecEndSim(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers):
-    IExecutionStrategy(lsModule, icModule, registers) {};
+ExecEndSim::ExecEndSim(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+    IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecEndSim::executeInstruction(Instruction instr)
 {

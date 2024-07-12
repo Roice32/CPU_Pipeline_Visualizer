@@ -1,7 +1,7 @@
 #include "ExecJumpOp.h"
 
-ExecJumpOp::ExecJumpOp(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers):
-    IExecutionStrategy(lsModule, icModule, registers) {};
+ExecJumpOp::ExecJumpOp(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+    IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecJumpOp::executeInstruction(Instruction instr)
 {

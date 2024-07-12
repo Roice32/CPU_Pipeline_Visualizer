@@ -1,7 +1,7 @@
 #include "ExecCall.h"
 
-ExecCall::ExecCall(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers, ExecPush* helper):
-    IExecutionStrategy(lsModule, icModule, registers)
+ExecCall::ExecCall(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers, ExecPush* helper):
+    IExecutionStrategy(commPipeWithLS, registers)
 {
     pushHelper = helper;
 };

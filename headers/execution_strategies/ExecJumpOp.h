@@ -5,7 +5,7 @@
 class ExecJumpOp: public IExecutionStrategy
 {
 public:
-    ExecJumpOp(LoadStore* lsModule, InstructionCache* icModule, CPURegisters* registers);
+    ExecJumpOp(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers);
     void executeInstruction(Instruction instr) override;
     ~ExecJumpOp();
 };

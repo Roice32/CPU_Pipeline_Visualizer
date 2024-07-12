@@ -1,13 +1,14 @@
 #pragma once
 
-#include "LoadStore.h"
+#include "MemoryAccessRequest.h"
+#include "InterThreadCommPipe.h"
 
 class IMemoryAccesser
 {
 protected:
-    LoadStore* LSModule;
+    InterThreadCommPipe<MemoryAccessRequest, word>* requestsToLS;
     
-    IMemoryAccesser(LoadStore* lsModule) : LSModule(lsModule) {};
+    IMemoryAccesser(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS) : requestsToLS(commPipeWithLS) {};
     virtual word requestDataAt(word addr) = 0;
     virtual void storeDataAt(word addr, word data) = 0;
 };

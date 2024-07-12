@@ -11,34 +11,34 @@
 #include "ExecPop.h"
 #include "Config.h"
 
-Execute::Execute(LoadStore* lsModule, CPURegisters* registers, InstructionCache* icModule):
-    registers(registers), ICModule(icModule)
+Execute::Execute(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+    requestsToLS(commPipeWithLS), registers(registers)
 {
-    ExecSimpleMathOp* addOrSub = new ExecSimpleMathOp(lsModule, icModule, registers);
+    ExecSimpleMathOp* addOrSub = new ExecSimpleMathOp(commPipeWithLS, registers);
     execStrategies.insert({ADD, addOrSub});
     execStrategies.insert({SUB, addOrSub});
-    ExecComplexMathOp* mulOrDiv = new ExecComplexMathOp(lsModule, icModule, registers);
+    ExecComplexMathOp* mulOrDiv = new ExecComplexMathOp(commPipeWithLS, registers);
     execStrategies.insert({MUL, mulOrDiv});
     execStrategies.insert({DIV, mulOrDiv});
-    ExecMov* mov = new ExecMov(lsModule, icModule, registers);
+    ExecMov* mov = new ExecMov(commPipeWithLS, registers);
     execStrategies.insert({MOV, mov});
-    ExecCmp* cmp = new ExecCmp(lsModule, icModule, registers);
+    ExecCmp* cmp = new ExecCmp(commPipeWithLS, registers);
     execStrategies.insert({CMP, cmp});
-    ExecJumpOp* jumpOp = new ExecJumpOp(lsModule, icModule, registers);
+    ExecJumpOp* jumpOp = new ExecJumpOp(commPipeWithLS, registers);
     execStrategies.insert({JMP, jumpOp});
     execStrategies.insert({JE, jumpOp});
     execStrategies.insert({JL, jumpOp});
     execStrategies.insert({JG, jumpOp});
     execStrategies.insert({JZ, jumpOp});
-    ExecPush* push = new ExecPush(lsModule, icModule, registers);
+    ExecPush* push = new ExecPush(commPipeWithLS, registers);
     execStrategies.insert({PUSH, push});
-    ExecCall* call = new ExecCall(lsModule, icModule, registers, push);
+    ExecCall* call = new ExecCall(commPipeWithLS, registers, push);
     execStrategies.insert({CALL, call});
-    ExecPop* pop = new ExecPop(lsModule, icModule, registers);
+    ExecPop* pop = new ExecPop(commPipeWithLS, registers);
     execStrategies.insert({POP, pop});
-    ExecRet* ret = new ExecRet(lsModule, icModule, registers, pop);
+    ExecRet* ret = new ExecRet(commPipeWithLS, registers, pop);
     execStrategies.insert({RET, ret});
-    ExecEndSim* endSim = new ExecEndSim(lsModule, icModule, registers);
+    ExecEndSim* endSim = new ExecEndSim(commPipeWithLS, registers);
     execStrategies.insert({END_SIM, endSim});
 };
 
