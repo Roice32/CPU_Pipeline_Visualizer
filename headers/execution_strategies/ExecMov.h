@@ -5,8 +5,7 @@
 class ExecMov: public IExecutionStrategy
 {
 public:
-    ExecMov(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers);
+    ExecMov(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
     void executeInstruction(Instruction instr) override;
     void log(Instruction instr, word actualParam1 = 0, word actualParam2 = 0, bool newLine = true) override;
-    ~ExecMov();
 };

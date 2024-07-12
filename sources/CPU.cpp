@@ -3,20 +3,20 @@
 
 #include <thread>
 
-CPU::CPU(Memory* memory): memoryUnit(memory)
+CPU::CPU(std::shared_ptr<Memory> memory): memoryUnit(memory)
 {
-    ICtoLS = new InterThreadCommPipe<address, fetch_window>();
-    DEtoIC = new InterThreadCommPipe<address, fetch_window>();
-    EXtoDE = new InterThreadCommPipe<byte, Instruction>();
-    EXtoLS = new InterThreadCommPipe<MemoryAccessRequest, word>();
+    ICtoLS = std::make_shared<InterThreadCommPipe<address, fetch_window>>();
+    DEtoIC = std::make_shared<InterThreadCommPipe<address, fetch_window>>();
+    EXtoDE = std::make_shared<InterThreadCommPipe<byte, Instruction>>();
+    EXtoLS = std::make_shared<InterThreadCommPipe<MemoryAccessRequest, word>>();
 
-    registers = new CPURegisters();
-    LSModule = new LoadStore(memory, ICtoLS, EXtoLS, &registers->flags);
-    ICModule = new InstructionCache(ICtoLS, DEtoIC, &registers->flags);
-    DEModule = new Decode(DEtoIC, EXtoDE, &registers->IP);
-    EXModule = new Execute(EXtoLS, EXtoDE, registers);
+    registers = std::make_shared<CPURegisters>();
+    LSModule = std::make_shared<LoadStore>(memory, ICtoLS, EXtoLS, registers->flags);
+    ICModule = std::make_shared<InstructionCache>(ICtoLS, DEtoIC, registers->flags);
+    DEModule = std::make_shared<Decode>(DEtoIC, EXtoDE, registers->IP);
+    EXModule = std::make_shared<Execute>(EXtoLS, EXtoDE, registers);
 
-    registers->flags |= RUNNING;
+    *registers->flags |= RUNNING;
 }
 
 void CPU::run()
@@ -30,17 +30,4 @@ void CPU::run()
     icThread.join();
     deThread.join();
     exThread.join();
-}
-
-CPU::~CPU()
-{
-    delete ICtoLS;
-    delete DEtoIC;
-    delete EXtoDE;
-    delete EXtoLS;
-
-    delete LSModule;
-    delete ICModule;
-    delete DEModule;
-    delete EXModule;
 }

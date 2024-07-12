@@ -32,6 +32,4 @@ public:
         container.pop();
         return data;
     }
-
-    ~CommQueue() {};
 };

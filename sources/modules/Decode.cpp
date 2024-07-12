@@ -1,6 +1,6 @@
 #include "Decode.h"
 
-Decode::Decode(InterThreadCommPipe<address, fetch_window>* commPipeWithIC, InterThreadCommPipe<byte, Instruction>* commPipeWithEX, register_16b* ip):
+Decode::Decode(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC, std::shared_ptr<InterThreadCommPipe<byte, Instruction>> commPipeWithEX, std::shared_ptr<register_16b> ip):
     requestsToIC(commPipeWithIC), requestsFromEX(commPipeWithEX), IP(ip) {};
 
 byte Decode::getExpectedParamCount(byte opCode)

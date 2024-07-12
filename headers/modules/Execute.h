@@ -4,21 +4,22 @@
 #include "Instruction.h"
 #include "IExecutionStrategy.cpp"
 
+#include <memory>
+
 class Execute
 {
 private:
-    InterThreadCommPipe<MemoryAccessRequest, word>* requestsToLS;
-    InterThreadCommPipe<byte, Instruction>* requestsToDE;
-    std::unordered_map<OpCode, IExecutionStrategy*> execStrategies;
-    CPURegisters* registers;
+    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> requestsToLS;
+    std::shared_ptr<InterThreadCommPipe<byte, Instruction>> requestsToDE;
+    std::unordered_map<OpCode, std::shared_ptr<IExecutionStrategy>> execStrategies;
+    std::shared_ptr<CPURegisters> registers;
 
 public:
-    Execute(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, InterThreadCommPipe<byte, Instruction>* commPipeWithDE, CPURegisters* registers);
+    Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<InterThreadCommPipe<byte, Instruction>> commPipeWithDE, std::shared_ptr<CPURegisters> registers);
     word requestDataAt(word addr);
     void storeDataAt(word addr, word data);
     void executeInstruction(Instruction instr);
     void run();
-    ~Execute();
 
     friend class IExecutionStrategy;
 };

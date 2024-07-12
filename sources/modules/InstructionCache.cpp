@@ -1,6 +1,6 @@
 #include "InstructionCache.h"
 
-InstructionCache::InstructionCache(InterThreadCommPipe<address, fetch_window>* commPipeWithLS, InterThreadCommPipe<address, fetch_window>* commPipeWithDE, register_16b* flags): 
+InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithLS, std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithDE, std::shared_ptr<register_16b> flags): 
     requestsToLS(commPipeWithLS), requestsFromDE(commPipeWithDE), flags(flags) {};
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {

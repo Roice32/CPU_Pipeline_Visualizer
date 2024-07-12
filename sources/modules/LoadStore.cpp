@@ -1,7 +1,7 @@
 #include "LoadStore.h"
 #include "Config.h"
 
-LoadStore::LoadStore(Memory* simulatedMemory, InterThreadCommPipe<address, fetch_window>* commPipeWithIC, InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithEX, register_16b* flagsReg):
+LoadStore::LoadStore(std::shared_ptr<Memory> simulatedMemory, std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC, std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithEX, std::shared_ptr<register_16b> flagsReg):
     IMemoryHandler(simulatedMemory), requestsFromIC(commPipeWithIC), requestsFromEX(commPipeWithEX), flags(flagsReg) {};
 
 byte LoadStore::loadFrom(address addr)
@@ -65,9 +65,4 @@ void LoadStore::run()
             requestsFromIC->sendResponse(currResponse);
         }
     }
-}
-
-LoadStore::~LoadStore()
-{
-    delete target;
 }

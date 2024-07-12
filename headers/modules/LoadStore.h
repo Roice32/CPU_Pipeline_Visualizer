@@ -7,16 +7,15 @@
 class LoadStore : public IMemoryHandler
 {
 private:
-    InterThreadCommPipe<address, fetch_window>* requestsFromIC;
-    InterThreadCommPipe<MemoryAccessRequest, word>* requestsFromEX;
-    register_16b* flags;
+    std::shared_ptr<InterThreadCommPipe<address, fetch_window>> requestsFromIC;
+    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> requestsFromEX;
+    std::shared_ptr<register_16b> flags;
 
 public:
-    LoadStore(Memory* simulatedMemory, InterThreadCommPipe<address, fetch_window>* commPipeWithIC, InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithEX, register_16b* flagsReg);
+    LoadStore(std::shared_ptr<Memory> simulatedMemory, std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC, std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithEX, std::shared_ptr<register_16b> flagsReg);
     byte loadFrom(address addr);
     fetch_window bufferedLoadFrom(address addr);
     void storeAt(address addr, byte value);
     word handleRequestFromEX(MemoryAccessRequest req);
     void run();
-    ~LoadStore();
 };

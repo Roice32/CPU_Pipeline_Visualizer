@@ -5,8 +5,7 @@
 class ExecPop: public IExecutionStrategy
 {
 public:
-    ExecPop(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers);
+    ExecPop(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
     void executeInstruction(Instruction instr) override;
     void executeInstructionNoLog(Instruction instr);
-    ~ExecPop();
 };

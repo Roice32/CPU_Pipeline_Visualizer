@@ -75,5 +75,3 @@ void Memory::dumpMemoryContents(const char* outputFile)
         output << keyValuePair->first << ": " << word (keyValuePair->second) << '\n';
     output.close();
 }
-
-Memory::~Memory() {}

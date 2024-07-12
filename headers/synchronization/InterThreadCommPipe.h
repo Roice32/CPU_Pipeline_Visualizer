@@ -41,6 +41,4 @@ public:
     {
         return responses.pop();
     }
-    
-    ~InterThreadCommPipe() {};
 };

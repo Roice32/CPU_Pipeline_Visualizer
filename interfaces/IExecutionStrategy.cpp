@@ -7,7 +7,7 @@
 class IExecutionStrategy: public IMemoryAccesser, public ExecutionLogger
 {
 protected:
-    CPURegisters* regs;
+    std::shared_ptr<CPURegisters> regs;
 
     word getFinalArgValue(byte src, word param = 0)
     {
@@ -18,15 +18,15 @@ protected:
         if (src == ADDR)
             return requestDataAt(param);
         if (src == SP_REG)
-            return regs->stackPointer;
+            return *regs->stackPointer;
         if (src == ST_BASE)
-            return regs->stackBase;
+            return *regs->stackBase;
         if (src == ST_SIZE)
-            return regs->stackSize;
+            return *regs->stackSize;
         if (src >= R0 && src <= R7)
-            return regs->registers[src - R0];
+            return *regs->registers[src - R0];
         if (src >= ADDR_R0 && src <= ADDR_R7)
-            return requestDataAt(regs->registers[src - ADDR_R0]);
+            return requestDataAt(*regs->registers[src - ADDR_R0]);
         throw "Wrong or unimplemented argument type";
     }
 
@@ -35,20 +35,20 @@ protected:
         if (destType == ADDR)
             storeDataAt(destLocation, result);
         else if (destType == SP_REG)
-            regs->stackPointer = result;
+            *regs->stackPointer = result;
         else if (destType == ST_BASE)
-            regs->stackBase = result;
+            *regs->stackBase = result;
         else if (destType == ST_SIZE)
-            regs->stackSize = result;
+            *regs->stackSize = result;
         else if (destType >= R0 && destType <= R7)
-            regs->registers[destType - R0] = result;
+            *regs->registers[destType - R0] = result;
         else if (destType >= ADDR_R0 && destType <= ADDR_R7)
-            storeDataAt(regs->registers[destType - ADDR_R0], result);
+            storeDataAt(*regs->registers[destType - ADDR_R0], result);
         else throw "Wrong or unimplemented argument type";
     }
 
 public:
-    IExecutionStrategy(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+    IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
         IMemoryAccesser(commPipeWithLS), ExecutionLogger(), regs(registers) {};
 
     word requestDataAt(word addr)
@@ -71,6 +71,4 @@ public:
     }
 
     virtual void executeInstruction(Instruction instr) = 0;
-
-    virtual ~IExecutionStrategy() {};
 };

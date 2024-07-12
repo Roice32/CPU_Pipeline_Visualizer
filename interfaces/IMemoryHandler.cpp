@@ -3,17 +3,17 @@
 #include "Memory.h"
 #include "Config.h"
 
+#include <memory>
+
 class IMemoryHandler
 {
 protected:
-    Memory* target;
+    std::shared_ptr<Memory> target;
     
 public:
-    IMemoryHandler(Memory* target): target(target) {};
+    IMemoryHandler(std::shared_ptr<Memory> target): target(target) {};
     
     virtual byte loadFrom(address addr) = 0;
     virtual fetch_window bufferedLoadFrom(address addr) = 0;
     virtual void storeAt(address addr, byte value) = 0;
-    
-    virtual ~IMemoryHandler() {};
 };

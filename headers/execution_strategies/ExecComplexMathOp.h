@@ -5,8 +5,7 @@
 class ExecComplexMathOp: public IExecutionStrategy
 {
 public:
-    ExecComplexMathOp(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers);
+    ExecComplexMathOp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
     void executeInstruction(Instruction instr) override;
     void log(Instruction instr, word r0Result = 0, word r1Result = 0, bool newLine = true) override;
-    ~ExecComplexMathOp();
 };

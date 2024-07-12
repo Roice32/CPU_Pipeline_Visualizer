@@ -5,7 +5,6 @@
 class ExecEndSim: public IExecutionStrategy
 {
 public:
-    ExecEndSim(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers);
+    ExecEndSim(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
     void executeInstruction(Instruction instr) override;
-    ~ExecEndSim();
 };

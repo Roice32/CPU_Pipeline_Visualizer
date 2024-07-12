@@ -7,7 +7,7 @@ int main(int argc, char** argv)
 {
     try
     {
-        Memory* mem = new Memory(argv[1]);
+        std::shared_ptr<Memory> mem = std::make_shared<Memory>(argv[1]);
         CPU cpu(mem);
         cpu.run();
     }

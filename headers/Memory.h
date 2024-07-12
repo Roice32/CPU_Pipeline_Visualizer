@@ -18,5 +18,4 @@ public:
     byte getMemoryCell(address addr);
     void setMemoryCell(address addr, byte value);
     void dumpMemoryContents(const char* outputFile);
-    ~Memory();
 };

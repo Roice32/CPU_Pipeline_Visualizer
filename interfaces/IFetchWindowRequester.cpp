@@ -2,12 +2,14 @@
 
 #include "LoadStore.h"
 
+#include <memory>
+
 class IFetchWindowRequester
 {
 protected:
-    LoadStore* const LSModule;
+    std::shared_ptr<LoadStore> const LSModule;
 
 public:
-    IFetchWindowRequester(LoadStore* lsModule): LSModule(lsModule) {};
+    IFetchWindowRequester(std::shared_ptr<LoadStore> lsModule): LSModule(lsModule) {};
     virtual void requestFetchWindow() = 0;
 };

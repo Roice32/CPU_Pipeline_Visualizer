@@ -1,6 +1,6 @@
 #include "ExecJumpOp.h"
 
-ExecJumpOp::ExecJumpOp(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
     IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecJumpOp::executeInstruction(Instruction instr)
@@ -9,18 +9,16 @@ void ExecJumpOp::executeInstruction(Instruction instr)
     log(instr, jumpAddress, 0, false);
 
     bool plainJump = (instr.opCode == JMP);
-    bool equalJump = (instr.opCode == JE && (regs->flags & EQUAL));
-    bool lessJump = (instr.opCode == JL && !(regs->flags & EQUAL) && !(regs->flags & GREATER));
-    bool greaterJump = (instr.opCode == JG && (regs->flags & GREATER));
-    bool zeroJump = (instr.opCode == JZ && (regs->flags & ZERO));
+    bool equalJump = (instr.opCode == JE && (*regs->flags & EQUAL));
+    bool lessJump = (instr.opCode == JL && !(*regs->flags & EQUAL) && !(*regs->flags & GREATER));
+    bool greaterJump = (instr.opCode == JG && (*regs->flags & GREATER));
+    bool zeroJump = (instr.opCode == JZ && (*regs->flags & ZERO));
 
     if (plainJump || equalJump || lessJump || greaterJump || zeroJump)
     {
-        regs->IP = jumpAddress;
+        *regs->IP = jumpAddress;
         printf(" (yes)\n");
     }
     else
         printf(" (no)\n");
 }
-
-ExecJumpOp::~ExecJumpOp() {};

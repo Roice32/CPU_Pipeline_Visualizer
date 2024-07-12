@@ -1,6 +1,6 @@
 #include "ExecComplexMathOp.h"
 
-ExecComplexMathOp::ExecComplexMathOp(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+ExecComplexMathOp::ExecComplexMathOp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
     IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecComplexMathOp::executeInstruction(Instruction instr)
@@ -11,7 +11,7 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
     {
         unsigned int result = ((unsigned int) actualParam1) * actualParam2;
         if (result == 0)
-            regs->flags |= ZERO;
+            *regs->flags |= ZERO;
         storeResultAtDest(result >> 16, R0);
         storeResultAtDest((result << 16) >> 16, R1);
         log(instr, result >> 16, (result << 16) >> 16);
@@ -21,7 +21,7 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
         word ratio = actualParam1 / actualParam2;
         word modulus = actualParam1 % actualParam2;
         if (ratio == 0 && modulus == 0)
-            regs->flags |= ZERO;
+            *regs->flags |= ZERO;
         storeResultAtDest(ratio, R0);
         storeResultAtDest(modulus, R1);
         log(instr, ratio, modulus);
@@ -38,5 +38,3 @@ void ExecComplexMathOp::log(Instruction instr, word r0Result, word r1Result, boo
         printf(" Flags.Z=1");
     printf("\n");
 }
-
-ExecComplexMathOp::~ExecComplexMathOp() {};

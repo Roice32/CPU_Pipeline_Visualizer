@@ -5,8 +5,7 @@
 class ExecPush: public IExecutionStrategy
 {
 public:
-    ExecPush(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers);
+    ExecPush(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
     void executeInstruction(Instruction instr) override;
     void executeInstructionNoLog(Instruction instr);
-    ~ExecPush();
 };

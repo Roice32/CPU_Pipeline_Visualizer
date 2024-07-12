@@ -6,11 +6,10 @@
 class ExecCall: public IExecutionStrategy
 {
 private:
-    ExecPush* pushHelper;
+    std::shared_ptr<ExecPush> pushHelper;
 
 public:
-    ExecCall(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers, ExecPush* helper);
+    ExecCall(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers, std::shared_ptr<ExecPush> helper);
     void executeInstruction(Instruction instr) override;
     void log(Instruction instr, word actualParam1 = 0, word actualParam2 = 0, bool newLine = true) override;
-    ~ExecCall();
 };

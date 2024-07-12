@@ -1,6 +1,6 @@
 #include "ExecSimpleMathOp.h"
 
-ExecSimpleMathOp::ExecSimpleMathOp(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+ExecSimpleMathOp::ExecSimpleMathOp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
     IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecSimpleMathOp::executeInstruction(Instruction instr)
@@ -14,7 +14,7 @@ void ExecSimpleMathOp::executeInstruction(Instruction instr)
         result = actualParam1 - actualParam2;
     storeResultAtDest(result, instr.src1, instr.param1);
     if (result == 0)
-        regs->flags |= ZERO;
+        *regs->flags |= ZERO;
     log(instr, actualParam1, result);
 }
 
@@ -29,5 +29,3 @@ void ExecSimpleMathOp::log(Instruction instr, word actualParam1, word result, bo
         printf(" Flags.Z=1");
     printf("\n");
 }
-
-ExecSimpleMathOp::~ExecSimpleMathOp() {};

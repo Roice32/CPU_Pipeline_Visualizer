@@ -2,15 +2,17 @@
 
 #include "Config.h"
 
+#include <memory>
+
 class CPURegisters
 {
 public:
-    register_16b registers[REGISTER_COUNT];
-    register_16b IP;
-    register_16b flags;
-    register_16b stackBase;
-    register_16b stackSize;
-    register_16b stackPointer;
+    std::shared_ptr<register_16b> registers[REGISTER_COUNT];
+    std::shared_ptr<register_16b> IP;
+    std::shared_ptr<register_16b> flags;
+    std::shared_ptr<register_16b> stackBase;
+    std::shared_ptr<register_16b> stackSize;
+    std::shared_ptr<register_16b> stackPointer;
 
     CPURegisters();
     void reset();

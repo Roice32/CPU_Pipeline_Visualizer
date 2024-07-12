@@ -11,34 +11,34 @@
 #include "ExecPop.h"
 #include "Config.h"
 
-Execute::Execute(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, InterThreadCommPipe<byte, Instruction>* commPipeWithDE, CPURegisters* registers):
+Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<InterThreadCommPipe<byte, Instruction>> commPipeWithDE, std::shared_ptr<CPURegisters> registers):
     requestsToLS(commPipeWithLS), requestsToDE(commPipeWithDE), registers(registers)
 {
-    ExecSimpleMathOp* addOrSub = new ExecSimpleMathOp(commPipeWithLS, registers);
+    std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, registers);
     execStrategies.insert({ADD, addOrSub});
     execStrategies.insert({SUB, addOrSub});
-    ExecComplexMathOp* mulOrDiv = new ExecComplexMathOp(commPipeWithLS, registers);
+    std::shared_ptr<ExecComplexMathOp> mulOrDiv = std::make_shared<ExecComplexMathOp>(commPipeWithLS, registers);
     execStrategies.insert({MUL, mulOrDiv});
     execStrategies.insert({DIV, mulOrDiv});
-    ExecMov* mov = new ExecMov(commPipeWithLS, registers);
+    std::shared_ptr<ExecMov> mov = std::make_shared<ExecMov>(commPipeWithLS, registers);
     execStrategies.insert({MOV, mov});
-    ExecCmp* cmp = new ExecCmp(commPipeWithLS, registers);
+    std::shared_ptr<ExecCmp> cmp = std::make_shared<ExecCmp>(commPipeWithLS, registers);
     execStrategies.insert({CMP, cmp});
-    ExecJumpOp* jumpOp = new ExecJumpOp(commPipeWithLS, registers);
+    std::shared_ptr<ExecJumpOp> jumpOp = std::make_shared<ExecJumpOp>(commPipeWithLS, registers);
     execStrategies.insert({JMP, jumpOp});
     execStrategies.insert({JE, jumpOp});
     execStrategies.insert({JL, jumpOp});
     execStrategies.insert({JG, jumpOp});
     execStrategies.insert({JZ, jumpOp});
-    ExecPush* push = new ExecPush(commPipeWithLS, registers);
+    std::shared_ptr<ExecPush> push = std::make_shared<ExecPush>(commPipeWithLS, registers);
     execStrategies.insert({PUSH, push});
-    ExecCall* call = new ExecCall(commPipeWithLS, registers, push);
+    std::shared_ptr<ExecCall> call = std::make_shared<ExecCall>(commPipeWithLS, registers, push);
     execStrategies.insert({CALL, call});
-    ExecPop* pop = new ExecPop(commPipeWithLS, registers);
+    std::shared_ptr<ExecPop> pop = std::make_shared<ExecPop>(commPipeWithLS, registers);
     execStrategies.insert({POP, pop});
-    ExecRet* ret = new ExecRet(commPipeWithLS, registers, pop);
+    std::shared_ptr<ExecRet> ret = std::make_shared<ExecRet>(commPipeWithLS, registers, pop);
     execStrategies.insert({RET, ret});
-    ExecEndSim* endSim = new ExecEndSim(commPipeWithLS, registers);
+    std::shared_ptr<ExecEndSim> endSim = std::make_shared<ExecEndSim>(commPipeWithLS, registers);
     execStrategies.insert({END_SIM, endSim});
 };
 
@@ -52,21 +52,11 @@ void Execute::executeInstruction(Instruction instr)
 
 void Execute::run()
 {
-    while(registers->flags & RUNNING)
+    while(*registers->flags & RUNNING)
     {
-        requestsToDE->sendRequest(registers->IP);
+        requestsToDE->sendRequest(*registers->IP);
         while (!requestsToDE->pendingResponse()) ;
         Instruction currInstr = requestsToDE->getResponse();
         executeInstruction(currInstr);
-    }
-}
-
-Execute::~Execute()
-{
-    for (byte op = ADD; op <= POP; ++op)
-    {
-        if (op == SUB || op == DIV || (op >= JE && op <= JZ) || op == UNDEFINED)
-            continue;
-        delete execStrategies.at((OpCode) op);
     }
 }

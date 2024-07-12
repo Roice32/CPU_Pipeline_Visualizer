@@ -5,7 +5,6 @@
 class ExecJumpOp: public IExecutionStrategy
 {
 public:
-    ExecJumpOp(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers);
+    ExecJumpOp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
     void executeInstruction(Instruction instr) override;
-    ~ExecJumpOp();
 };

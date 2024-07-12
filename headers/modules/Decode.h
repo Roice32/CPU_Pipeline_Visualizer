@@ -4,12 +4,14 @@
 #include "Instruction.h"
 #include "Config.h"
 
+#include <memory>
+
 class Decode
 {
 private:
-    InterThreadCommPipe<address, fetch_window>* requestsToIC;
-    InterThreadCommPipe<byte, Instruction>* requestsFromEX;
-    register_16b* const IP;
+    std::shared_ptr<InterThreadCommPipe<address, fetch_window>> requestsToIC;
+    std::shared_ptr<InterThreadCommPipe<byte, Instruction>> requestsFromEX;
+    std::shared_ptr<register_16b> const IP;
 
     static byte getExpectedParamCount(byte opCode);
     static bool argumentsMatchExpectedNumber(byte opCode, byte src1, byte src2);
@@ -19,7 +21,7 @@ private:
     void moveIP(byte const paramsCount); // TO DO: Get rid of this
 
 public:
-    Decode(InterThreadCommPipe<address, fetch_window>* commPipeWithIC, InterThreadCommPipe<byte, Instruction>* commPipeWithEX, register_16b* const IP);
+    Decode(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC, std::shared_ptr<InterThreadCommPipe<byte, Instruction>> commPipeWithEX, std::shared_ptr<register_16b> const IP);
     void processFetchWindow(fetch_window newBatch);
     void run();
 };

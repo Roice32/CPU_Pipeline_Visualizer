@@ -1,23 +1,20 @@
 #include "ExecCall.h"
 
-ExecCall::ExecCall(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers, ExecPush* helper):
-    IExecutionStrategy(commPipeWithLS, registers)
-{
-    pushHelper = helper;
-};
+ExecCall::ExecCall(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers, std::shared_ptr<ExecPush> helper):
+    IExecutionStrategy(commPipeWithLS, registers), pushHelper(helper) {};
 
 void ExecCall::executeInstruction(Instruction instr)
 {
     word methodAddress = getFinalArgValue(instr.src1, instr.param1);
     log(instr, methodAddress);
     Instruction pushInstr(PUSH, IMM);
-    pushInstr.param1 = regs->IP;
+    pushInstr.param1 = *regs->IP;
     pushHelper->executeInstructionNoLog(pushInstr);
-    pushInstr.param1 = regs->flags;
+    pushInstr.param1 = *regs->flags;
     pushHelper->executeInstructionNoLog(pushInstr);
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
         pushHelper->executeInstructionNoLog(Instruction(PUSH, R0 + reg));
-    regs->IP = methodAddress;
+    *regs->IP = methodAddress;
 }
 
 void ExecCall::log(Instruction instr, word actualparam1, word actualParam2, bool newLine)
@@ -25,12 +22,10 @@ void ExecCall::log(Instruction instr, word actualparam1, word actualParam2, bool
     printf(">");
     printPlainInstruction(instr);
     printf("\nSaved state:\n");
-    printf("\tIP = %hu\n\t", regs->IP);
-    printFlagsChange(~regs->flags, regs->flags, false);
+    printf("\tIP = %hu\n\t", *regs->IP);
+    printFlagsChange(~*regs->flags, *regs->flags, false);
     printf("\n\tRegisters:");
     for (byte reg = 0; reg < 8; ++reg)
-        printf(" %s=%hu", typeNames.at(TypeCode (R0 + reg)), regs->registers[R0 + reg]);
+        printf(" %s=%hu", typeNames.at(TypeCode (R0 + reg)), *regs->registers[R0 + reg]);
     printf("\n");
 }
-
-ExecCall::~ExecCall() {};

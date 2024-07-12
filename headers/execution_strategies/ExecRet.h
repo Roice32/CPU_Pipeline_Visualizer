@@ -6,11 +6,10 @@
 class ExecRet: public IExecutionStrategy
 {
 private:
-    ExecPop* popHelper;
+    std::shared_ptr<ExecPop> popHelper;
 
 public:
-    ExecRet(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers, ExecPop* helper);
+    ExecRet(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers, std::shared_ptr<ExecPop> helper);
     void executeInstruction(Instruction instr) override;
     void log(Instruction instr, word actualParam1 = 0, word actualParam2 = 0, bool newLine = true) override; 
-    ~ExecRet();
 };

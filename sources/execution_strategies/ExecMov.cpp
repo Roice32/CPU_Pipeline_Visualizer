@@ -1,6 +1,6 @@
 #include "ExecMov.h"
 
-ExecMov::ExecMov(InterThreadCommPipe<MemoryAccessRequest, word>* commPipeWithLS, CPURegisters* registers):
+ExecMov::ExecMov(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
     IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecMov::executeInstruction(Instruction instr)
@@ -18,5 +18,3 @@ void ExecMov::log(Instruction instr, word actualParam1, word actualParam2, bool 
     printPlainArg(instr.src1, instr.param1, false);
     printf(" = %hu)\n", actualParam2);
 }
-
-ExecMov::~ExecMov() {};
