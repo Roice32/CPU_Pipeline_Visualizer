@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <mutex>
+#include <cassert>
 
 template <typename T>
 class CommQueue
@@ -28,6 +29,7 @@ public:
     T pop()
     {
         std::lock_guard<std::mutex> lock(guard);
+        assert(!container.empty() && "Popping from an empty queue");
         T data = container.front();
         container.pop();
         return data;

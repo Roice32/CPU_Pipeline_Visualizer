@@ -3,6 +3,8 @@
 #include "Memory.h"
 #include "Config.h"
 
+#include <cassert>
+
 byte Memory::hexCharToDec(const char digit)
 {
     return digit - (digit >= 'a' ? 'a' - 10 : '0');
@@ -34,8 +36,7 @@ Memory::Memory(const char* hexSourceFilePath)
     
     std::ifstream sourceCodeFile(hexSourceFilePath);
 
-    if(!sourceCodeFile.is_open())
-        throw 404;
+    assert(sourceCodeFile.is_open() && "Unable to open specified input file");
 
     while(sourceCodeFile >> instrLine)
     {

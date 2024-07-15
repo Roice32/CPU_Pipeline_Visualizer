@@ -1,4 +1,5 @@
 #include "Decode.h"
+#include <cassert>
 
 Decode::Decode(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC, std::shared_ptr<InterThreadCommPipe<byte, Instruction>> commPipeWithEX, std::shared_ptr<register_16b> ip):
     requestsToIC(commPipeWithIC), requestsFromEX(commPipeWithEX), IP(ip) {};
@@ -59,19 +60,16 @@ bool Decode::argumentsAreNotMutuallyExclusive(byte opCode, byte src1, byte src2)
 Instruction Decode::decodeInstructionHeader(word instruction)
 {
     byte opCode = instruction >> 10;
-    if (opCode == UNDEFINED || opCode > POP)
-        throw "Unknown operation code";
+    assert((opCode != UNDEFINED && opCode <= POP) && "Unknown operation code");
+
     byte src1 = (instruction >> 5) & 0b11111;
     byte src2 = instruction & 0b11111;
     
-    if (!argumentsMatchExpectedNumber(opCode, src1, src2))
-        throw "Wrong number of arguments for this operation";
+    assert(argumentsMatchExpectedNumber(opCode, src1, src2) && "Wrong number of arguments for this operation");
     
-    if (!argumentsMatchExpectedTypes(opCode, src1, src2))
-        throw "Wrong arguments' types for this operation";
+    assert(argumentsMatchExpectedTypes(opCode, src1, src2) && "Wrong arguments' types for this operation");
 
-    if (!argumentsAreNotMutuallyExclusive(opCode, src1, src2))
-        throw "Arguments are mutually exclusive for this operation";
+    assert(argumentsAreNotMutuallyExclusive(opCode, src1, src2) && "Arguments are mutually exclusive for this operation");
 
     return Instruction(opCode, src1, src2);
 }
@@ -85,8 +83,7 @@ void Decode::moveIP(byte const paramsCount)
 void Decode::processFetchWindow(fetch_window newBatch)
 {
     // assert
-    if (*IP % 2 != 0)
-        throw "IP register misaligned";
+    assert(*IP % 2 == 0 && "IP register misaligned");
 
     Instruction instr = decodeInstructionHeader(word (newBatch >> 48));
     byte paramsCount = 0;

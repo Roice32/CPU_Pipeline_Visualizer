@@ -11,8 +11,8 @@ void ExecPop::executeInstruction(Instruction instr)
 
 void ExecPop::executeInstructionNoLog(Instruction instr)
 {
-    if (*regs->stackSize - *regs->stackPointer < 2)
-        throw "Lower limit of the stack exceeded";
+    assert((*regs->stackSize - *regs->stackPointer > 1) && "Lower limit of the stack exceeded");
+
     if (instr.src1 != NULL_VAL)
     {
         word topOfStack = *regs->stackBase + *regs->stackPointer;

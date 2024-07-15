@@ -45,8 +45,7 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>>
 void Execute::executeInstruction(Instruction instr)
 {
     auto foundStrategy = execStrategies.find((OpCode) instr.opCode); 
-    if (foundStrategy == execStrategies.end())
-        throw "Undefined instruction";
+    assert(foundStrategy != execStrategies.end() && "Undefined instruction");
     foundStrategy->second->executeInstruction(instr);
 }
 

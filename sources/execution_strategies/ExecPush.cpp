@@ -12,8 +12,8 @@ void ExecPush::executeInstruction(Instruction instr)
 
 void ExecPush::executeInstructionNoLog(Instruction instr)
 {
-    if (*regs->stackPointer < 2)
-        throw "Upper limit of the stack exceeded";
+    assert((*regs->stackPointer > 1) && "Upper limit of the stack exceeded");
+
     word actualParam = getFinalArgValue(instr.src1, instr.param1);
     *regs->stackPointer -= 2;
     word newSP = *regs->stackBase + *regs->stackPointer;

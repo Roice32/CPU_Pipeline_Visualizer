@@ -3,6 +3,7 @@
 #include "CPURegisters.h"
 #include "ExecutionLogger.h"
 #include "IMemoryAccesser.cpp"
+#include <cassert>
 
 class IExecutionStrategy: public IMemoryAccesser, public ExecutionLogger
 {
@@ -30,7 +31,7 @@ protected:
             return *regs->registers[src - R0];
         if (src >= ADDR_R0 && src <= ADDR_R7)
             return requestDataAt(*regs->registers[src - ADDR_R0]);
-        throw "Wrong or unimplemented argument type";
+        assert(0 && "Wrong or unimplemented parameter type");
     }
 
     void storeResultAtDest(word result, byte destType, word destLocation = 0)
@@ -47,7 +48,7 @@ protected:
             *regs->registers[destType - R0] = result;
         else if (destType >= ADDR_R0 && destType <= ADDR_R7)
             storeDataAt(*regs->registers[destType - ADDR_R0], result);
-        else throw "Wrong or unimplemented argument type";
+        else assert(0 && "Wrong or unimplemented parameter type");
     }
 
     word requestDataAt(word addr)
