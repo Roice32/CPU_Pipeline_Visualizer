@@ -9,6 +9,9 @@ class IExecutionStrategy: public IMemoryAccesser, public ExecutionLogger
 protected:
     std::shared_ptr<CPURegisters> regs;
 
+    IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
+        IMemoryAccesser(commPipeWithLS), ExecutionLogger(), regs(registers) {};
+
     word getFinalArgValue(byte src, word param = 0)
     {
         if (src == NULL_VAL)
@@ -47,10 +50,6 @@ protected:
         else throw "Wrong or unimplemented argument type";
     }
 
-public:
-    IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
-        IMemoryAccesser(commPipeWithLS), ExecutionLogger(), regs(registers) {};
-
     word requestDataAt(word addr)
     {
         MemoryAccessRequest newReq(addr);
@@ -70,5 +69,6 @@ public:
         return;
     }
 
+public:
     virtual void executeInstruction(Instruction instr) = 0;
 };
