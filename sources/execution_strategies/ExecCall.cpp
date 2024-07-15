@@ -26,6 +26,6 @@ void ExecCall::log(Instruction instr, word actualparam1, word actualParam2, bool
     printFlagsChange(~*regs->flags, *regs->flags, false);
     printf("\n\tRegisters:");
     for (byte reg = 0; reg < 8; ++reg)
-        printf(" %s=%hu", typeNames.at(TypeCode (R0 + reg)), *regs->registers[R0 + reg]);
+        printf(" %s=%hu", typeNames.at(TypeCode (R0 + reg)), *regs->registers[reg]);
     printf("\n");
 }
