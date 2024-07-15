@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "headers/Memory.h"
 #include "CPU.h"
 

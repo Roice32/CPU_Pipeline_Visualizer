@@ -16,6 +16,7 @@ void ExecSimpleMathOp::executeInstruction(Instruction instr)
     if (result == 0)
         *regs->flags |= ZERO;
     log(instr, actualParam1, result);
+    moveIP(instr);
 }
 
 void ExecSimpleMathOp::log(Instruction instr, word actualParam1, word result, bool newLine)

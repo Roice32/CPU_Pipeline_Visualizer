@@ -70,6 +70,15 @@ protected:
         return;
     }
 
+    void moveIP(Instruction instr)
+    {
+        *regs->IP += 2;
+        if (instr.src1 == IMM || instr.src1 == ADDR)
+            *regs->IP += 2;
+        if (instr.src2 == IMM || instr.src2 == ADDR)
+            *regs->IP += 2;
+    }
+
 public:
     virtual void executeInstruction(Instruction instr) = 0;
 };

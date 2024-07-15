@@ -8,6 +8,7 @@ void ExecMov::executeInstruction(Instruction instr)
     word movedValue = getFinalArgValue(instr.src2, instr.param2);
     log(instr, 0, movedValue); 
     storeResultAtDest(movedValue, instr.src1, instr.param1);
+    moveIP(instr);
 }
 
 void ExecMov::log(Instruction instr, word actualParam1, word actualParam2, bool newLine)

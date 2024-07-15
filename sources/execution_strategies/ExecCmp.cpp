@@ -15,6 +15,7 @@ void ExecCmp::executeInstruction(Instruction instr)
     if (actualParam1 > actualParam2)
         *regs->flags |= GREATER;
     log(instr, actualParam1, actualParam2);
+    moveIP(instr);
 }
 
 void ExecCmp::log(Instruction instr, word actualParam1, word actualParam2, bool newLine)

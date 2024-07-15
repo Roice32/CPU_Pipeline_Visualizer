@@ -7,13 +7,13 @@ CPU::CPU(std::shared_ptr<Memory> memory): memoryUnit(memory)
 {
     ICtoLS = std::make_shared<InterThreadCommPipe<address, fetch_window>>();
     DEtoIC = std::make_shared<InterThreadCommPipe<address, fetch_window>>();
-    EXtoDE = std::make_shared<InterThreadCommPipe<byte, Instruction>>();
+    EXtoDE = std::make_shared<InterThreadCommPipe<address, Instruction>>();
     EXtoLS = std::make_shared<InterThreadCommPipe<MemoryAccessRequest, word>>();
 
     registers = std::make_shared<CPURegisters>();
     LSModule = std::make_shared<LoadStore>(memory, ICtoLS, EXtoLS, registers->flags);
     ICModule = std::make_shared<InstructionCache>(ICtoLS, DEtoIC, registers->flags);
-    DEModule = std::make_shared<Decode>(DEtoIC, EXtoDE, registers->IP);
+    DEModule = std::make_shared<Decode>(DEtoIC, EXtoDE, registers->flags);
     EXModule = std::make_shared<Execute>(EXtoLS, EXtoDE, registers);
 
     *registers->flags |= RUNNING;

@@ -8,7 +8,7 @@ void ExecCall::executeInstruction(Instruction instr)
     word methodAddress = getFinalArgValue(instr.src1, instr.param1);
     log(instr, methodAddress);
     Instruction pushInstr(PUSH, IMM);
-    pushInstr.param1 = *regs->IP;
+    pushInstr.param1 = *regs->IP + 4;
     pushHelper->executeInstructionNoLog(pushInstr);
     pushInstr.param1 = *regs->flags;
     pushHelper->executeInstructionNoLog(pushInstr);

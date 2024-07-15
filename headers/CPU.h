@@ -19,7 +19,7 @@ private:
 
     std::shared_ptr<InterThreadCommPipe<address, fetch_window>> ICtoLS;
     std::shared_ptr<InterThreadCommPipe<address, fetch_window>> DEtoIC;
-    std::shared_ptr<InterThreadCommPipe<byte, Instruction>> EXtoDE;
+    std::shared_ptr<InterThreadCommPipe<address, Instruction>> EXtoDE;
     std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> EXtoLS;
 
 public:

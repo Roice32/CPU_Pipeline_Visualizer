@@ -16,9 +16,12 @@ void ExecJumpOp::executeInstruction(Instruction instr)
 
     if (plainJump || equalJump || lessJump || greaterJump || zeroJump)
     {
-        *regs->IP = jumpAddress;
         printf(" (yes)\n");
+        *regs->IP = jumpAddress;
     }
     else
+    {
         printf(" (no)\n");
+        moveIP(instr);
+    }
 }

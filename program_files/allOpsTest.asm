@@ -10,6 +10,7 @@ first:
     mov r0, [0x2000]
     add [someVar], 1
     cmp [someVar], r1
+    sub [someVar], 0
     jg first
     jz final
     end_sim

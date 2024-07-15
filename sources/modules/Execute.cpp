@@ -9,9 +9,8 @@
 #include "ExecEndSim.h"
 #include "ExecPush.h"
 #include "ExecPop.h"
-#include "Config.h"
 
-Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<InterThreadCommPipe<byte, Instruction>> commPipeWithDE, std::shared_ptr<CPURegisters> registers):
+Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE, std::shared_ptr<CPURegisters> registers):
     requestsToLS(commPipeWithLS), requestsToDE(commPipeWithDE), registers(registers)
 {
     std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, registers);

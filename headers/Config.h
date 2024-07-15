@@ -7,6 +7,7 @@
 #define REGISTER_COUNT 8
 #define WORD_BYTES 2
 #define FETCH_WINDOW_BYTES 8
+#define DECODER_CACHE_FW_SIZE 2
 
 using byte = uint8_t;
 using register_16b = uint16_t;

@@ -26,6 +26,7 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
         storeResultAtDest(modulus, R1);
         log(instr, ratio, modulus);
     }
+    moveIP(instr);
 }
 
 

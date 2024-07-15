@@ -8,6 +8,7 @@ void ExecPush::executeInstruction(Instruction instr)
     word actualParam = getFinalArgValue(instr.src1, instr.param1);
     log(instr, actualParam);
     executeInstructionNoLog(instr);
+    moveIP(instr);
 }
 
 void ExecPush::executeInstructionNoLog(Instruction instr)

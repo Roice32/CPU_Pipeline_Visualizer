@@ -7,6 +7,7 @@ void ExecPop::executeInstruction(Instruction instr)
 {
     log(instr);
     executeInstructionNoLog(instr);
+    moveIP(instr);
 }
 
 void ExecPop::executeInstructionNoLog(Instruction instr)
