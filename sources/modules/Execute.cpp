@@ -10,8 +10,12 @@
 #include "ExecPush.h"
 #include "ExecPop.h"
 
-Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE, std::shared_ptr<CPURegisters> registers):
-    requestsToLS(commPipeWithLS), requestsToDE(commPipeWithDE), registers(registers)
+Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE,
+    std::shared_ptr<CPURegisters> registers,
+    std::shared_ptr<ClockSyncPackage> clockSyncVars):
+        IClockBoundModule(clockSyncVars, 3), 
+        requestsToLS(commPipeWithLS), requestsToDE(commPipeWithDE), registers(registers)
 {
     std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, registers);
     execStrategies.insert({ADD, addOrSub});
@@ -55,6 +59,10 @@ void Execute::run()
         requestsToDE->sendRequest(*registers->IP);
         while (!requestsToDE->pendingResponse()) ;
         Instruction currInstr = requestsToDE->getResponse();
+        startTimeOfCurrOp = clockSyncVars->cycleCount;
+        printf("(T=%lu)", clockSyncVars->cycleCount);
         executeInstruction(currInstr);
+        while(clockSyncVars->cycleCount - startTimeOfCurrOp < clockTicksPerCycle)
+            awaitClockSignal();
     }
 }

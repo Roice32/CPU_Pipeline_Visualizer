@@ -5,6 +5,7 @@
 #include "InstructionCache.h"
 #include "Decode.h"
 #include "Execute.h"
+#include "Clock.h"
 
 class CPU
 {
@@ -16,6 +17,8 @@ private:
     std::shared_ptr<InstructionCache> ICModule;
     std::shared_ptr<Decode> DEModule;
     std::shared_ptr<Execute> EXModule;
+
+    std::shared_ptr<Clock> clock;
 
     std::shared_ptr<InterThreadCommPipe<address, fetch_window>> ICtoLS;
     std::shared_ptr<InterThreadCommPipe<address, fetch_window>> DEtoIC;

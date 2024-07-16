@@ -2,11 +2,12 @@
 
 #include "CPURegisters.h"
 #include "Instruction.h"
+#include "IClockBoundModule.cpp"
 #include "IExecutionStrategy.cpp"
 
 #include <memory>
 
-class Execute
+class Execute: public IClockBoundModule
 {
 private:
     std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> requestsToLS;
@@ -19,6 +20,9 @@ private:
     void executeInstruction(Instruction instr);
 
 public:
-    Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE, std::shared_ptr<CPURegisters> registers);
-    void run();
+    Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS,
+        std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE,
+        std::shared_ptr<CPURegisters> registers,
+        std::shared_ptr<ClockSyncPackage> clockSyncVars);
+    void run() override;
 };

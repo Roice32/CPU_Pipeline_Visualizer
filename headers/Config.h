@@ -3,17 +3,19 @@
 #include <cstdint>
 
 #define ADDRESS_WIDTH 16
-#define MEMORY_SIZE 65535
+#define MEMORY_SIZE 0xffff
 #define REGISTER_COUNT 8
 #define WORD_BYTES 2
 #define FETCH_WINDOW_BYTES 8
 #define DECODER_CACHE_FW_SIZE 2
+#define CLOCK_PERIOD_MILLIS 1000
 
 using byte = uint8_t;
 using register_16b = uint16_t;
 using address = uint16_t;
 using word = uint16_t;
 using fetch_window = uint64_t;
+using clock_time = uint64_t;
 
 enum OpCode
 {
