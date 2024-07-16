@@ -1,8 +1,11 @@
 #include "Decode.h"
 #include <cassert>
 
-Decode::Decode(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC, std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithEX, std::shared_ptr<register_16b> const flagsReg):
-    requestsToIC(commPipeWithIC), requestsFromEX(commPipeWithEX), flags(flagsReg) {};
+Decode::Decode(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC,
+    std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithEX,
+    std::shared_ptr<ClockSyncPackage> clockSyncVars):
+        IClockBoundModule(clockSyncVars, 2, "Decode"),
+        requestsToIC(commPipeWithIC), requestsFromEX(commPipeWithEX) {};
 
 byte Decode::getExpectedParamCount(byte opCode)
 {
@@ -86,8 +89,9 @@ void Decode::processFetchWindow(fetch_window newBatch)
         instr.param2 = (newBatch << (paramsCount == 0 ? 16 : 32)) >> 48;
         ++paramsCount;
     }
-    requestsFromEX->sendResponse(instr);
     cache.shiftUsedWords(paramsCount + 1);
+    waitTillLastTick();
+    requestsFromEX->sendResponse(instr);
 }
 
 void Decode::manageCacheForRequest(address req)
@@ -95,29 +99,29 @@ void Decode::manageCacheForRequest(address req)
     if (!cache.reqIPAlreadyCached(req))
     {
         requestsToIC->sendRequest(req / 8 * 8);
+        enterIdlingState();
         while(!requestsToIC->pendingResponse()) ;
+        returnFromIdlingState();
         cache.overwriteCache(requestsToIC->getResponse(), req / 8 * 8);
     }
     cache.bringIPToStart(req);
     if (!cache.canProvideFullInstruction())
     {
         requestsToIC->sendRequest((req / 8 + 1) * 8);
+        enterIdlingState();
         while (!requestsToIC->pendingResponse()) ;
+        returnFromIdlingState();
         cache.concatNewFW(requestsToIC->getResponse());
     }
 }
 
-void Decode::run()
+bool Decode::executeModuleLogic()
 {
+    if (!requestsFromEX->pendingRequest())
+        return false;
     address currReq;
-    fetch_window newBatch;
-    while(*flags & RUNNING)
-    {
-        // TO DO: Future
-        if (!requestsFromEX->pendingRequest())
-            continue;
-        currReq = requestsFromEX->getRequest();
-        manageCacheForRequest(currReq);
-        processFetchWindow(cache.getFullInstrFetchWindow());
-    }
+    currReq = requestsFromEX->getRequest();
+    manageCacheForRequest(currReq);
+    processFetchWindow(cache.getFullInstrFetchWindow());
+    return true;
 }

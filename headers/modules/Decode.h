@@ -3,10 +3,11 @@
 #include "InterThreadCommPipe.h"
 #include "Instruction.h"
 #include "DecoderCache.h"
+#include "IClockBoundModule.cpp"
 
 #include <memory>
 
-class Decode
+class Decode: public IClockBoundModule
 {
 private:
     std::shared_ptr<InterThreadCommPipe<address, fetch_window>> requestsToIC;
@@ -23,6 +24,9 @@ private:
     void manageCacheForRequest(address req);
 
 public:
-    Decode(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC, std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithEX, std::shared_ptr<register_16b> const flagsReg);
-    void run();
+    Decode(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC,
+        std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithEX,
+        std::shared_ptr<ClockSyncPackage> clockSyncVars);
+
+    bool executeModuleLogic() override;
 };

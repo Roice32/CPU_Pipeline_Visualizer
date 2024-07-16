@@ -3,12 +3,12 @@
 #include <cstdio>
 #include <thread>
 
-Clock::Clock(std::shared_ptr<register_16b> flags): clockSyncVars(std::make_shared<ClockSyncPackage>(flags)) {};
+Clock::Clock(): clockSyncVars(std::make_shared<ClockSyncPackage>()) {};
 
 void Clock::run()
 {
     // TO DO: Fix the clock stopping leaving other threads starving
-    while (*clockSyncVars->flags & RUNNING)
+    while (clockSyncVars->running)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(CLOCK_PERIOD_MILLIS));
         {

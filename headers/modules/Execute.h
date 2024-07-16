@@ -24,5 +24,5 @@ public:
         std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE,
         std::shared_ptr<CPURegisters> registers,
         std::shared_ptr<ClockSyncPackage> clockSyncVars);
-    void run() override;
+    bool executeModuleLogic() override;
 };

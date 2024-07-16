@@ -1,8 +1,12 @@
 #include "LoadStore.h"
 #include "Config.h"
 
-LoadStore::LoadStore(std::shared_ptr<Memory> simulatedMemory, std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC, std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithEX, std::shared_ptr<register_16b> flagsReg):
-    IMemoryHandler(simulatedMemory), requestsFromIC(commPipeWithIC), requestsFromEX(commPipeWithEX), flags(flagsReg) {};
+LoadStore::LoadStore(std::shared_ptr<Memory> simulatedMemory,
+    std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC,
+    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithEX,
+    std::shared_ptr<ClockSyncPackage> clockSyncVars):
+        IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, 15, "Load/Store"),
+        requestsFromIC(commPipeWithIC), requestsFromEX(commPipeWithEX) {};
 
 byte LoadStore::loadFrom(address addr)
 {
@@ -44,25 +48,29 @@ word LoadStore::handleRequestFromEX(MemoryAccessRequest req)
     }
 }
 
-void LoadStore::run()
+bool LoadStore::executeModuleLogic()
 {
+    bool EXMadeARequest = requestsFromEX->pendingRequest();
+    bool ICMadeARequest = requestsFromIC->pendingRequest();
+    if (!EXMadeARequest && !ICMadeARequest)
+        return false;
+
     word responseForEX;
     address currRequest;
     fetch_window currResponse;
-    while (*flags & RUNNING)
+    
+    if (EXMadeARequest)
     {
-        if (requestsFromEX->pendingRequest())
-        {
-            MemoryAccessRequest exReq = requestsFromEX->getRequest();
-            responseForEX = handleRequestFromEX(exReq);
-            requestsFromEX->sendResponse(responseForEX);
-        }
-        // TO DO: When Clock is implemented, turn this into futures
-        else if (requestsFromIC->pendingRequest())
-        {
-            currRequest = requestsFromIC->getRequest();
-            currResponse = bufferedLoadFrom(currRequest);
-            requestsFromIC->sendResponse(currResponse);
-        }
+        MemoryAccessRequest exReq = requestsFromEX->getRequest();
+        responseForEX = handleRequestFromEX(exReq);
+        waitTillLastTick();
+        requestsFromEX->sendResponse(responseForEX);
+        return true;
     }
+    
+    currRequest = requestsFromIC->getRequest();
+    currResponse = bufferedLoadFrom(currRequest);
+    waitTillLastTick();
+    requestsFromIC->sendResponse(currResponse);
+    return true;
 }

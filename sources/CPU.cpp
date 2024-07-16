@@ -12,14 +12,12 @@ CPU::CPU(std::shared_ptr<Memory> memory): memoryUnit(memory)
     EXtoDE = std::make_shared<InterThreadCommPipe<address, Instruction>>();
     EXtoLS = std::make_shared<InterThreadCommPipe<MemoryAccessRequest, word>>();
 
-    clock = std::make_shared<Clock>(registers->flags);
+    clock = std::make_shared<Clock>();
     
-    LSModule = std::make_shared<LoadStore>(memory, ICtoLS, EXtoLS, registers->flags);
-    ICModule = std::make_shared<InstructionCache>(ICtoLS, DEtoIC, registers->flags);
-    DEModule = std::make_shared<Decode>(DEtoIC, EXtoDE, registers->flags);
+    LSModule = std::make_shared<LoadStore>(memory, ICtoLS, EXtoLS, clock->clockSyncVars);
+    ICModule = std::make_shared<InstructionCache>(ICtoLS, DEtoIC, clock->clockSyncVars);
+    DEModule = std::make_shared<Decode>(DEtoIC, EXtoDE, clock->clockSyncVars);
     EXModule = std::make_shared<Execute>(EXtoLS, EXtoDE, registers, clock->clockSyncVars);
-
-    *registers->flags |= RUNNING;
 }
 
 void CPU::run()

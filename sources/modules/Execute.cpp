@@ -14,7 +14,7 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>>
     std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE,
     std::shared_ptr<CPURegisters> registers,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
-        IClockBoundModule(clockSyncVars, 3), 
+        IClockBoundModule(clockSyncVars, 5, "Execute"), 
         requestsToLS(commPipeWithLS), requestsToDE(commPipeWithDE), registers(registers)
 {
     std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, registers);
@@ -52,17 +52,16 @@ void Execute::executeInstruction(Instruction instr)
     foundStrategy->second->executeInstruction(instr);
 }
 
-void Execute::run()
+bool Execute::executeModuleLogic()
 {
-    while(*registers->flags & RUNNING)
-    {
-        requestsToDE->sendRequest(*registers->IP);
-        while (!requestsToDE->pendingResponse()) ;
-        Instruction currInstr = requestsToDE->getResponse();
-        startTimeOfCurrOp = clockSyncVars->cycleCount;
-        printf("(T=%lu)", clockSyncVars->cycleCount);
-        executeInstruction(currInstr);
-        while(clockSyncVars->cycleCount - startTimeOfCurrOp < clockTicksPerCycle)
-            awaitClockSignal();
-    }
+    // TO DO: If no instruction queued, return false.
+    // ALSO, lad is 1 tick short but maybe when he won't be making requests that will get fixed.
+    requestsToDE->sendRequest(*registers->IP);
+    enterIdlingState();
+    while (!requestsToDE->pendingResponse()) ;
+    Instruction currInstr = requestsToDE->getResponse();
+    returnFromIdlingState();
+    executeInstruction(currInstr);
+    waitTillLastTick();
+    return true;
 }
