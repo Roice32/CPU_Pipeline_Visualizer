@@ -41,7 +41,7 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>>
     execStrategies.insert({POP, pop});
     std::shared_ptr<ExecRet> ret = std::make_shared<ExecRet>(commPipeWithLS, registers, pop);
     execStrategies.insert({RET, ret});
-    std::shared_ptr<ExecEndSim> endSim = std::make_shared<ExecEndSim>(commPipeWithLS, registers);
+    std::shared_ptr<ExecEndSim> endSim = std::make_shared<ExecEndSim>(commPipeWithLS, registers, clockSyncVars);
     execStrategies.insert({END_SIM, endSim});
 };
 
@@ -58,7 +58,7 @@ bool Execute::executeModuleLogic()
     // ALSO, lad is 1 tick short but maybe when he won't be making requests that will get fixed.
     requestsToDE->sendRequest(*registers->IP);
     enterIdlingState();
-    while (!requestsToDE->pendingResponse()) ;
+    while (!requestsToDE->pendingResponse() && clockSyncVars->running) ;
     Instruction currInstr = requestsToDE->getResponse();
     returnFromIdlingState();
     executeInstruction(currInstr);

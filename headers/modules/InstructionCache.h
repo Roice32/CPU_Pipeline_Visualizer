@@ -11,7 +11,6 @@ class InstructionCache: public IClockBoundModule
 private:
     std::shared_ptr<InterThreadCommPipe<address, fetch_window>> requestsToLS;
     std::shared_ptr<InterThreadCommPipe<address, fetch_window>> requestsFromDE;
-    std::shared_ptr<ClockSyncPackage> clockSyncVars;
 
     fetch_window getFetchWindowFromLS(address addr);
     void passForDecode(fetch_window currBatch);

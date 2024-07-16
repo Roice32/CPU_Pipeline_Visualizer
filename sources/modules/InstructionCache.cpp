@@ -8,10 +8,10 @@ InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<address, 
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     requestsToLS->sendRequest(addr);
-    // enterIdlingState();
+    enterIdlingState();
     // TO DO: replace this with promises in the future
-    while (!requestsToLS->pendingResponse()) ;
-    // returnFromIdlingState();
+    while (!requestsToLS->pendingResponse() && clockSyncVars->running) ;
+    returnFromIdlingState();
     return requestsToLS->getResponse();
 }
 

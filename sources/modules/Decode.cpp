@@ -100,7 +100,7 @@ void Decode::manageCacheForRequest(address req)
     {
         requestsToIC->sendRequest(req / 8 * 8);
         enterIdlingState();
-        while(!requestsToIC->pendingResponse()) ;
+        while(!requestsToIC->pendingResponse() && clockSyncVars->running) ;
         returnFromIdlingState();
         cache.overwriteCache(requestsToIC->getResponse(), req / 8 * 8);
     }
@@ -109,7 +109,7 @@ void Decode::manageCacheForRequest(address req)
     {
         requestsToIC->sendRequest((req / 8 + 1) * 8);
         enterIdlingState();
-        while (!requestsToIC->pendingResponse()) ;
+        while (!requestsToIC->pendingResponse() && clockSyncVars->running) ;
         returnFromIdlingState();
         cache.concatNewFW(requestsToIC->getResponse());
     }

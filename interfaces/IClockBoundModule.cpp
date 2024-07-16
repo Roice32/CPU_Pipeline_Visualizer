@@ -20,6 +20,8 @@ public:
 
     void awaitClockSignal()
     {
+        if (!clockSyncVars->running)
+            return;
         std::unique_lock awaitingLock(clockSyncVars->updateLock);
         clockSyncVars->update.wait(awaitingLock);
     }
@@ -35,14 +37,14 @@ public:
     {
         awaitClockSignal();
         elapsedTimeOfCurrOp += clockSyncVars->cycleCount - startTimeOfCurrOp;
-        printf("\t(%s enters idling at T=%lu, having used %hu ticks so far.)\n", moduleName, clockSyncVars->cycleCount, elapsedTimeOfCurrOp);
+        //printf("\t(%s enters idling at T=%lu, having used %hu ticks so far.)\n", moduleName, clockSyncVars->cycleCount, elapsedTimeOfCurrOp);
     }
 
     void returnFromIdlingState()
     {
         awaitClockSignal();
         startTimeOfCurrOp = clockSyncVars->cycleCount;
-        printf("\t(%s resumes execution at T=%lu, having %hu ticks left.)\n", moduleName, clockSyncVars->cycleCount, clockTicksPerCycle - elapsedTimeOfCurrOp);
+        //printf("\t(%s resumes execution at T=%lu, having %hu ticks left.)\n", moduleName, clockSyncVars->cycleCount, clockTicksPerCycle - elapsedTimeOfCurrOp);
     }
 
     void waitTillLastTick()
@@ -66,15 +68,16 @@ public:
         while(clockSyncVars->running)
         {
             startCurrOpTimer();
-            printf("(%s STARTS op at T=%lu)\n", moduleName, clockSyncVars->cycleCount);
+            //printf("(%s STARTS op at T=%lu)\n", moduleName, clockSyncVars->cycleCount);
             moduleDidSomething = executeModuleLogic();
             if (!moduleDidSomething)
             {
-                printf("\t(%s has nothing to do.)\n", moduleName);
+                //printf("\t(%s has nothing to do.)\n", moduleName);
                 continue;
             }
             awaitClockSignal();
-            printf("(%s FINISHES op at T=%lu).\n", moduleName, clockSyncVars->cycleCount);
+            //printf("(%s FINISHES op at T=%lu).\n", moduleName, clockSyncVars->cycleCount);
         }
+        //printf("(%s finished its job.)\n", moduleName);
     }
 };
