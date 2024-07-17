@@ -37,6 +37,13 @@ void DecoderCache::concatNewFW(fetch_window newFW)
     *this << emptyWordsInFirstFW;
 }
 
+void DecoderCache::overwriteCache(fetch_window newFW, address associatedIP)
+{
+    storedFWs[0] = newFW;
+    cacheStartAddr = associatedIP;
+    storedWordsCount = 4;
+}
+
 bool DecoderCache::canProvideFullInstruction()
 {
     byte neededWordsCount = 1;
@@ -57,6 +64,11 @@ fetch_window DecoderCache::getFullInstrFetchWindow()
 address DecoderCache::getAssociatedInstrAddr()
 {
     return cacheStartAddr;
+}
+
+byte DecoderCache::getStoredWordsCount()
+{
+    return storedWordsCount;
 }
 
 void DecoderCache::shiftUsedWords(byte usedWordsCount)

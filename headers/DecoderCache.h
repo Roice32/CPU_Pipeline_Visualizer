@@ -14,9 +14,11 @@ private:
 public:
     DecoderCache();
     void concatNewFW(fetch_window newFW);
+    void overwriteCache(fetch_window newFW, address associatedIP);
     bool canProvideFullInstruction();
     fetch_window getFullInstrFetchWindow();
     address getAssociatedInstrAddr();
+    byte getStoredWordsCount();
     void shiftUsedWords(byte usedWordsCount);
     void discardCurrent();
 };
