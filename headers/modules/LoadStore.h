@@ -3,14 +3,15 @@
 #include "ClockSyncPackage.h"
 #include "MemoryAccessRequest.h"
 #include "InterThreadCommPipe.h"
+#include "SynchronizedDataPackage.h"
 #include "IMemoryHandler.cpp"
 #include "IClockBoundModule.cpp"
 
 class LoadStore : public IMemoryHandler, public IClockBoundModule
 {
 private:
-    std::shared_ptr<InterThreadCommPipe<address, fetch_window>> requestsFromIC;
-    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> requestsFromEX;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> fromICtoMe;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> fromEXtoMe;
 
     byte loadFrom(address addr) override;
     fetch_window bufferedLoadFrom(address addr) override;
@@ -19,8 +20,8 @@ private:
 
 public:
     LoadStore(std::shared_ptr<Memory> simulatedMemory,
-        std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC,
-        std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithEX,
+        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithIC,
+        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithEX,
         std::shared_ptr<ClockSyncPackage> clockSyncVars);
 
     bool executeModuleLogic() override;

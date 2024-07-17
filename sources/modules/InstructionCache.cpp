@@ -1,29 +1,37 @@
 #include "InstructionCache.h"
 
-InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithDE,
-    std::shared_ptr<ClockSyncPackage> clockSyncVars):
+InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>> commPipeWithDE,
+    std::shared_ptr<ClockSyncPackage> clockSyncVars,
+    std::shared_ptr<register_16b> ip):
         IClockBoundModule(clockSyncVars, 3, "Instruction Cache"),
-        requestsToLS(commPipeWithLS), requestsFromDE(commPipeWithDE) {};
+        fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), IP(ip), internalIP(0xfff0) {};
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
-    requestsToLS->sendRequest(addr);
+    SynchronizedDataPackage<address> syncReq(addr, clockSyncVars->cycleCount);
+    fromMetoLS->sendA(syncReq);
     enterIdlingState();
-    // TO DO: replace this with promises in the future
-    while (!requestsToLS->pendingResponse() && clockSyncVars->running) ;
+    while (!fromMetoLS->pendingB() && clockSyncVars->running)
+        awaitClockSignal();
     returnFromIdlingState();
-    return requestsToLS->getResponse();
+    return fromMetoLS->getB().data;
 }
 
 bool InstructionCache::executeModuleLogic()
 {
-    if (!requestsFromDE->pendingRequest())
-        return false;
-    address reqAddress;
+    if (fromMetoDE->pendingB())
+    {
+        internalIP = *IP / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
+        fromMetoDE->getB();
+    }
+
     fetch_window currBatch;
-    reqAddress = requestsFromDE->getRequest();
-    currBatch = getFetchWindowFromLS(reqAddress);
+    currBatch = getFetchWindowFromLS(internalIP);
+    SynchronizedDataPackage<fetch_window> syncResponse(currBatch, internalIP);
+    internalIP += FETCH_WINDOW_BYTES;
+    
     waitTillLastTick();
-    requestsFromDE->sendResponse(currBatch);
+    syncResponse.sentAt = clockSyncVars->cycleCount;
+    fromMetoDE->sendA(syncResponse);
     return true;
 }

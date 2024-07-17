@@ -8,6 +8,6 @@ private:
     void log(Instruction instr, word actualParam1 = 0, word actualParam2 = 0, bool newLine = true) override;
 
 public:
-    ExecMov(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
+    ExecMov(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
     void executeInstruction(Instruction instr) override;
 };

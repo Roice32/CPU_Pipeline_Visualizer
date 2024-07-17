@@ -1,11 +1,11 @@
 #include "Decode.h"
 #include <cassert>
 
-Decode::Decode(std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC,
-    std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithEX,
+Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>> commPipeWithIC,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithEX,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
         IClockBoundModule(clockSyncVars, 2, "Decode"),
-        requestsToIC(commPipeWithIC), requestsFromEX(commPipeWithEX) {};
+        fromICtoMe(commPipeWithIC), fromMetoEX(commPipeWithEX), discardUntilAddr(DUMMY_ADDRESS) {};
 
 byte Decode::getExpectedParamCount(byte opCode)
 {
@@ -48,11 +48,15 @@ bool Decode::argumentsAreNotMutuallyExclusive(byte opCode, byte src1, byte src2)
 Instruction Decode::decodeInstructionHeader(word instruction)
 {
     byte opCode = instruction >> 10;
+    if (opCode == UNUSED)
+        return Instruction(0);
     assert((opCode != UNDEFINED && opCode <= POP) && "Unknown operation code");
 
     byte src1 = (instruction >> 5) & 0b11111;
     byte src2 = instruction & 0b11111;
     
+    printf("\tProcessing %hu %hu %hu\n", opCode, src1, src2);
+
     assert(argumentsMatchExpectedNumber(opCode, src1, src2) && "Wrong number of arguments for this operation");
     assert(argumentsMatchExpectedTypes(opCode, src1, src2) && "Wrong arguments' types for this operation");
     assert(argumentsAreNotMutuallyExclusive(opCode, src1, src2) && "Arguments are mutually exclusive for this operation");
@@ -60,9 +64,12 @@ Instruction Decode::decodeInstructionHeader(word instruction)
     return Instruction(opCode, src1, src2);
 }
 
-void Decode::processFetchWindow(fetch_window newBatch)
+bool Decode::processFetchWindow(fetch_window newBatch)
 {
     Instruction instr = decodeInstructionHeader(word (newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8)));
+    if (instr.opCode == UNUSED)
+        return false;
+
     byte paramsCount = 0;
     if (instr.src1 == IMM || instr.src1 == ADDR)
     {
@@ -74,39 +81,47 @@ void Decode::processFetchWindow(fetch_window newBatch)
         instr.param2 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * (paramsCount == 0 ? 2 : 3)) * 8);
         ++paramsCount;
     }
+    SynchronizedDataPackage<Instruction> syncResponse(instr, cache.getAssociatedInstrAddr());
     cache.shiftUsedWords(paramsCount + 1);
     waitTillLastTick();
-    requestsFromEX->sendResponse(instr);
-}
-
-void Decode::manageCacheForRequest(address req)
-{
-    if (!cache.reqIPAlreadyCached(req))
-    {
-        requestsToIC->sendRequest(req / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES);
-        enterIdlingState();
-        while(!requestsToIC->pendingResponse() && clockSyncVars->running) ;
-        returnFromIdlingState();
-        cache.overwriteCache(requestsToIC->getResponse(), req / 8 * 8);
-    }
-    cache.bringIPToStart(req);
-    if (!cache.canProvideFullInstruction())
-    {
-        requestsToIC->sendRequest((req / FETCH_WINDOW_BYTES + 1) * FETCH_WINDOW_BYTES);
-        enterIdlingState();
-        while (!requestsToIC->pendingResponse() && clockSyncVars->running) ;
-        returnFromIdlingState();
-        cache.concatNewFW(requestsToIC->getResponse());
-    }
+    syncResponse.sentAt = clockSyncVars->cycleCount;
+    printf("Sending %hu %hu %hu at %lu for exec with IP %hu", syncResponse.data.opCode, syncResponse.data.src1, syncResponse.data.param1, syncResponse.sentAt, syncResponse.associatedIP);
+    fflush(stdout);
+    fromMetoEX->sendA(syncResponse);
+    return true;
 }
 
 bool Decode::executeModuleLogic()
 {
-    if (!requestsFromEX->pendingRequest())
+    if (fromMetoEX->pendingB())
+    {
+        discardUntilAddr = fromMetoEX->getB();
+        fromICtoMe->sendB(true);
+    }
+
+    while (fromICtoMe->pendingA() && discardUntilAddr != DUMMY_ADDRESS)
+    {
+        SynchronizedDataPackage<fetch_window> nextBatch = fromICtoMe->getA();
+        if (nextBatch.associatedIP == discardUntilAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES)
+            discardUntilAddr = DUMMY_ADDRESS;
+    }
+
+    if (discardUntilAddr != DUMMY_ADDRESS)
         return false;
-    address currReq;
-    currReq = requestsFromEX->getRequest();
-    manageCacheForRequest(currReq);
-    processFetchWindow(cache.getFullInstrFetchWindow());
-    return true;
+
+    if (cache.canProvideFullInstruction())
+        return processFetchWindow(cache.getFullInstrFetchWindow());
+    
+    if (fromICtoMe->pendingA())
+    {
+        SynchronizedDataPackage<fetch_window> receivedFW = fromICtoMe->getA();
+        printf("Received %lu at %lu for IP %hu\n", receivedFW.data, receivedFW.sentAt, receivedFW.associatedIP);
+        awaitNextTickToHandle(receivedFW);
+        cache.concatNewFW(receivedFW.data);
+        printf("\tCache now has: %lu\n", cache.getFullInstrFetchWindow());
+        fflush(stdout);
+        return processFetchWindow(cache.getFullInstrFetchWindow());
+    }
+    else
+        return false;
 }

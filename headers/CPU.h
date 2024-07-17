@@ -20,10 +20,10 @@ private:
 
     std::shared_ptr<Clock> clock;
 
-    std::shared_ptr<InterThreadCommPipe<address, fetch_window>> ICtoLS;
-    std::shared_ptr<InterThreadCommPipe<address, fetch_window>> DEtoIC;
-    std::shared_ptr<InterThreadCommPipe<address, Instruction>> EXtoDE;
-    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> EXtoLS;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> fromICtoLS;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>> fromICtoDE;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromDEtoEX;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> fromEXtoLS;
 
 public:
     CPU(std::shared_ptr<Memory> memory);

@@ -2,43 +2,43 @@
 
 #include "CommQueue.h"
 
-template <typename Req, typename Res>
+template <typename SentByA, typename SentByB>
 class InterThreadCommPipe
 {
 private:
-    CommQueue<Req> requests;
-    CommQueue<Res> responses;
+    CommQueue<SentByA> AQueue;
+    CommQueue<SentByB> BQueue;
 
 public:
     InterThreadCommPipe() {};
     
-    void sendRequest(Req r)
+    void sendA(SentByA a)
     {
-        requests.push(r);
+        AQueue.push(a);
     }
     
-    bool pendingRequest()
+    bool pendingA()
     {
-        return !requests.isEmpty();
+        return !AQueue.isEmpty();
     }
 
-    Req getRequest()
+    SentByA getA()
     {
-        return requests.pop();
+        return AQueue.pop();
     }
 
-    void sendResponse(Res r)
+    void sendB(SentByB b)
     {
-        responses.push(r);
+        BQueue.push(b);
     }
 
-    bool pendingResponse()
+    bool pendingB()
     {
-        return !responses.isEmpty();
+        return !BQueue.isEmpty();
     }
     
-    Res getResponse()
+    SentByB getB()
     {
-        return responses.pop();
+        return BQueue.pop();
     }
 };

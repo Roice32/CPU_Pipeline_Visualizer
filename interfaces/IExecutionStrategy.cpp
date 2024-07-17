@@ -10,7 +10,7 @@ class IExecutionStrategy: public IMemoryAccesser, public ExecutionLogger
 protected:
     std::shared_ptr<CPURegisters> regs;
 
-    IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
+    IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
         IMemoryAccesser(commPipeWithLS), ExecutionLogger(), regs(registers) {};
 
     word getFinalArgValue(byte src, word param = 0)
@@ -68,19 +68,20 @@ protected:
     std::vector<word> requestDataAt(address addr, byte howManyWords)
     {
         MemoryAccessRequest newReq(addr, howManyWords);
-        requestsToLS->sendRequest(newReq);
+        fromEXtoLS->sendA(newReq);
         // TO DO somehow else
-        while (!requestsToLS->pendingResponse()) ;
-        return requestsToLS->getResponse();
+        while (!fromEXtoLS->pendingB()) ;
+        // TO DO: Wait for the next tick
+        return fromEXtoLS->getB().data;
     }
 
     void storeDataAt(address addr, byte howManyWords, std::vector<word> data)
     {
         MemoryAccessRequest newReq(addr, howManyWords, true, data);
-        requestsToLS->sendRequest(newReq);
+        fromEXtoLS->sendA(newReq);
         // TO DO
-        while (!requestsToLS->pendingResponse()) ;
-        requestsToLS->getResponse();
+        while (!fromEXtoLS->pendingB()) ;
+        fromEXtoLS->getB();
         return;
     }
 

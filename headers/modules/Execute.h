@@ -4,14 +4,15 @@
 #include "Instruction.h"
 #include "IClockBoundModule.cpp"
 #include "IExecutionStrategy.cpp"
+#include "SynchronizedDataPackage.h"
 
 #include <memory>
 
 class Execute: public IClockBoundModule
 {
 private:
-    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> requestsToLS;
-    std::shared_ptr<InterThreadCommPipe<address, Instruction>> requestsToDE;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> fromMeToLS;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromDEtoMe;
     std::unordered_map<OpCode, std::shared_ptr<IExecutionStrategy>> execStrategies;
     std::shared_ptr<CPURegisters> registers;
 
@@ -20,8 +21,8 @@ private:
     void executeInstruction(Instruction instr);
 
 public:
-    Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS,
-        std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE,
+    Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
         std::shared_ptr<CPURegisters> registers,
         std::shared_ptr<ClockSyncPackage> clockSyncVars);
     bool executeModuleLogic() override;

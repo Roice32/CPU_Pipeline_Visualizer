@@ -20,7 +20,7 @@ DecoderCache& DecoderCache::operator<<(const byte wordsCount)
             storedFWs[fwIndex - 1] |= storedFWs[fwIndex] >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8);
         }
         storedFWs[DECODER_CACHE_FW_SIZE - 1] <<= WORD_BYTES * 8;
-        cacheStartAddr += 2;
+        cacheStartAddr += WORD_BYTES;
     }
     storedWordsCount = (storedWordsCount - wordsCount > 0) ? (storedWordsCount - wordsCount) : 0;
     return *this;
@@ -37,11 +37,6 @@ void DecoderCache::concatNewFW(fetch_window newFW)
     *this << emptyWordsInFirstFW;
 }
 
-bool DecoderCache::reqIPAlreadyCached(address reqIP)
-{
-    return cacheStartAddr <= reqIP && reqIP <= (cacheStartAddr + (storedWordsCount - 1) * WORD_BYTES); 
-}
-
 bool DecoderCache::canProvideFullInstruction()
 {
     byte neededWordsCount = 1;
@@ -54,15 +49,14 @@ bool DecoderCache::canProvideFullInstruction()
     return storedWordsCount >= neededWordsCount;
 }
 
-void DecoderCache::bringIPToStart(address reqIP)
-{
-    while (cacheStartAddr != reqIP)
-        *this << 1;
-}
-
 fetch_window DecoderCache::getFullInstrFetchWindow()
 {
     return storedFWs[0];
+}
+
+address DecoderCache::getAssociatedInstrAddr()
+{
+    return cacheStartAddr;
 }
 
 void DecoderCache::shiftUsedWords(byte usedWordsCount)
@@ -70,10 +64,8 @@ void DecoderCache::shiftUsedWords(byte usedWordsCount)
     *this << usedWordsCount;
 }
 
-void DecoderCache::overwriteCache(fetch_window newFW, address newAddr)
+void DecoderCache::discardCurrent()
 {
-    storedFWs[0] = newFW;
-    storedFWs[1] = 0;
-    cacheStartAddr = newAddr;
-    storedWordsCount = FETCH_WINDOW_BYTES / WORD_BYTES;
+    storedFWs[0] = storedFWs[1] = 0;
+    storedWordsCount = 0;
 }

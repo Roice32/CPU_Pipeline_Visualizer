@@ -1,6 +1,6 @@
 #include "ExecEndSim.h"
 
-ExecEndSim::ExecEndSim(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS,
+ExecEndSim::ExecEndSim(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
     std::shared_ptr<CPURegisters> registers,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
     IExecutionStrategy(commPipeWithLS, registers), clockSyncVars(clockSyncVars) {};

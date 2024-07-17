@@ -10,12 +10,12 @@
 #include "ExecPush.h"
 #include "ExecPop.h"
 
-Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE,
+Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
     std::shared_ptr<CPURegisters> registers,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
         IClockBoundModule(clockSyncVars, 5, "Execute"), 
-        requestsToLS(commPipeWithLS), requestsToDE(commPipeWithDE), registers(registers)
+        fromMeToLS(commPipeWithLS), fromDEtoMe(commPipeWithDE), registers(registers)
 {
     std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, registers);
     execStrategies.insert({ADD, addOrSub});
@@ -47,22 +47,29 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::v
 
 void Execute::executeInstruction(Instruction instr)
 {
+    printf("Now executing %hu %hu %hu\n", instr.opCode, instr.src1, instr.param1);
+    fflush(stdout);
     auto foundStrategy = execStrategies.find((OpCode) instr.opCode); 
     assert(foundStrategy != execStrategies.end() && "Undefined instruction");
-    printf("(T=%lu)", clockSyncVars->cycleCount);
     foundStrategy->second->executeInstruction(instr);
 }
 
 bool Execute::executeModuleLogic()
 {
-    // TO DO: If no instruction queued, return false.
-    // ALSO, lad is 1 tick short but maybe when he won't be making requests that will get fixed.
-    requestsToDE->sendRequest(*registers->IP);
-    enterIdlingState();
-    while (!requestsToDE->pendingResponse() && clockSyncVars->running) ;
-    Instruction currInstr = requestsToDE->getResponse();
-    returnFromIdlingState();
-    executeInstruction(currInstr);
-    waitTillLastTick();
+    if (!fromDEtoMe->pendingA())
+        return false;
+
+    SynchronizedDataPackage<Instruction> currInstr;
+    do
+    {
+        currInstr = fromDEtoMe->getA();
+    } while (fromDEtoMe->pendingA() && currInstr.associatedIP != *registers->IP);
+
+    if (currInstr.associatedIP != *registers->IP)
+        return false;
+
+    awaitNextTickToHandle(currInstr);
+    executeInstruction(currInstr.data);
+    printf("\t@T=%lu\n", clockSyncVars->cycleCount);
     return true;
 }

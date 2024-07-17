@@ -2,11 +2,11 @@
 #include "Config.h"
 
 LoadStore::LoadStore(std::shared_ptr<Memory> simulatedMemory,
-    std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC,
-    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithEX,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithIC,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithEX,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
         IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, 15, "Load/Store"),
-        requestsFromIC(commPipeWithIC), requestsFromEX(commPipeWithEX) {};
+        fromICtoMe(commPipeWithIC), fromEXtoMe(commPipeWithEX) {};
 
 byte LoadStore::loadFrom(address addr)
 {
@@ -57,27 +57,29 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
 
 bool LoadStore::executeModuleLogic()
 {
-    bool EXMadeARequest = requestsFromEX->pendingRequest();
-    bool ICMadeARequest = requestsFromIC->pendingRequest();
+    bool EXMadeARequest = fromEXtoMe->pendingA();
+    bool ICMadeARequest = fromICtoMe->pendingA();
     if (!EXMadeARequest && !ICMadeARequest)
         return false;
 
-    std::vector<word> responseForEX;
-    address currRequest;
-    fetch_window currResponse;
-    
     if (EXMadeARequest)
     {
-        MemoryAccessRequest exReq = requestsFromEX->getRequest();
-        responseForEX = handleRequestFromEX(exReq);
+        SynchronizedDataPackage<MemoryAccessRequest> exReq = fromEXtoMe->getA();
+        awaitNextTickToHandle(exReq);
+        std::vector<word> responseForEX = handleRequestFromEX(exReq.data);
         waitTillLastTick();
-        requestsFromEX->sendResponse(responseForEX);
+        SynchronizedDataPackage<std::vector<word>> syncResponse(responseForEX, clockSyncVars->cycleCount);
+        fromEXtoMe->sendB(syncResponse);
         return true;
     }
     
-    currRequest = requestsFromIC->getRequest();
-    currResponse = bufferedLoadFrom(currRequest);
+    SynchronizedDataPackage<address> lsReq = fromICtoMe->getA();
+    awaitNextTickToHandle(lsReq);
+    fetch_window responseForIC = bufferedLoadFrom(lsReq.data);
+    SynchronizedDataPackage<fetch_window> syncResponse(responseForIC, lsReq.data);
+    
     waitTillLastTick();
-    requestsFromIC->sendResponse(currResponse);
+    syncResponse.sentAt = clockSyncVars->cycleCount;
+    fromICtoMe->sendB(syncResponse);
     return true;
 }

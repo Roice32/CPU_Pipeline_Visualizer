@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ClockSyncPackage.h"
+#include "SynchronizedDataPackage.h"
 
 #include <memory>
 
@@ -24,6 +25,16 @@ public:
             return;
         std::unique_lock awaitingLock(clockSyncVars->updateLock);
         clockSyncVars->update.wait(awaitingLock);
+    }
+
+    template <typename DataType>
+    void awaitNextTickToHandle(SynchronizedDataPackage<DataType> receivedPackage)
+    {
+        if (receivedPackage.sentAt == clockSyncVars->cycleCount)
+        {
+            awaitClockSignal();
+            ++startTimeOfCurrOp;
+        }
     }
 
     void startCurrOpTimer()

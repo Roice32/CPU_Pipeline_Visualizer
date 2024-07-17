@@ -6,17 +6,17 @@ CPU::CPU(std::shared_ptr<Memory> memory): memoryUnit(memory)
 {
     registers = std::make_shared<CPURegisters>();
 
-    ICtoLS = std::make_shared<InterThreadCommPipe<address, fetch_window>>();
-    DEtoIC = std::make_shared<InterThreadCommPipe<address, fetch_window>>();
-    EXtoDE = std::make_shared<InterThreadCommPipe<address, Instruction>>();
-    EXtoLS = std::make_shared<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>>();
+    fromICtoLS = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>>();
+    fromICtoDE = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>>();
+    fromDEtoEX = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>>();
+    fromEXtoLS = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>>();
 
     clock = std::make_shared<Clock>();
     
-    LSModule = std::make_shared<LoadStore>(memory, ICtoLS, EXtoLS, clock->clockSyncVars);
-    ICModule = std::make_shared<InstructionCache>(ICtoLS, DEtoIC, clock->clockSyncVars);
-    DEModule = std::make_shared<Decode>(DEtoIC, EXtoDE, clock->clockSyncVars);
-    EXModule = std::make_shared<Execute>(EXtoLS, EXtoDE, registers, clock->clockSyncVars);
+    LSModule = std::make_shared<LoadStore>(memory, fromICtoLS, fromEXtoLS, clock->clockSyncVars);
+    ICModule = std::make_shared<InstructionCache>(fromICtoLS, fromICtoDE, clock->clockSyncVars, registers->IP);
+    DEModule = std::make_shared<Decode>(fromICtoDE, fromDEtoEX, clock->clockSyncVars);
+    EXModule = std::make_shared<Execute>(fromEXtoLS, fromDEtoEX, registers, clock->clockSyncVars);
 }
 
 void CPU::run()
