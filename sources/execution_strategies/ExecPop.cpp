@@ -14,6 +14,6 @@ void ExecPop::executeInstruction(Instruction instr)
         word valueOnTop = requestDataAt(topOfStack, 1)[0];
         storeResultAtDest(valueOnTop, instr.src1, instr.param1);
     }
-    *regs->stackPointer += 2;
+    *regs->stackPointer += WORD_BYTES;
     moveIP(instr);
 }

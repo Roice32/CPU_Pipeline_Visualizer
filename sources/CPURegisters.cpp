@@ -17,7 +17,7 @@ CPURegisters::CPURegisters()
 
 void CPURegisters::reset()
 {
-    for (byte reg = 0; reg < 8; ++reg)
+    for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
         *registers[reg] = 0;
     *IP = 0xfff0;
     *stackBase = 0xefee;

@@ -62,16 +62,16 @@ Instruction Decode::decodeInstructionHeader(word instruction)
 
 void Decode::processFetchWindow(fetch_window newBatch)
 {
-    Instruction instr = decodeInstructionHeader(word (newBatch >> 48));
+    Instruction instr = decodeInstructionHeader(word (newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8)));
     byte paramsCount = 0;
     if (instr.src1 == IMM || instr.src1 == ADDR)
     {
-        instr.param1 = (newBatch << 16) >> 48;
+        instr.param1 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * 2) * 8);
         ++paramsCount;
     }
     if (instr.src2 == IMM || instr.src2 == ADDR)
     {
-        instr.param2 = (newBatch << (paramsCount == 0 ? 16 : 32)) >> 48;
+        instr.param2 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * (paramsCount == 0 ? 2 : 3)) * 8);
         ++paramsCount;
     }
     cache.shiftUsedWords(paramsCount + 1);
@@ -83,7 +83,7 @@ void Decode::manageCacheForRequest(address req)
 {
     if (!cache.reqIPAlreadyCached(req))
     {
-        requestsToIC->sendRequest(req / 8 * 8);
+        requestsToIC->sendRequest(req / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES);
         enterIdlingState();
         while(!requestsToIC->pendingResponse() && clockSyncVars->running) ;
         returnFromIdlingState();
@@ -92,7 +92,7 @@ void Decode::manageCacheForRequest(address req)
     cache.bringIPToStart(req);
     if (!cache.canProvideFullInstruction())
     {
-        requestsToIC->sendRequest((req / 8 + 1) * 8);
+        requestsToIC->sendRequest((req / FETCH_WINDOW_BYTES + 1) * FETCH_WINDOW_BYTES);
         enterIdlingState();
         while (!requestsToIC->pendingResponse() && clockSyncVars->running) ;
         returnFromIdlingState();

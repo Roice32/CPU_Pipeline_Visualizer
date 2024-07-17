@@ -43,6 +43,7 @@ ExecutionLogger::ExecutionLogger()
         typeNames.insert({ADDR_R5, "[r5]"});
         typeNames.insert({ADDR_R6, "[r6]"});
         typeNames.insert({ADDR_R7, "[r7]"});
+        // If registers' count ever changes, this needs changing, too.
     }
 }
 

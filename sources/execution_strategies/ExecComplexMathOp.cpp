@@ -12,9 +12,10 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
         unsigned int result = ((unsigned int) actualParam1) * actualParam2;
         if (result == 0)
             *regs->flags |= ZERO;
-        storeResultAtDest(result >> 16, R0);
-        storeResultAtDest((result << 16) >> 16, R1);
-        log(instr, result >> 16, (result << 16) >> 16);
+
+        storeResultAtDest(result >> (8 * WORD_BYTES), R0);
+        storeResultAtDest(result, R1);
+        log(instr, result >> (8 * WORD_BYTES), result);
     }
     else
     {

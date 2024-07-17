@@ -16,10 +16,10 @@ DecoderCache& DecoderCache::operator<<(const byte wordsCount)
     {
         for (byte fwIndex = 1; fwIndex < DECODER_CACHE_FW_SIZE; ++fwIndex)
         {
-            storedFWs[fwIndex - 1] <<= 16;
-            storedFWs[fwIndex - 1] |= storedFWs[fwIndex] >> 48;
+            storedFWs[fwIndex - 1] <<= WORD_BYTES * 8;
+            storedFWs[fwIndex - 1] |= storedFWs[fwIndex] >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8);
         }
-        storedFWs[DECODER_CACHE_FW_SIZE - 1] <<= 16;
+        storedFWs[DECODER_CACHE_FW_SIZE - 1] <<= WORD_BYTES * 8;
         cacheStartAddr += 2;
     }
     storedWordsCount = (storedWordsCount - wordsCount > 0) ? (storedWordsCount - wordsCount) : 0;
@@ -28,25 +28,25 @@ DecoderCache& DecoderCache::operator<<(const byte wordsCount)
 
 void DecoderCache::concatNewFW(fetch_window newFW)
 {
-    assert(storedWordsCount < 4 && "Attempt to overwrite non-empty cache end");
-    byte emptyWordsInFirstFW = 4 - storedWordsCount;
-    storedFWs[0] >>= (emptyWordsInFirstFW * 16);
+    assert(storedWordsCount < FETCH_WINDOW_BYTES / WORD_BYTES && "Attempt to overwrite non-empty cache end");
+    byte emptyWordsInFirstFW = FETCH_WINDOW_BYTES / WORD_BYTES - storedWordsCount;
+    storedFWs[0] >>= (emptyWordsInFirstFW * WORD_BYTES * 8);
     storedFWs[1] = newFW;
-    storedWordsCount += 4;
-    cacheStartAddr -= emptyWordsInFirstFW * 2;
+    storedWordsCount += FETCH_WINDOW_BYTES / WORD_BYTES;
+    cacheStartAddr -= emptyWordsInFirstFW * WORD_BYTES;
     *this << emptyWordsInFirstFW;
 }
 
 bool DecoderCache::reqIPAlreadyCached(address reqIP)
 {
-    return cacheStartAddr <= reqIP && reqIP <= (cacheStartAddr + (storedWordsCount - 1) * 2); 
+    return cacheStartAddr <= reqIP && reqIP <= (cacheStartAddr + (storedWordsCount - 1) * WORD_BYTES); 
 }
 
 bool DecoderCache::canProvideFullInstruction()
 {
     byte neededWordsCount = 1;
-    byte src1 = (storedFWs[0] >> 53) & 0b11111;
-    byte src2 = (storedFWs[0] >> 48) & 0b11111;
+    byte src1 = (storedFWs[0] >> (FETCH_WINDOW_BYTES * 8 - 11)) & 0b11111;
+    byte src2 = (storedFWs[0] >> (FETCH_WINDOW_BYTES * 8 - 16)) & 0b11111;
     if (src1 == IMM || src1 == ADDR)
         ++neededWordsCount;
     if (src2 == IMM || src2 == ADDR)
@@ -75,5 +75,5 @@ void DecoderCache::overwriteCache(fetch_window newFW, address newAddr)
     storedFWs[0] = newFW;
     storedFWs[1] = 0;
     cacheStartAddr = newAddr;
-    storedWordsCount = 4;
+    storedWordsCount = FETCH_WINDOW_BYTES / WORD_BYTES;
 }

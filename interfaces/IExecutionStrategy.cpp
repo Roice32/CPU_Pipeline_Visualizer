@@ -86,11 +86,11 @@ protected:
 
     void moveIP(Instruction instr)
     {
-        *regs->IP += 2;
+        *regs->IP += WORD_BYTES;
         if (instr.src1 == IMM || instr.src1 == ADDR)
-            *regs->IP += 2;
+            *regs->IP += WORD_BYTES;
         if (instr.src2 == IMM || instr.src2 == ADDR)
-            *regs->IP += 2;
+            *regs->IP += WORD_BYTES;
     }
 
 public:
