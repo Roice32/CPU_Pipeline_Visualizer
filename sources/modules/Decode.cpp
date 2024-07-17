@@ -28,27 +28,12 @@ bool Decode::argumentsMatchExpectedNumber(byte opCode, byte src1, byte src2)
 
 bool Decode::argumentsMatchExpectedTypes(byte opCode, byte src1, byte src2)
 {
-    if (opCode < JMP &&
-        (src1 * src2 == NULL_VAL))
-        return false;
+    bool missingEitherMandatoryParam = opCode < JMP && (src1 * src2 == NULL_VAL);
+    bool immGivenAsDestination = (opCode < MUL || opCode == POP) && src1 == IMM;
+    bool missingOrExtraParamForSingleParamOp = (opCode >= JMP && opCode <= CALL || opCode == PUSH) && (src1 == NULL_VAL || src2 != NULL_VAL);
+    bool parameterWhereNoneNeeded = (opCode == RET || opCode == END_SIM) && (src1 + src2 != NULL_VAL);
 
-    if (opCode < MUL &&
-        src1 == IMM)
-        return false;
-
-    if ((opCode >= JMP && opCode <= CALL || opCode == PUSH) &&
-        (src1 == NULL_VAL || src2 != NULL_VAL))
-        return false;
-
-    if ((opCode == RET || opCode == END_SIM) &&
-        (src1 + src2 != NULL_VAL))
-        return false;
-
-    if (opCode == POP &&
-        src1 == IMM)
-        return false;
-
-    return true;
+    return !missingEitherMandatoryParam && !immGivenAsDestination && !missingOrExtraParamForSingleParamOp && !parameterWhereNoneNeeded;
 }
 
 bool Decode::argumentsAreNotMutuallyExclusive(byte opCode, byte src1, byte src2)

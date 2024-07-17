@@ -15,41 +15,54 @@ protected:
 
     word getFinalArgValue(byte src, word param = 0)
     {
-        // switch
-        if (src == NULL_VAL)
-            return 0;
-        if (src == IMM)
-            return param;
-        if (src == ADDR)
-            return requestDataAt(param, 1)[0];
-        if (src == SP_REG)
-            return *regs->stackPointer;
-        if (src == ST_BASE)
-            return *regs->stackBase;
-        if (src == ST_SIZE)
-            return *regs->stackSize;
-        if (src >= R0 && src <= R7)
-            return *regs->registers[src - R0];
-        if (src >= ADDR_R0 && src <= ADDR_R7)
-            return requestDataAt(*regs->registers[src - ADDR_R0], 1)[0];
-        assert(0 && "Wrong or unimplemented parameter type");
+        switch(src)
+        {
+            case NULL_VAL:
+                return 0;
+            case IMM:
+                return param;
+            case ADDR:
+                return requestDataAt(param, 1)[0];
+            case SP_REG:
+                return *regs->stackPointer;
+            case ST_BASE:
+                return *regs->stackBase;
+            case ST_SIZE:
+                return *regs->stackSize;
+            case R0 ... R7:
+                return *regs->registers[src - R0];
+            case ADDR_R0 ... ADDR_R7:
+                return requestDataAt(*regs->registers[src - ADDR_R0], 1)[0];
+            default:
+                assert(0 && "Wrong or unimplemented parameter type");
+        }
     }
 
     void storeResultAtDest(word result, byte destType, word destLocation = 0)
     {
-        if (destType == ADDR)
-            storeDataAt(destLocation, 1, std::vector<word> { result });
-        else if (destType == SP_REG)
-            *regs->stackPointer = result;
-        else if (destType == ST_BASE)
-            *regs->stackBase = result;
-        else if (destType == ST_SIZE)
-            *regs->stackSize = result;
-        else if (destType >= R0 && destType <= R7)
-            *regs->registers[destType - R0] = result;
-        else if (destType >= ADDR_R0 && destType <= ADDR_R7)
-            storeDataAt(*regs->registers[destType - ADDR_R0], 1, std::vector<word> { result });
-        else assert(0 && "Wrong or unimplemented parameter type");
+        switch (destType)
+        {
+            case ADDR:
+                storeDataAt(destLocation, 1, std::vector<word> { result });
+            break;
+            case SP_REG:
+                *regs->stackPointer = result;
+            break;
+            case ST_BASE:
+                *regs->stackBase = result;
+            break;
+            case ST_SIZE:
+                *regs->stackSize = result;
+            break;
+            case R0 ... R7:
+                *regs->registers[destType - R0] = result;
+            break;
+            case ADDR_R0 ... ADDR_R7:
+                storeDataAt(*regs->registers[destType - ADDR_R0], 1, std::vector<word> { result });
+            break;
+            default:
+                assert(0 && "Wrong or unimplemented parameter type");
+        }
     }
 
     std::vector<word> requestDataAt(address addr, byte howManyWords)
