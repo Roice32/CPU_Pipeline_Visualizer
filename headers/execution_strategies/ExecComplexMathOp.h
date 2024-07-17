@@ -8,6 +8,6 @@ private:
     void log(Instruction instr, word r0Result = 0, word r1Result = 0, bool newLine = true) override;
     
 public:
-    ExecComplexMathOp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
+    ExecComplexMathOp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);
     void executeInstruction(Instruction instr) override;
 };

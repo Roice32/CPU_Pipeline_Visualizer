@@ -10,13 +10,13 @@ class IClockBoundModule
 protected:
     const char* moduleName; // Used mainly for debug.
     std::shared_ptr<ClockSyncPackage> clockSyncVars;
-    byte clockTicksPerCycle;
+    byte clockTicksPerOperation;
     clock_time startTimeOfCurrOp;
     byte elapsedTimeOfCurrOp;
 
 public:
-    IClockBoundModule(std::shared_ptr<ClockSyncPackage> clockSyncVars, byte clockTicksPerCycle, const char* moduleName):
-        clockSyncVars(clockSyncVars), clockTicksPerCycle(clockTicksPerCycle), moduleName(moduleName) {};
+    IClockBoundModule(std::shared_ptr<ClockSyncPackage> clockSyncVars, byte clockTicksPerOperation, const char* moduleName):
+        clockSyncVars(clockSyncVars), clockTicksPerOperation(clockTicksPerOperation), moduleName(moduleName) {};
 
     void awaitClockSignal()
     {
@@ -44,16 +44,16 @@ public:
     {
         awaitClockSignal();
         startTimeOfCurrOp = clockSyncVars->cycleCount;
-        //printf("\t(%s resumes execution at T=%lu, having %hu ticks left.)\n", moduleName, clockSyncVars->cycleCount, clockTicksPerCycle - elapsedTimeOfCurrOp);
+        //printf("\t(%s resumes execution at T=%lu, having %hu ticks left.)\n", moduleName, clockSyncVars->cycleCount, clockTicksPerOperation - elapsedTimeOfCurrOp);
     }
 
     void waitTillLastTick()
     {
-        if (elapsedTimeOfCurrOp == clockTicksPerCycle - 1)
+        if (elapsedTimeOfCurrOp == clockTicksPerOperation - 1)
             return;
         awaitClockSignal();
         elapsedTimeOfCurrOp += clockSyncVars->cycleCount - startTimeOfCurrOp;
-        while ((elapsedTimeOfCurrOp < clockTicksPerCycle - 1) && (clockSyncVars->running))
+        while ((elapsedTimeOfCurrOp < clockTicksPerOperation - 1) && (clockSyncVars->running))
         {
             awaitClockSignal();
             ++elapsedTimeOfCurrOp;

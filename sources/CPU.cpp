@@ -1,5 +1,4 @@
 #include "CPU.h"
-#include "Decode.h"
 
 #include <thread>
 
@@ -10,7 +9,7 @@ CPU::CPU(std::shared_ptr<Memory> memory): memoryUnit(memory)
     ICtoLS = std::make_shared<InterThreadCommPipe<address, fetch_window>>();
     DEtoIC = std::make_shared<InterThreadCommPipe<address, fetch_window>>();
     EXtoDE = std::make_shared<InterThreadCommPipe<address, Instruction>>();
-    EXtoLS = std::make_shared<InterThreadCommPipe<MemoryAccessRequest, word>>();
+    EXtoLS = std::make_shared<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>>();
 
     clock = std::make_shared<Clock>();
     

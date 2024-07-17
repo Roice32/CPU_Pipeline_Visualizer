@@ -8,9 +8,9 @@
 class IMemoryAccesser
 {
 protected:
-    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> requestsToLS;
+    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> requestsToLS;
     
-    IMemoryAccesser(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS) : requestsToLS(commPipeWithLS) {};
-    virtual word requestDataAt(word addr) = 0;
-    virtual void storeDataAt(word addr, word data) = 0;
+    IMemoryAccesser(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS) : requestsToLS(commPipeWithLS) {};
+    virtual std::vector<word> requestDataAt(address addr,  byte howManyWords) = 0;
+    virtual void storeDataAt(address addr, byte howManyWords, std::vector<word> data) = 0;
 };

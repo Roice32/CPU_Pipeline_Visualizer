@@ -1,6 +1,6 @@
 #include "ExecMov.h"
 
-ExecMov::ExecMov(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
+ExecMov::ExecMov(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
     IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecMov::executeInstruction(Instruction instr)

@@ -3,7 +3,7 @@
 
 LoadStore::LoadStore(std::shared_ptr<Memory> simulatedMemory,
     std::shared_ptr<InterThreadCommPipe<address, fetch_window>> commPipeWithIC,
-    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithEX,
+    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithEX,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
         IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, 15, "Load/Store"),
         requestsFromIC(commPipeWithIC), requestsFromEX(commPipeWithEX) {};
@@ -30,20 +30,27 @@ void LoadStore::storeAt(address addr, byte value)
     target->setMemoryCell(addr, value);
 }
 
-word LoadStore::handleRequestFromEX(MemoryAccessRequest req)
+std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
 {
     if (req.isStoreOperation)
     {
-        storeAt(req.reqAddr, req.reqData >> 8);
-        storeAt(req.reqAddr + 1, (req.reqData << 8) >> 8);
-        return 0;
+        for (byte ind = 0; ind < req.wordsSizeOfReq; ++ind)
+        {
+            storeAt(req.reqAddr + WORD_BYTES * ind, req.reqData[ind] >> 8);
+            storeAt(req.reqAddr + WORD_BYTES * ind + 1, req.reqData[ind]);
+        }
+        return std::vector<word> {};
     }
     else 
     {
-        word response = 0;
-        response |= loadFrom(req.reqAddr);
-        response <<= 8;
-        response |= loadFrom(req.reqAddr + 1);
+        std::vector<word> response;
+        for (byte ind = 0; ind < req.wordsSizeOfReq; ++ind)
+        {
+            response.push_back(0);
+            response[ind] |= loadFrom(req.reqAddr + WORD_BYTES * ind);
+            response[ind] <<= 8;
+            response[ind] |= loadFrom(req.reqAddr + WORD_BYTES * ind + 1);
+        }
         return response;
     }
 }
@@ -55,7 +62,7 @@ bool LoadStore::executeModuleLogic()
     if (!EXMadeARequest && !ICMadeARequest)
         return false;
 
-    word responseForEX;
+    std::vector<word> responseForEX;
     address currRequest;
     fetch_window currResponse;
     

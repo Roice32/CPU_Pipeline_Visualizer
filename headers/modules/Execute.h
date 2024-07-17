@@ -10,7 +10,7 @@
 class Execute: public IClockBoundModule
 {
 private:
-    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> requestsToLS;
+    std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> requestsToLS;
     std::shared_ptr<InterThreadCommPipe<address, Instruction>> requestsToDE;
     std::unordered_map<OpCode, std::shared_ptr<IExecutionStrategy>> execStrategies;
     std::shared_ptr<CPURegisters> registers;
@@ -20,7 +20,7 @@ private:
     void executeInstruction(Instruction instr);
 
 public:
-    Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS,
+    Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS,
         std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE,
         std::shared_ptr<CPURegisters> registers,
         std::shared_ptr<ClockSyncPackage> clockSyncVars);

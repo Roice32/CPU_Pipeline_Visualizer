@@ -10,17 +10,18 @@ class IExecutionStrategy: public IMemoryAccesser, public ExecutionLogger
 protected:
     std::shared_ptr<CPURegisters> regs;
 
-    IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
+    IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
         IMemoryAccesser(commPipeWithLS), ExecutionLogger(), regs(registers) {};
 
     word getFinalArgValue(byte src, word param = 0)
     {
+        // switch
         if (src == NULL_VAL)
             return 0;
         if (src == IMM)
             return param;
         if (src == ADDR)
-            return requestDataAt(param);
+            return requestDataAt(param, 1)[0];
         if (src == SP_REG)
             return *regs->stackPointer;
         if (src == ST_BASE)
@@ -30,14 +31,14 @@ protected:
         if (src >= R0 && src <= R7)
             return *regs->registers[src - R0];
         if (src >= ADDR_R0 && src <= ADDR_R7)
-            return requestDataAt(*regs->registers[src - ADDR_R0]);
+            return requestDataAt(*regs->registers[src - ADDR_R0], 1)[0];
         assert(0 && "Wrong or unimplemented parameter type");
     }
 
     void storeResultAtDest(word result, byte destType, word destLocation = 0)
     {
         if (destType == ADDR)
-            storeDataAt(destLocation, result);
+            storeDataAt(destLocation, 1, std::vector<word> { result });
         else if (destType == SP_REG)
             *regs->stackPointer = result;
         else if (destType == ST_BASE)
@@ -47,22 +48,22 @@ protected:
         else if (destType >= R0 && destType <= R7)
             *regs->registers[destType - R0] = result;
         else if (destType >= ADDR_R0 && destType <= ADDR_R7)
-            storeDataAt(*regs->registers[destType - ADDR_R0], result);
+            storeDataAt(*regs->registers[destType - ADDR_R0], 1, std::vector<word> { result });
         else assert(0 && "Wrong or unimplemented parameter type");
     }
 
-    word requestDataAt(word addr)
+    std::vector<word> requestDataAt(address addr, byte howManyWords)
     {
-        MemoryAccessRequest newReq(addr);
+        MemoryAccessRequest newReq(addr, howManyWords);
         requestsToLS->sendRequest(newReq);
         // TO DO somehow else
         while (!requestsToLS->pendingResponse()) ;
         return requestsToLS->getResponse();
     }
 
-    void storeDataAt(word addr, word data)
+    void storeDataAt(address addr, byte howManyWords, std::vector<word> data)
     {
-        MemoryAccessRequest newReq(addr, true, data);
+        MemoryAccessRequest newReq(addr, howManyWords, true, data);
         requestsToLS->sendRequest(newReq);
         // TO DO
         while (!requestsToLS->pendingResponse()) ;

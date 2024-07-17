@@ -1,6 +1,6 @@
 #include "ExecJumpOp.h"
 
-ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
+ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
     IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecJumpOp::executeInstruction(Instruction instr)

@@ -10,7 +10,7 @@
 #include "ExecPush.h"
 #include "ExecPop.h"
 
-Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS,
+Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS,
     std::shared_ptr<InterThreadCommPipe<address, Instruction>> commPipeWithDE,
     std::shared_ptr<CPURegisters> registers,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
@@ -35,11 +35,11 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>>
     execStrategies.insert({JZ, jumpOp});
     std::shared_ptr<ExecPush> push = std::make_shared<ExecPush>(commPipeWithLS, registers);
     execStrategies.insert({PUSH, push});
-    std::shared_ptr<ExecCall> call = std::make_shared<ExecCall>(commPipeWithLS, registers, push);
+    std::shared_ptr<ExecCall> call = std::make_shared<ExecCall>(commPipeWithLS, registers);
     execStrategies.insert({CALL, call});
     std::shared_ptr<ExecPop> pop = std::make_shared<ExecPop>(commPipeWithLS, registers);
     execStrategies.insert({POP, pop});
-    std::shared_ptr<ExecRet> ret = std::make_shared<ExecRet>(commPipeWithLS, registers, pop);
+    std::shared_ptr<ExecRet> ret = std::make_shared<ExecRet>(commPipeWithLS, registers);
     execStrategies.insert({RET, ret});
     std::shared_ptr<ExecEndSim> endSim = std::make_shared<ExecEndSim>(commPipeWithLS, registers, clockSyncVars);
     execStrategies.insert({END_SIM, endSim});
@@ -49,6 +49,7 @@ void Execute::executeInstruction(Instruction instr)
 {
     auto foundStrategy = execStrategies.find((OpCode) instr.opCode); 
     assert(foundStrategy != execStrategies.end() && "Undefined instruction");
+    printf("(T=%lu)", clockSyncVars->cycleCount);
     foundStrategy->second->executeInstruction(instr);
 }
 

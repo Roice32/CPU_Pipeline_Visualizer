@@ -1,6 +1,6 @@
 #include "ExecCmp.h"
 
-ExecCmp::ExecCmp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
+ExecCmp::ExecCmp(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
     IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecCmp::executeInstruction(Instruction instr)

@@ -2,17 +2,21 @@
 
 #include "Config.h"
 
+#include <vector>
+
 class MemoryAccessRequest
 {
 public:
-    bool isStoreOperation;
     address reqAddr;
-    word reqData;
+    byte wordsSizeOfReq;
+    bool isStoreOperation;
+    std::vector<word> reqData;
 
-    MemoryAccessRequest(address addr, bool storeOp = false, word data = 0)
+    MemoryAccessRequest(address addr, byte howManyWords, bool storeOp = false, std::vector<word> data = {})
     {
-        isStoreOperation = storeOp;
         reqAddr = addr;
+        wordsSizeOfReq = howManyWords;
+        isStoreOperation = storeOp;
         if (isStoreOperation)
             reqData = data;
     }

@@ -1,20 +1,17 @@
 #include "ExecRet.h"
 
-ExecRet::ExecRet(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, word>> commPipeWithLS, std::shared_ptr<CPURegisters> registers, std::shared_ptr<ExecPop> helper):
-    IExecutionStrategy(commPipeWithLS, registers), popHelper(helper) {};
+ExecRet::ExecRet(std::shared_ptr<InterThreadCommPipe<MemoryAccessRequest, std::vector<word>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
+    IExecutionStrategy(commPipeWithLS, registers) {};
 
 void ExecRet::executeInstruction(Instruction instr)
 {
-    for (byte reg = 7; reg < REGISTER_COUNT; --reg)
-        popHelper->executeInstructionNoLog(Instruction(POP, R0 + reg));
-    
-    word currentSP = *regs->stackBase + *regs->stackPointer;
-    *regs->flags = requestDataAt(currentSP);
-    popHelper->executeInstructionNoLog(Instruction(POP, NULL_VAL));
-    currentSP += 2;
-    
-    *regs->IP = requestDataAt(currentSP);
-    popHelper->executeInstructionNoLog(Instruction(POP, NULL_VAL));
+    std::vector<word> restoredState = requestDataAt(*regs->stackBase + *regs->stackPointer, 10);
+    for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
+        *regs->registers[7 - reg] = restoredState[reg];
+    *regs->flags = restoredState[8];
+    *regs->IP = restoredState[9];
+    *regs->stackPointer += 10 * WORD_BYTES;
+
     log(instr);
 }
 
