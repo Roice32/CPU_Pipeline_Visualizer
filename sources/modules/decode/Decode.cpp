@@ -1,7 +1,7 @@
 #include "Decode.h"
 #include <cassert>
 
-Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>> commPipeWithIC,
+Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> commPipeWithIC,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithEX,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
         IClockBoundModule(clockSyncVars, 2, "Decode"),
@@ -88,6 +88,7 @@ bool Decode::processFetchWindow(fetch_window newBatch)
     waitTillLastTick();
     syncResponse.sentAt = clockSyncVars->cycleCount;
     fromMetoEX->sendA(syncResponse);
+    logComplete(getCurrTime(), LoggablePackage(syncResponse.associatedIP, instr));
     return true;
 }
 
@@ -96,7 +97,7 @@ bool Decode::executeModuleLogic()
     if (fromMetoEX->pendingB())
     {
         discardUntilAddr = fromMetoEX->getB();
-        fromICtoMe->sendB(true);
+        fromICtoMe->sendB(discardUntilAddr);
     }
 
     while (fromICtoMe->pendingA() && discardUntilAddr != DUMMY_ADDRESS)

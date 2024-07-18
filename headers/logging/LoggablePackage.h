@@ -17,4 +17,7 @@ public:
 
     LoggablePackage(address ip, fetch_window fetchWindow):
         ip(ip), fetchWindow(fetchWindow) {};
+
+    LoggablePackage(address addr, Instruction instr):
+        ip(addr), instr(instr) {};
 };

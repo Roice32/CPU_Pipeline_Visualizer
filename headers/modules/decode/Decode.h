@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DELogger.h"
 #include "InterThreadCommPipe.h"
 #include "Instruction.h"
 #include "DecoderCache.h"
@@ -8,10 +9,10 @@
 
 #include <memory>
 
-class Decode: public IClockBoundModule
+class Decode: public IClockBoundModule, public DELogger
 {
 private:
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>> fromICtoMe;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> fromICtoMe;
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromMetoEX;
     std::shared_ptr<register_16b> const flags;
     DecoderCache cache;
@@ -25,7 +26,7 @@ private:
     bool processFetchWindow(fetch_window newBatch);
 
 public:
-    Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>> commPipeWithIC,
+    Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> commPipeWithIC,
         std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithEX,
         std::shared_ptr<ClockSyncPackage> clockSyncVars);
 

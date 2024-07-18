@@ -12,8 +12,7 @@ class InstructionCache: public IClockBoundModule, public ICLogger
 {
 private:
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> fromMetoLS;
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>> fromMetoDE;
-    std::shared_ptr<register_16b> IP;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> fromMetoDE;
     register_16b internalIP;
 
     fetch_window getFetchWindowFromLS(address addr);
@@ -21,7 +20,7 @@ private:
     
 public:
     InstructionCache(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithLS,
-        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>> commPipeWithDE,
+        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> commPipeWithDE,
         std::shared_ptr<ClockSyncPackage> clockSyncVars,
         std::shared_ptr<register_16b> ip);
     

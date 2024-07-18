@@ -2,9 +2,10 @@
 
 #include "ILogger.cpp"
 
-class ICLogger: public ILogger
+class DELogger: public ILogger
 {
 public:
-    ICLogger();
+    DELogger();
     void log(LoggablePackage toLog) override;
+    void logDiscard();
 };
