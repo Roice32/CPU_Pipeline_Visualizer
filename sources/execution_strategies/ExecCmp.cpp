@@ -14,15 +14,15 @@ void ExecCmp::executeInstruction(Instruction instr)
         *regs->flags |= EQUAL;
     if (actualParam1 > actualParam2)
         *regs->flags |= GREATER;
-    log(instr, actualParam1, actualParam2);
+    log(LoggablePackage { EXLogPackage(instr, actualParam1, actualParam2) });
     moveIP(instr);
 }
 
-void ExecCmp::log(Instruction instr, word actualParam1, word actualParam2, bool newLine)
+void ExecCmp::log(LoggablePackage toLog)
 {
     printf(">");
-    printPlainInstruction(instr);
-    printf(" (%hu ? %hu)", actualParam1, actualParam2);
+    printPlainInstruction(toLog.ex.instr);
+    printf(" (%hu ? %hu)", toLog.ex.actualParam1, toLog.ex.actualParam2);
     printFlagsChange(~*regs->flags, *regs->flags);
     printf("\n");
 }

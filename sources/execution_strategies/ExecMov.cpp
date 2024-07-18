@@ -6,16 +6,16 @@ ExecMov::ExecMov(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 void ExecMov::executeInstruction(Instruction instr)
 {
     word movedValue = getFinalArgValue(instr.src2, instr.param2);
-    log(instr, 0, movedValue); 
+    log(LoggablePackage { EXLogPackage(instr, 0, movedValue) }); 
     storeResultAtDest(movedValue, instr.src1, instr.param1);
     moveIP(instr);
 }
 
-void ExecMov::log(Instruction instr, word actualParam1, word actualParam2, bool newLine)
+void ExecMov::log(LoggablePackage toLog)
 {
     printf(">");
-    printPlainInstruction(instr);
+    printPlainInstruction(toLog.ex.instr);
     printf(" (");
-    printPlainArg(instr.src1, instr.param1, false);
-    printf(" = %hu)\n", actualParam2);
+    printPlainArg(toLog.ex.instr.src1, toLog.ex.instr.param1, false);
+    printf(" = %hu)\n", toLog.ex.actualParam2);
 }

@@ -15,18 +15,18 @@ void ExecSimpleMathOp::executeInstruction(Instruction instr)
     storeResultAtDest(result, instr.src1, instr.param1);
     if (result == 0)
         *regs->flags |= ZERO;
-    log(instr, actualParam1, result);
+    log(LoggablePackage { EXLogPackage(instr, actualParam1, result) });
     moveIP(instr);
 }
 
-void ExecSimpleMathOp::log(Instruction instr, word actualParam1, word result, bool newLine)
+void ExecSimpleMathOp::log(LoggablePackage toLog)
 {
     printf(">");
-    printPlainInstruction(instr);
+    printPlainInstruction(toLog.ex.instr);
     printf(" (");
-    printPlainArg(instr.src1, instr.param1, false);
-    printf(" = %hu)", result);
-    if (result == 0)
+    printPlainArg(toLog.ex.instr.src1, toLog.ex.instr.param1, false);
+    printf(" = %hu)", toLog.ex.actualParam2);
+    if (toLog.ex.actualParam2 == 0)
         printf(" Flags.Z=1");
     printf("\n");
 }

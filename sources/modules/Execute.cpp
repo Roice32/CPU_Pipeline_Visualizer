@@ -27,7 +27,7 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
     execStrategies.insert({MOV, mov});
     std::shared_ptr<ExecCmp> cmp = std::make_shared<ExecCmp>(commPipeWithLS, registers);
     execStrategies.insert({CMP, cmp});
-    std::shared_ptr<ExecJumpOp> jumpOp = std::make_shared<ExecJumpOp>(commPipeWithLS, registers);
+    std::shared_ptr<ExecJumpOp> jumpOp = std::make_shared<ExecJumpOp>(commPipeWithLS, commPipeWithDE, registers);
     execStrategies.insert({JMP, jumpOp});
     execStrategies.insert({JE, jumpOp});
     execStrategies.insert({JL, jumpOp});
@@ -35,11 +35,11 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
     execStrategies.insert({JZ, jumpOp});
     std::shared_ptr<ExecPush> push = std::make_shared<ExecPush>(commPipeWithLS, registers);
     execStrategies.insert({PUSH, push});
-    std::shared_ptr<ExecCall> call = std::make_shared<ExecCall>(commPipeWithLS, registers);
+    std::shared_ptr<ExecCall> call = std::make_shared<ExecCall>(commPipeWithLS, commPipeWithDE, registers);
     execStrategies.insert({CALL, call});
     std::shared_ptr<ExecPop> pop = std::make_shared<ExecPop>(commPipeWithLS, registers);
     execStrategies.insert({POP, pop});
-    std::shared_ptr<ExecRet> ret = std::make_shared<ExecRet>(commPipeWithLS, registers);
+    std::shared_ptr<ExecRet> ret = std::make_shared<ExecRet>(commPipeWithLS, commPipeWithDE, registers);
     execStrategies.insert({RET, ret});
     std::shared_ptr<ExecEndSim> endSim = std::make_shared<ExecEndSim>(commPipeWithLS, registers, clockSyncVars);
     execStrategies.insert({END_SIM, endSim});
@@ -47,8 +47,6 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 
 void Execute::executeInstruction(Instruction instr)
 {
-    printf("Now executing %hu %hu %hu\n", instr.opCode, instr.src1, instr.param1);
-    fflush(stdout);
     auto foundStrategy = execStrategies.find((OpCode) instr.opCode); 
     assert(foundStrategy != execStrategies.end() && "Undefined instruction");
     foundStrategy->second->executeInstruction(instr);

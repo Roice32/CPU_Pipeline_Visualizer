@@ -15,7 +15,7 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
 
         storeResultAtDest(result >> (8 * WORD_BYTES), R0);
         storeResultAtDest(result, R1);
-        log(instr, result >> (8 * WORD_BYTES), result);
+        log(LoggablePackage { EXLogPackage(instr, result >> (8 * WORD_BYTES), result) });
     }
     else
     {
@@ -25,18 +25,18 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
             *regs->flags |= ZERO;
         storeResultAtDest(ratio, R0);
         storeResultAtDest(modulus, R1);
-        log(instr, ratio, modulus);
+        log(LoggablePackage { EXLogPackage(instr, ratio, modulus) });
     }
     moveIP(instr);
 }
 
 
-void ExecComplexMathOp::log(Instruction instr, word r0Result, word r1Result, bool newLine)
+void ExecComplexMathOp::log(LoggablePackage toLog)
 {
     printf(">");
-    printPlainInstruction(instr);
-    printf(" (r0 = %hu, r1 = %hu)", r0Result, r1Result);
-    if (r0Result == 0 && r1Result == 0)
+    printPlainInstruction(toLog.ex.instr);
+    printf(" (r0 = %hu, r1 = %hu)", toLog.ex.actualParam1, toLog.ex.actualParam2);
+    if (toLog.ex.actualParam1 == 0 && toLog.ex.actualParam2 == 0)
         printf(" Flags.Z=1");
     printf("\n");
 }

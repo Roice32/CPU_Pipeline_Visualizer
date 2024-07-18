@@ -5,8 +5,8 @@ ExecPop::ExecPop(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 
 void ExecPop::executeInstruction(Instruction instr)
 {
-    log(instr);
-    assert((*regs->stackSize - *regs->stackPointer > 1) && "Lower limit of the stack exceeded");
+    log(LoggablePackage { EXLogPackage(instr) });
+    assert((*regs->stackSize - *regs->stackPointer >= WORD_BYTES) && "Lower limit of the stack exceeded");
 
     if (instr.src1 != NULL_VAL)
     {

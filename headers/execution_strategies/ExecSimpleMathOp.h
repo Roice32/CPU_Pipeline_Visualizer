@@ -5,7 +5,7 @@
 class ExecSimpleMathOp: public IExecutionStrategy
 {
 private:
-    void log(Instruction instr, word actualParam1 = 0, word result = 0, bool newLine = 0) override;
+    void log(LoggablePackage toLog) override;
 
 public:
     ExecSimpleMathOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);

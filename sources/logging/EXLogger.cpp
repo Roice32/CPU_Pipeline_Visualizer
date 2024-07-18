@@ -1,6 +1,6 @@
-#include "ExecutionLogger.h"
+#include "EXLogger.h"
 
-ExecutionLogger::ExecutionLogger()
+EXLogger::EXLogger()
 {
     if (opNames.empty())
     {
@@ -47,17 +47,17 @@ ExecutionLogger::ExecutionLogger()
     }
 }
 
-bool ExecutionLogger::mustDisplayParamValue(byte src)
+bool EXLogger::mustDisplayParamValue(byte src)
 {
     return src == IMM || src == ADDR;
 }
 
-bool ExecutionLogger::canBeReplacedByValue(byte src)
+bool EXLogger::canBeReplacedByValue(byte src)
 {
     return src != NULL_VAL && src != IMM;
 }
 
-void ExecutionLogger::printPlainArg(byte src, word param, bool spaced)
+void EXLogger::printPlainArg(byte src, word param, bool spaced)
 {
     if (spaced)
         printf(" ");
@@ -72,7 +72,7 @@ void ExecutionLogger::printPlainArg(byte src, word param, bool spaced)
         printf("%s", typeNames.at((TypeCode) src));
 }
 
-void ExecutionLogger::printPlainInstruction(Instruction instr)
+void EXLogger::printPlainInstruction(Instruction instr)
 {
     printf(" %s", opNames.at((OpCode) instr.opCode));
     printPlainArg(instr.src1, instr.param1);
@@ -81,7 +81,7 @@ void ExecutionLogger::printPlainInstruction(Instruction instr)
     printPlainArg(instr.src2, instr.param2);
 }
 
-void ExecutionLogger::printInstructionWithParamsReplaced(Instruction instr, word actualParam1, word actualParam2)
+void EXLogger::printInstructionWithParamsReplaced(Instruction instr, word actualParam1, word actualParam2)
 {
     printf(" (%s", opNames.at((OpCode) instr.opCode));
     if (canBeReplacedByValue(instr.src1) && instr.opCode != MOV)
@@ -99,17 +99,17 @@ void ExecutionLogger::printInstructionWithParamsReplaced(Instruction instr, word
     printf(")");
 }
 
-void ExecutionLogger::log(Instruction instr, word actualParam1, word actualParam2, bool newLine)
+void EXLogger::log(LoggablePackage toLog)
 {
     printf(">");
-    printPlainInstruction(instr);
-    if (canBeReplacedByValue(instr.src1) && instr.opCode != MOV || canBeReplacedByValue(instr.src2))
-        printInstructionWithParamsReplaced(instr, actualParam1, actualParam2);
-    if (newLine)
+    printPlainInstruction(toLog.ex.instr);
+    if (canBeReplacedByValue(toLog.ex.instr.src1) && toLog.ex.instr.opCode != MOV || canBeReplacedByValue(toLog.ex.instr.src2))
+        printInstructionWithParamsReplaced(toLog.ex.instr, toLog.ex.actualParam1, toLog.ex.actualParam2);
+    if (toLog.ex.newLine)
         printf("\n");
 }
 
-void ExecutionLogger::printFlagsChange(register_16b oldFlagsState, register_16b newFlagsState, bool initSpace)
+void EXLogger::printFlagsChange(register_16b oldFlagsState, register_16b newFlagsState, bool initSpace)
 {
     if (oldFlagsState == newFlagsState)
         return;

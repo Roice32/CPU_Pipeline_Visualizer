@@ -1,12 +1,15 @@
 #include "ExecCall.h"
 
-ExecCall::ExecCall(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
-    IExecutionStrategy(commPipeWithLS, registers) {};
+ExecCall::ExecCall(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+    std::shared_ptr<CPURegisters> registers):
+        IExecutionStrategy(commPipeWithLS, registers), fromDEtoMe(commPipeWithDE) {};
 
 void ExecCall::executeInstruction(Instruction instr)
 {
+    // TO DO: Check that stack has enough space for this call
     word methodAddress = getFinalArgValue(instr.src1, instr.param1);
-    log(instr, methodAddress);
+    log(LoggablePackage { EXLogPackage(instr, methodAddress) });
     std::vector<word> savedState;
     for (byte reg = REGISTER_COUNT - 1; reg < REGISTER_COUNT; --reg)
         savedState.push_back(*regs->registers[reg]);
@@ -15,12 +18,13 @@ void ExecCall::executeInstruction(Instruction instr)
     *regs->stackPointer -= (REGISTER_COUNT + 2) * WORD_BYTES;
     storeDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2, savedState);
     *regs->IP = methodAddress;
+    fromDEtoMe->sendB(methodAddress);
 }
 
-void ExecCall::log(Instruction instr, word actualparam1, word actualParam2, bool newLine)
+void ExecCall::log(LoggablePackage toLog)
 {
     printf(">");
-    printPlainInstruction(instr);
+    printPlainInstruction(toLog.ex.instr);
     printf("\nSaved state:\n");
     printf("\tIP = %hu\n\t", *regs->IP + 2 * WORD_BYTES);
     printFlagsChange(~*regs->flags, *regs->flags, false);

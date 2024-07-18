@@ -5,7 +5,7 @@
 class ExecCmp: public IExecutionStrategy
 {
 private:
-    void log(Instruction instr, word actualParam1 = 0, word actualParam2 = 0, bool newLine = true) override;
+    void log(LoggablePackage toLog) override;
 
 public:
     ExecCmp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers);

@@ -1,12 +1,15 @@
 #include "ExecJumpOp.h"
 
-ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
-    IExecutionStrategy(commPipeWithLS, registers) {};
+ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+    std::shared_ptr<CPURegisters> registers):
+        IExecutionStrategy(commPipeWithLS, registers),
+        fromDEtoMe(commPipeWithDE) {};
 
 void ExecJumpOp::executeInstruction(Instruction instr)
 {
     word jumpAddress = getFinalArgValue(instr.src1, instr.param1);
-    log(instr, jumpAddress, 0, false);
+    log(LoggablePackage { EXLogPackage(instr, jumpAddress, 0, false) });
 
     bool plainJump = (instr.opCode == JMP);
     bool equalJump = (instr.opCode == JE && (*regs->flags & EQUAL));
@@ -18,6 +21,7 @@ void ExecJumpOp::executeInstruction(Instruction instr)
     {
         printf(" (yes)\n");
         *regs->IP = jumpAddress;
+        fromDEtoMe->sendB(jumpAddress);
     }
     else
     {

@@ -6,8 +6,8 @@ ExecPush::ExecPush(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<M
 void ExecPush::executeInstruction(Instruction instr)
 {
     word actualParam = getFinalArgValue(instr.src1, instr.param1);
-    log(instr, actualParam);
-    assert((*regs->stackPointer > 1) && "Upper limit of the stack exceeded");
+    log(LoggablePackage { EXLogPackage(instr, actualParam) });
+    assert((*regs->stackPointer >= WORD_BYTES) && "Upper limit of the stack exceeded");
     *regs->stackPointer -= WORD_BYTES;
     word newSP = *regs->stackBase + *regs->stackPointer;
     storeDataAt(newSP, 1, std::vector<word> { actualParam });

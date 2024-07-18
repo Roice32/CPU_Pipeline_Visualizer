@@ -55,8 +55,6 @@ Instruction Decode::decodeInstructionHeader(word instruction)
 
     byte src1 = (instruction >> 5) & 0b11111;
     byte src2 = instruction & 0b11111;
-    
-    printf("\tProcessing %hu %hu %hu\n", opCode, src1, src2);
 
     assert(argumentsMatchExpectedNumber(opCode, src1, src2) && "Wrong number of arguments for this operation");
     assert(argumentsMatchExpectedTypes(opCode, src1, src2) && "Wrong arguments' types for this operation");
@@ -69,7 +67,10 @@ bool Decode::processFetchWindow(fetch_window newBatch)
 {
     Instruction instr = decodeInstructionHeader(word (newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8)));
     if (instr.opCode == UNUSED)
+    {
+        cache.shiftUsedWords(1);
         return false;
+    }
 
     byte paramsCount = 0;
     if (instr.src1 == IMM || instr.src1 == ADDR)
@@ -86,8 +87,6 @@ bool Decode::processFetchWindow(fetch_window newBatch)
     cache.shiftUsedWords(paramsCount + 1);
     waitTillLastTick();
     syncResponse.sentAt = clockSyncVars->cycleCount;
-    printf("Sending %hu %hu %hu at %lu for exec with IP %hu\n", syncResponse.data.opCode, syncResponse.data.src1, syncResponse.data.param1, syncResponse.sentAt);
-    fflush(stdout);
     fromMetoEX->sendA(syncResponse);
     return true;
 }
@@ -104,7 +103,10 @@ bool Decode::executeModuleLogic()
     {
         SynchronizedDataPackage<fetch_window> nextBatch = fromICtoMe->getA();
         if (nextBatch.associatedIP == discardUntilAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES)
+        {
+            cache.overwriteCache(nextBatch.data, nextBatch.associatedIP);
             discardUntilAddr = DUMMY_ADDRESS;
+        }
     }
 
     if (discardUntilAddr != DUMMY_ADDRESS)
@@ -116,15 +118,12 @@ bool Decode::executeModuleLogic()
     if (fromICtoMe->pendingA())
     {
         SynchronizedDataPackage<fetch_window> receivedFW = fromICtoMe->getA();
-        printf("Received %lu at %lu for IP %hu\n", receivedFW.data, receivedFW.sentAt, receivedFW.associatedIP);
         awaitNextTickToHandle(receivedFW);
         // HERE
         if (cache.getStoredWordsCount() == 0)
             cache.overwriteCache(receivedFW.data, receivedFW.associatedIP);
         else
             cache.concatNewFW(receivedFW.data);
-        printf("\tCache now has: %lu\n", cache.getFullInstrFetchWindow());
-        fflush(stdout);
         return processFetchWindow(cache.getFullInstrFetchWindow());
     }
     else

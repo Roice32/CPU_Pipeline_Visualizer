@@ -7,6 +7,6 @@ ExecEndSim::ExecEndSim(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPacka
 
 void ExecEndSim::executeInstruction(Instruction instr)
 {
-    log(instr);
+    log(LoggablePackage { EXLogPackage(instr) });
     clockSyncVars->running = false;
 }

@@ -1,17 +1,17 @@
 #pragma once
 
 #include "CPURegisters.h"
-#include "ExecutionLogger.h"
+#include "EXLogger.h"
 #include "IMemoryAccesser.cpp"
 #include <cassert>
 
-class IExecutionStrategy: public IMemoryAccesser, public ExecutionLogger
+class IExecutionStrategy: public IMemoryAccesser, public EXLogger
 {
 protected:
     std::shared_ptr<CPURegisters> regs;
 
     IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
-        IMemoryAccesser(commPipeWithLS), ExecutionLogger(), regs(registers) {};
+        IMemoryAccesser(commPipeWithLS), EXLogger(), regs(registers) {};
 
     word getFinalArgValue(byte src, word param = 0)
     {
