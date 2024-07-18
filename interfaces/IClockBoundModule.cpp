@@ -19,6 +19,11 @@ public:
     IClockBoundModule(std::shared_ptr<ClockSyncPackage> clockSyncVars, byte clockTicksPerOperation, const char* moduleName):
         clockSyncVars(clockSyncVars), clockTicksPerOperation(clockTicksPerOperation), moduleName(moduleName) {};
 
+    clock_time getCurrTime()
+    {
+        return clockSyncVars->cycleCount;
+    }
+
     void awaitClockSignal()
     {
         if (!clockSyncVars->running)

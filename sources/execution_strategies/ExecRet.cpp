@@ -2,8 +2,9 @@
 
 ExecRet::ExecRet(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+    IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, registers), fromDEtoMe(commPipeWithDE) {};
+        IExecutionStrategy(commPipeWithLS, refToEX, registers), fromDEtoMe(commPipeWithDE) {};
 
 void ExecRet::executeInstruction(Instruction instr)
 {
@@ -14,13 +15,12 @@ void ExecRet::executeInstruction(Instruction instr)
     *regs->flags = restoredState[REGISTER_COUNT];
     *regs->IP = restoredState[REGISTER_COUNT + 1];
     *regs->stackPointer += (REGISTER_COUNT + 2) * WORD_BYTES;
-    log(LoggablePackage { EXLogPackage(instr) });
+    logComplete(refToEX->getCurrTime(),LoggablePackage { EXLogPackage(instr) });
     fromDEtoMe->sendB(restoredState[REGISTER_COUNT + 1]);
 }
 
 void ExecRet::log(LoggablePackage toLog)
 {
-    printf(">");
     printPlainInstruction(toLog.ex.instr);
     printf("\nReturned to state:\n");
     printf("\tIP = %hu\n\t", *regs->IP);

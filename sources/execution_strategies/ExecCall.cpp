@@ -2,14 +2,15 @@
 
 ExecCall::ExecCall(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+        IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, registers), fromDEtoMe(commPipeWithDE) {};
+        IExecutionStrategy(commPipeWithLS, refToEX, registers), fromDEtoMe(commPipeWithDE) {};
 
 void ExecCall::executeInstruction(Instruction instr)
 {
     // TO DO: Check that stack has enough space for this call
     word methodAddress = getFinalArgValue(instr.src1, instr.param1);
-    log(LoggablePackage { EXLogPackage(instr, methodAddress) });
+    logComplete(refToEX->getCurrTime(), LoggablePackage { EXLogPackage(instr, methodAddress) });
     std::vector<word> savedState;
     for (byte reg = REGISTER_COUNT - 1; reg < REGISTER_COUNT; --reg)
         savedState.push_back(*regs->registers[reg]);
@@ -23,7 +24,6 @@ void ExecCall::executeInstruction(Instruction instr)
 
 void ExecCall::log(LoggablePackage toLog)
 {
-    printf(">");
     printPlainInstruction(toLog.ex.instr);
     printf("\nSaved state:\n");
     printf("\tIP = %hu\n\t", *regs->IP + 2 * WORD_BYTES);

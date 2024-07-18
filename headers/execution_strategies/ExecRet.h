@@ -11,7 +11,8 @@ private:
 
 public:
     ExecRet(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
-    std::shared_ptr<CPURegisters> registers);
+        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+        IClockBoundModule* refToEX,
+        std::shared_ptr<CPURegisters> registers);
     void executeInstruction(Instruction instr) override;
 };

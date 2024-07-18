@@ -1,6 +1,6 @@
 #include "EXLogger.h"
 
-EXLogger::EXLogger()
+EXLogger::EXLogger(): ILogger("EX")
 {
     if (opNames.empty())
     {
@@ -101,7 +101,6 @@ void EXLogger::printInstructionWithParamsReplaced(Instruction instr, word actual
 
 void EXLogger::log(LoggablePackage toLog)
 {
-    printf(">");
     printPlainInstruction(toLog.ex.instr);
     if (canBeReplacedByValue(toLog.ex.instr.src1) && toLog.ex.instr.opCode != MOV || canBeReplacedByValue(toLog.ex.instr.src2))
         printInstructionWithParamsReplaced(toLog.ex.instr, toLog.ex.actualParam1, toLog.ex.actualParam2);

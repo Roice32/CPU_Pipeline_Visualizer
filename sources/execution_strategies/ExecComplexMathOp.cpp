@@ -1,7 +1,9 @@
 #include "ExecComplexMathOp.h"
 
-ExecComplexMathOp::ExecComplexMathOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
-    IExecutionStrategy(commPipeWithLS, registers) {};
+ExecComplexMathOp::ExecComplexMathOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    IClockBoundModule* refToEX,
+    std::shared_ptr<CPURegisters> registers):
+        IExecutionStrategy(commPipeWithLS, refToEX, registers) {};
 
 void ExecComplexMathOp::executeInstruction(Instruction instr)
 {
@@ -15,7 +17,7 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
 
         storeResultAtDest(result >> (8 * WORD_BYTES), R0);
         storeResultAtDest(result, R1);
-        log(LoggablePackage { EXLogPackage(instr, result >> (8 * WORD_BYTES), result) });
+        logComplete(refToEX->getCurrTime(),LoggablePackage { EXLogPackage(instr, result >> (8 * WORD_BYTES), result) });
     }
     else
     {
@@ -25,7 +27,7 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
             *regs->flags |= ZERO;
         storeResultAtDest(ratio, R0);
         storeResultAtDest(modulus, R1);
-        log(LoggablePackage { EXLogPackage(instr, ratio, modulus) });
+        logComplete(refToEX->getCurrTime(),LoggablePackage { EXLogPackage(instr, ratio, modulus) });
     }
     moveIP(instr);
 }
@@ -33,7 +35,6 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
 
 void ExecComplexMathOp::log(LoggablePackage toLog)
 {
-    printf(">");
     printPlainInstruction(toLog.ex.instr);
     printf(" (r0 = %hu, r1 = %hu)", toLog.ex.actualParam1, toLog.ex.actualParam2);
     if (toLog.ex.actualParam1 == 0 && toLog.ex.actualParam2 == 0)

@@ -17,31 +17,31 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
         IClockBoundModule(clockSyncVars, 5, "Execute"), 
         fromMeToLS(commPipeWithLS), fromDEtoMe(commPipeWithDE), registers(registers)
 {
-    std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, registers);
+    std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, this, registers);
     execStrategies.insert({ADD, addOrSub});
     execStrategies.insert({SUB, addOrSub});
-    std::shared_ptr<ExecComplexMathOp> mulOrDiv = std::make_shared<ExecComplexMathOp>(commPipeWithLS, registers);
+    std::shared_ptr<ExecComplexMathOp> mulOrDiv = std::make_shared<ExecComplexMathOp>(commPipeWithLS, this, registers);
     execStrategies.insert({MUL, mulOrDiv});
     execStrategies.insert({DIV, mulOrDiv});
-    std::shared_ptr<ExecMov> mov = std::make_shared<ExecMov>(commPipeWithLS, registers);
+    std::shared_ptr<ExecMov> mov = std::make_shared<ExecMov>(commPipeWithLS, this, registers);
     execStrategies.insert({MOV, mov});
-    std::shared_ptr<ExecCmp> cmp = std::make_shared<ExecCmp>(commPipeWithLS, registers);
+    std::shared_ptr<ExecCmp> cmp = std::make_shared<ExecCmp>(commPipeWithLS, this, registers);
     execStrategies.insert({CMP, cmp});
-    std::shared_ptr<ExecJumpOp> jumpOp = std::make_shared<ExecJumpOp>(commPipeWithLS, commPipeWithDE, registers);
+    std::shared_ptr<ExecJumpOp> jumpOp = std::make_shared<ExecJumpOp>(commPipeWithLS, commPipeWithDE, this, registers);
     execStrategies.insert({JMP, jumpOp});
     execStrategies.insert({JE, jumpOp});
     execStrategies.insert({JL, jumpOp});
     execStrategies.insert({JG, jumpOp});
     execStrategies.insert({JZ, jumpOp});
-    std::shared_ptr<ExecPush> push = std::make_shared<ExecPush>(commPipeWithLS, registers);
+    std::shared_ptr<ExecPush> push = std::make_shared<ExecPush>(commPipeWithLS, this, registers);
     execStrategies.insert({PUSH, push});
-    std::shared_ptr<ExecCall> call = std::make_shared<ExecCall>(commPipeWithLS, commPipeWithDE, registers);
+    std::shared_ptr<ExecCall> call = std::make_shared<ExecCall>(commPipeWithLS, commPipeWithDE, this, registers);
     execStrategies.insert({CALL, call});
-    std::shared_ptr<ExecPop> pop = std::make_shared<ExecPop>(commPipeWithLS, registers);
+    std::shared_ptr<ExecPop> pop = std::make_shared<ExecPop>(commPipeWithLS, this, registers);
     execStrategies.insert({POP, pop});
-    std::shared_ptr<ExecRet> ret = std::make_shared<ExecRet>(commPipeWithLS, commPipeWithDE, registers);
+    std::shared_ptr<ExecRet> ret = std::make_shared<ExecRet>(commPipeWithLS, commPipeWithDE, this, registers);
     execStrategies.insert({RET, ret});
-    std::shared_ptr<ExecEndSim> endSim = std::make_shared<ExecEndSim>(commPipeWithLS, registers, clockSyncVars);
+    std::shared_ptr<ExecEndSim> endSim = std::make_shared<ExecEndSim>(commPipeWithLS, this, registers, clockSyncVars);
     execStrategies.insert({END_SIM, endSim});
 };
 
@@ -68,6 +68,5 @@ bool Execute::executeModuleLogic()
 
     awaitNextTickToHandle(currInstr);
     executeInstruction(currInstr.data);
-    printf("\t@T=%lu\n", clockSyncVars->cycleCount);
     return true;
 }

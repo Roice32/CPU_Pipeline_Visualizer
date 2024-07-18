@@ -1,7 +1,9 @@
 #include "ExecSimpleMathOp.h"
 
-ExecSimpleMathOp::ExecSimpleMathOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
-    IExecutionStrategy(commPipeWithLS, registers) {};
+ExecSimpleMathOp::ExecSimpleMathOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    IClockBoundModule* refToEX,
+    std::shared_ptr<CPURegisters> registers):
+        IExecutionStrategy(commPipeWithLS, refToEX, registers) {};
 
 void ExecSimpleMathOp::executeInstruction(Instruction instr)
 {
@@ -15,13 +17,12 @@ void ExecSimpleMathOp::executeInstruction(Instruction instr)
     storeResultAtDest(result, instr.src1, instr.param1);
     if (result == 0)
         *regs->flags |= ZERO;
-    log(LoggablePackage { EXLogPackage(instr, actualParam1, result) });
+    logComplete(refToEX->getCurrTime(),LoggablePackage { EXLogPackage(instr, actualParam1, result) });
     moveIP(instr);
 }
 
 void ExecSimpleMathOp::log(LoggablePackage toLog)
 {
-    printf(">");
     printPlainInstruction(toLog.ex.instr);
     printf(" (");
     printPlainArg(toLog.ex.instr.src1, toLog.ex.instr.param1, false);

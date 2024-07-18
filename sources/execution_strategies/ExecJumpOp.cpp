@@ -2,14 +2,15 @@
 
 ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+    IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, registers),
+        IExecutionStrategy(commPipeWithLS, refToEX, registers),
         fromDEtoMe(commPipeWithDE) {};
 
 void ExecJumpOp::executeInstruction(Instruction instr)
 {
     word jumpAddress = getFinalArgValue(instr.src1, instr.param1);
-    log(LoggablePackage { EXLogPackage(instr, jumpAddress, 0, false) });
+    logComplete(refToEX->getCurrTime(),LoggablePackage { EXLogPackage(instr, jumpAddress, 0, false) });
 
     bool plainJump = (instr.opCode == JMP);
     bool equalJump = (instr.opCode == JE && (*regs->flags & EQUAL));

@@ -1,7 +1,9 @@
 #include "ExecCmp.h"
 
-ExecCmp::ExecCmp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS, std::shared_ptr<CPURegisters> registers):
-    IExecutionStrategy(commPipeWithLS, registers) {};
+ExecCmp::ExecCmp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    IClockBoundModule* refToEX,
+    std::shared_ptr<CPURegisters> registers):
+        IExecutionStrategy(commPipeWithLS, refToEX, registers) {};
 
 void ExecCmp::executeInstruction(Instruction instr)
 {
@@ -14,13 +16,12 @@ void ExecCmp::executeInstruction(Instruction instr)
         *regs->flags |= EQUAL;
     if (actualParam1 > actualParam2)
         *regs->flags |= GREATER;
-    log(LoggablePackage { EXLogPackage(instr, actualParam1, actualParam2) });
+    logComplete(refToEX->getCurrTime(), LoggablePackage { EXLogPackage(instr, actualParam1, actualParam2) });
     moveIP(instr);
 }
 
 void ExecCmp::log(LoggablePackage toLog)
 {
-    printf(">");
     printPlainInstruction(toLog.ex.instr);
     printf(" (%hu ? %hu)", toLog.ex.actualParam1, toLog.ex.actualParam2);
     printFlagsChange(~*regs->flags, *regs->flags);
