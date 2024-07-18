@@ -98,6 +98,7 @@ bool Decode::executeModuleLogic()
     {
         discardUntilAddr = fromMetoEX->getB();
         fromICtoMe->sendB(discardUntilAddr);
+        logJump(getCurrTime(), discardUntilAddr);
     }
 
     while (fromICtoMe->pendingA() && discardUntilAddr != DUMMY_ADDRESS)
@@ -108,6 +109,8 @@ bool Decode::executeModuleLogic()
             cache.overwriteCache(nextBatch.data, nextBatch.associatedIP);
             discardUntilAddr = DUMMY_ADDRESS;
         }
+        else
+            logDiscard(getCurrTime(), nextBatch.associatedIP, discardUntilAddr);
     }
 
     if (discardUntilAddr != DUMMY_ADDRESS)
@@ -120,7 +123,6 @@ bool Decode::executeModuleLogic()
     {
         SynchronizedDataPackage<fetch_window> receivedFW = fromICtoMe->getA();
         awaitNextTickToHandle(receivedFW);
-        // HERE
         if (cache.getStoredWordsCount() == 0)
             cache.overwriteCache(receivedFW.data, receivedFW.associatedIP);
         else
