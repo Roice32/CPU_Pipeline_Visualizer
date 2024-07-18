@@ -20,7 +20,11 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
 bool InstructionCache::executeModuleLogic()
 {
     if (fromMetoDE->pendingB())
-        internalIP = fromMetoDE->getB() / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
+    {
+        address newAddr = fromMetoDE->getB();
+        internalIP = newAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
+        logJump(getCurrTime(), newAddr, internalIP);
+    }
 
     fetch_window currBatch;
     currBatch = getFetchWindowFromLS(internalIP);
@@ -32,4 +36,14 @@ bool InstructionCache::executeModuleLogic()
     fromMetoDE->sendA(syncResponse);
     logComplete(getCurrTime(), LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch));
     return true;
+}
+
+void InstructionCache::run()
+{
+    startCurrOpTimer();
+    printf("\t!IC begins simulation at T=%lu from #fff0!\n", getCurrTime());
+    bool moduleDidSomething = executeModuleLogic();
+    if (moduleDidSomething)
+        awaitClockSignal(); 
+    IClockBoundModule::run();
 }

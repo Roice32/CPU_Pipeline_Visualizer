@@ -17,16 +17,17 @@ void ExecCall::executeInstruction(Instruction instr)
     savedState.push_back(*regs->IP + 2 * WORD_BYTES);
     *regs->stackPointer -= (REGISTER_COUNT + 2) * WORD_BYTES;
     storeDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2, savedState);
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, methodAddress));
     *regs->IP = methodAddress;
     fromDEtoMe->sendB(methodAddress);
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, methodAddress));
 }
 
 void ExecCall::log(LoggablePackage toLog)
 {
+    char valueInHex[ADDRESS_WIDTH / 4 + 1];
     printPlainInstruction(toLog.instr);
     printf("\nSaved state:\n");
-    printf("\tIP = %hu\n\t", *regs->IP + 2 * WORD_BYTES);
+    printf("\tIP = #%s\n\t", convDecToHex(*regs->IP + 2 * WORD_BYTES, valueInHex));
     printFlagsChange(~*regs->flags, *regs->flags, false);
     printf("\n\tRegisters:");
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)

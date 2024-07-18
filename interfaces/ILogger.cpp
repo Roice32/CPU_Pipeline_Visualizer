@@ -119,7 +119,7 @@ protected:
 public:
     void logComplete(clock_time timestamp, LoggablePackage toLog)
     {
-        printf("[%s@T=%lu]>", moduleName, timestamp);
+        printf("[%s@T=%lu]> ", moduleName, timestamp);
         log(toLog);
     }
 };

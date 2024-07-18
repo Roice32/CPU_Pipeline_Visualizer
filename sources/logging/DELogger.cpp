@@ -6,7 +6,7 @@ DELogger::DELogger():
 void DELogger::log(LoggablePackage toLog)
 {
     char hexAddr[ADDRESS_WIDTH / 4 + 1];
-    printf(" Decoded '");
+    printf("Decoded '");
     printPlainInstruction(toLog.instr);
     printf("' from #%s\n", convDecToHex(toLog.ip, hexAddr));
 }

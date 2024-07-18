@@ -73,9 +73,10 @@ protected:
     {
         MemoryAccessRequest newReq(addr, howManyWords);
         fromEXtoLS->sendA(newReq);
-        // TO DO somehow else
-        while (!fromEXtoLS->pendingB()) ;
-        // TO DO: Wait for the next tick
+        refToEX->enterIdlingState();
+        while (!fromEXtoLS->pendingB())
+            refToEX->awaitClockSignal();
+        refToEX->returnFromIdlingState();
         return fromEXtoLS->getB().data;
     }
 
@@ -83,8 +84,10 @@ protected:
     {
         MemoryAccessRequest newReq(addr, howManyWords, true, data);
         fromEXtoLS->sendA(newReq);
-        // TO DO
-        while (!fromEXtoLS->pendingB()) ;
+        refToEX->enterIdlingState();
+        while (!fromEXtoLS->pendingB())
+            refToEX->awaitClockSignal();
+        refToEX->returnFromIdlingState();
         fromEXtoLS->getB();
         return;
     }

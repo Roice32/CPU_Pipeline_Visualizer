@@ -53,14 +53,12 @@ public:
     {
         awaitClockSignal();
         elapsedTimeOfCurrOp += clockSyncVars->cycleCount - startTimeOfCurrOp;
-        //printf("\t(%s enters idling at T=%lu, having used %hu ticks so far.)\n", moduleName, clockSyncVars->cycleCount, elapsedTimeOfCurrOp);
     }
 
     void returnFromIdlingState()
     {
         awaitClockSignal();
         startTimeOfCurrOp = clockSyncVars->cycleCount;
-        //printf("\t(%s resumes execution at T=%lu, having %hu ticks left.)\n", moduleName, clockSyncVars->cycleCount, clockTicksPerOperation - elapsedTimeOfCurrOp);
     }
 
     void waitTillLastTick()
@@ -78,22 +76,15 @@ public:
 
     virtual bool executeModuleLogic() = 0;
 
-    void run()
+    virtual void run()
     {
         bool moduleDidSomething;
         while(clockSyncVars->running)
         {
             startCurrOpTimer();
-            //printf("(%s STARTS op at T=%lu)\n", moduleName, clockSyncVars->cycleCount);
             moduleDidSomething = executeModuleLogic();
-            if (!moduleDidSomething)
-            {
-                //printf("\t(%s has nothing to do.)\n", moduleName);
-                continue;
-            }
-            awaitClockSignal();
-            //printf("(%s FINISHES op at T=%lu).\n", moduleName, clockSyncVars->cycleCount);
+            if (moduleDidSomething)
+                awaitClockSignal();
         }
-        //printf("(%s finished its job.)\n", moduleName);
     }
 };

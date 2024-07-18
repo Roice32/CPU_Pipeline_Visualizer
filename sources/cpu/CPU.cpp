@@ -19,7 +19,7 @@ CPU::CPU(std::shared_ptr<Memory> memory): memoryUnit(memory)
     EXModule = std::make_shared<Execute>(fromEXtoLS, fromDEtoEX, registers, clock->clockSyncVars);
 }
 
-void CPU::run()
+void CPU::runSimulation()
 {
     std::thread clkThread(&Clock::run, clock);
     std::thread lsThread(&LoadStore::run, LSModule);

@@ -17,12 +17,12 @@ void LSLogger::log(LoggablePackage toLog)
     char hexAddr[ADDRESS_WIDTH / 4];
     if (toLog.wasStoreOp)
     {
-        printf(" Stored ");
+        printf("Stored ");
         printVector(toLog.data);
         printf(" at #%s for EX\n", convDecToHex(toLog.ip, hexAddr));
         return;
     }
-    printf(" Fetched ");
+    printf("Fetched ");
     if (toLog.wasForEX)
         printVector(toLog.data);
     else

@@ -27,5 +27,5 @@ private:
 
 public:
     CPU(std::shared_ptr<Memory> memory);
-    void run();
+    void runSimulation();
 };

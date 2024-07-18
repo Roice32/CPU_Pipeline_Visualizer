@@ -28,7 +28,6 @@ void EXLogger::printInstructionWithParamsReplaced(Instruction instr, word actual
 
 void EXLogger::log(LoggablePackage toLog)
 {
-    printf(" ");
     printPlainInstruction(toLog.instr);
     if (canBeReplacedByValue(toLog.instr.src1) && toLog.instr.opCode != MOV || canBeReplacedByValue(toLog.instr.src2))
         printInstructionWithParamsReplaced(toLog.instr, toLog.actualParam1, toLog.actualParam2);
