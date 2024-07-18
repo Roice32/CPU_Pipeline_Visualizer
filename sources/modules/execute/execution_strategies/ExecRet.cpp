@@ -15,13 +15,13 @@ void ExecRet::executeInstruction(Instruction instr)
     *regs->flags = restoredState[REGISTER_COUNT];
     *regs->IP = restoredState[REGISTER_COUNT + 1];
     *regs->stackPointer += (REGISTER_COUNT + 2) * WORD_BYTES;
-    logComplete(refToEX->getCurrTime(),LoggablePackage { EXLogPackage(instr) });
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr));
     fromDEtoMe->sendB(restoredState[REGISTER_COUNT + 1]);
 }
 
 void ExecRet::log(LoggablePackage toLog)
 {
-    printPlainInstruction(toLog.ex.instr);
+    printPlainInstruction(toLog.instr);
     printf("\nReturned to state:\n");
     printf("\tIP = %hu\n\t", *regs->IP);
     printFlagsChange(~*regs->flags, *regs->flags, false);

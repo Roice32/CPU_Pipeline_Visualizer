@@ -101,10 +101,10 @@ void EXLogger::printInstructionWithParamsReplaced(Instruction instr, word actual
 
 void EXLogger::log(LoggablePackage toLog)
 {
-    printPlainInstruction(toLog.ex.instr);
-    if (canBeReplacedByValue(toLog.ex.instr.src1) && toLog.ex.instr.opCode != MOV || canBeReplacedByValue(toLog.ex.instr.src2))
-        printInstructionWithParamsReplaced(toLog.ex.instr, toLog.ex.actualParam1, toLog.ex.actualParam2);
-    if (toLog.ex.newLine)
+    printPlainInstruction(toLog.instr);
+    if (canBeReplacedByValue(toLog.instr.src1) && toLog.instr.opCode != MOV || canBeReplacedByValue(toLog.instr.src2))
+        printInstructionWithParamsReplaced(toLog.instr, toLog.actualParam1, toLog.actualParam2);
+    if (toLog.newLine)
         printf("\n");
 }
 

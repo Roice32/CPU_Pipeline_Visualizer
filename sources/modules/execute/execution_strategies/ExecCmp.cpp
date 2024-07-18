@@ -16,14 +16,14 @@ void ExecCmp::executeInstruction(Instruction instr)
         *regs->flags |= EQUAL;
     if (actualParam1 > actualParam2)
         *regs->flags |= GREATER;
-    logComplete(refToEX->getCurrTime(), LoggablePackage { EXLogPackage(instr, actualParam1, actualParam2) });
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, actualParam1, actualParam2));
     moveIP(instr);
 }
 
 void ExecCmp::log(LoggablePackage toLog)
 {
-    printPlainInstruction(toLog.ex.instr);
-    printf(" (%hu ? %hu)", toLog.ex.actualParam1, toLog.ex.actualParam2);
+    printPlainInstruction(toLog.instr);
+    printf(" (%hu ? %hu)", toLog.actualParam1, toLog.actualParam2);
     printFlagsChange(~*regs->flags, *regs->flags);
     printf("\n");
 }

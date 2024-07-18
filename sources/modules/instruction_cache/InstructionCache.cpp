@@ -4,7 +4,7 @@ InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<Synchroni
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, bool>> commPipeWithDE,
     std::shared_ptr<ClockSyncPackage> clockSyncVars,
     std::shared_ptr<register_16b> ip):
-        IClockBoundModule(clockSyncVars, 3, "Instruction Cache"),
+        IClockBoundModule(clockSyncVars, 3, "Instruction Cache"), ICLogger(),
         fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), IP(ip), internalIP(0xfff0) {};
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
@@ -33,5 +33,6 @@ bool InstructionCache::executeModuleLogic()
     waitTillLastTick();
     syncResponse.sentAt = clockSyncVars->cycleCount;
     fromMetoDE->sendA(syncResponse);
+    logComplete(getCurrTime(), LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch));
     return true;
 }

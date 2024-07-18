@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Config.h"
+#include "ICLogger.h"
 #include "InterThreadCommPipe.h"
 #include "SynchronizedDataPackage.h"
 #include "IClockBoundModule.cpp"
 
 #include <memory>
 
-class InstructionCache: public IClockBoundModule
+class InstructionCache: public IClockBoundModule, public ICLogger
 {
 private:
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> fromMetoLS;

@@ -10,7 +10,7 @@ ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPacka
 void ExecJumpOp::executeInstruction(Instruction instr)
 {
     word jumpAddress = getFinalArgValue(instr.src1, instr.param1);
-    logComplete(refToEX->getCurrTime(),LoggablePackage { EXLogPackage(instr, jumpAddress, 0, false) });
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, jumpAddress, 0, false));
 
     bool plainJump = (instr.opCode == JMP);
     bool equalJump = (instr.opCode == JE && (*regs->flags & EQUAL));

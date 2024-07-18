@@ -17,17 +17,17 @@ void ExecSimpleMathOp::executeInstruction(Instruction instr)
     storeResultAtDest(result, instr.src1, instr.param1);
     if (result == 0)
         *regs->flags |= ZERO;
-    logComplete(refToEX->getCurrTime(),LoggablePackage { EXLogPackage(instr, actualParam1, result) });
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, actualParam1, result));
     moveIP(instr);
 }
 
 void ExecSimpleMathOp::log(LoggablePackage toLog)
 {
-    printPlainInstruction(toLog.ex.instr);
+    printPlainInstruction(toLog.instr);
     printf(" (");
-    printPlainArg(toLog.ex.instr.src1, toLog.ex.instr.param1, false);
-    printf(" = %hu)", toLog.ex.actualParam2);
-    if (toLog.ex.actualParam2 == 0)
+    printPlainArg(toLog.instr.src1, toLog.instr.param1, false);
+    printf(" = %hu)", toLog.actualParam2);
+    if (toLog.actualParam2 == 0)
         printf(" Flags.Z=1");
     printf("\n");
 }
