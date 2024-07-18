@@ -15,8 +15,8 @@ void ExecRet::executeInstruction(Instruction instr)
     *regs->flags = restoredState[REGISTER_COUNT];
     *regs->IP = restoredState[REGISTER_COUNT + 1];
     *regs->stackPointer += (REGISTER_COUNT + 2) * WORD_BYTES;
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr));
     fromDEtoMe->sendB(restoredState[REGISTER_COUNT + 1]);
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr));
 }
 
 void ExecRet::log(LoggablePackage toLog)

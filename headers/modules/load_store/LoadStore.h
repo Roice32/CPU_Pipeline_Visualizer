@@ -1,13 +1,14 @@
 #pragma once
 
 #include "ClockSyncPackage.h"
+#include "LSLogger.h"
 #include "MemoryAccessRequest.h"
 #include "InterThreadCommPipe.h"
 #include "SynchronizedDataPackage.h"
 #include "IMemoryHandler.cpp"
 #include "IClockBoundModule.cpp"
 
-class LoadStore : public IMemoryHandler, public IClockBoundModule
+class LoadStore : public IMemoryHandler, public IClockBoundModule, public LSLogger
 {
 private:
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> fromICtoMe;

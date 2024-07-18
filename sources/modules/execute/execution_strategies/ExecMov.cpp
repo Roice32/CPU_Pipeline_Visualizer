@@ -8,8 +8,8 @@ ExecMov::ExecMov(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 void ExecMov::executeInstruction(Instruction instr)
 {
     word movedValue = getFinalArgValue(instr.src2, instr.param2);
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, 0, movedValue)); 
     storeResultAtDest(movedValue, instr.src1, instr.param1);
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, 0, movedValue)); 
     moveIP(instr);
 }
 

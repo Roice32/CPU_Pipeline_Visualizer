@@ -5,7 +5,7 @@ LoadStore::LoadStore(std::shared_ptr<Memory> simulatedMemory,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithIC,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithEX,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
-        IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, 15, "Load/Store"),
+        IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, 15, "Load/Store"), LSLogger(),
         fromICtoMe(commPipeWithIC), fromEXtoMe(commPipeWithEX) {};
 
 byte LoadStore::loadFrom(address addr)
@@ -70,6 +70,10 @@ bool LoadStore::executeModuleLogic()
         waitTillLastTick();
         SynchronizedDataPackage<std::vector<word>> syncResponse(responseForEX, clockSyncVars->cycleCount);
         fromEXtoMe->sendB(syncResponse);
+        if (exReq.data.isStoreOperation)
+            logComplete(getCurrTime(), LoggablePackage(exReq.data.reqData, exReq.data.reqAddr, true, true));
+        else
+            logComplete(getCurrTime(), LoggablePackage(responseForEX, exReq.associatedIP, false, true));
         return true;
     }
     
@@ -81,5 +85,6 @@ bool LoadStore::executeModuleLogic()
     waitTillLastTick();
     syncResponse.sentAt = clockSyncVars->cycleCount;
     fromICtoMe->sendB(syncResponse);
+    logComplete(getCurrTime(), LoggablePackage(responseForIC, lsReq.data));
     return true;
 }

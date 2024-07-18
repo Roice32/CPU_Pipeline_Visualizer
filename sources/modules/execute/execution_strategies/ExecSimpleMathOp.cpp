@@ -17,8 +17,8 @@ void ExecSimpleMathOp::executeInstruction(Instruction instr)
     storeResultAtDest(result, instr.src1, instr.param1);
     if (result == 0)
         *regs->flags |= ZERO;
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, actualParam1, result));
     moveIP(instr);
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, actualParam1, result));
 }
 
 void ExecSimpleMathOp::log(LoggablePackage toLog)

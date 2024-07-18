@@ -59,6 +59,20 @@ protected:
         }
     };
 
+    static void printFetchWindow(fetch_window fw)
+    {
+        byte wordsPerFW = FETCH_WINDOW_BYTES / WORD_BYTES;
+        char valuesInHex[WORD_BYTES * 2 + 1];
+        printf("[");
+        for (byte ind = 0; ind < wordsPerFW; ++ind)
+        {
+            printf("%s", convDecToHex(fw >> ((wordsPerFW - ind - 1) * 16), valuesInHex));
+            if (ind != wordsPerFW - 1)
+                printf(" ");
+        }
+        printf("]");
+    }
+
     static char* convDecToHex(word source, char* dest)
     {
         byte bytesGroup;

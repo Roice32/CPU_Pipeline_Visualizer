@@ -16,8 +16,8 @@ void ExecCmp::executeInstruction(Instruction instr)
         *regs->flags |= EQUAL;
     if (actualParam1 > actualParam2)
         *regs->flags |= GREATER;
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, actualParam1, actualParam2));
     moveIP(instr);
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, actualParam1, actualParam2));
 }
 
 void ExecCmp::log(LoggablePackage toLog)

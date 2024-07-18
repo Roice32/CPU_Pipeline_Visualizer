@@ -10,7 +10,6 @@ void ExecCall::executeInstruction(Instruction instr)
 {
     // TO DO: Check that stack has enough space for this call
     word methodAddress = getFinalArgValue(instr.src1, instr.param1);
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, methodAddress));
     std::vector<word> savedState;
     for (byte reg = REGISTER_COUNT - 1; reg < REGISTER_COUNT; --reg)
         savedState.push_back(*regs->registers[reg]);
@@ -20,6 +19,7 @@ void ExecCall::executeInstruction(Instruction instr)
     storeDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2, savedState);
     *regs->IP = methodAddress;
     fromDEtoMe->sendB(methodAddress);
+    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, methodAddress));
 }
 
 void ExecCall::log(LoggablePackage toLog)
