@@ -19,13 +19,11 @@ Find a way to make LoggablePackage be reasonable...
 IC *may* sometimes deliver the jumped-to FW because of incremental run, but then behavior is undefined
 	- this slipping may occur randomly. no idea rn how to fix
 
-log ic requests to ls
 dump logs to file
 
 	SYNCHRONIZATION ANALYSIS:
 
 LS: Working as intended: [t, t+14], final operations do not surpass 1 tick.
 IC: Working as intended: [t, t+2], no issues with LS.
-DE:
-
+DE: Seems to be working as intende: [t, t+1], properly timed between IC and EX.
 EX: Seems to be working as intended: [t, t+4], no sync loss on final ops, goes idle & awakes ok on calls to LS.
