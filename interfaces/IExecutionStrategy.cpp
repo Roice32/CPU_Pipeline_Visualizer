@@ -72,23 +72,30 @@ protected:
     std::vector<word> requestDataAt(address addr, byte howManyWords)
     {
         MemoryAccessRequest newReq(addr, howManyWords);
-        fromEXtoLS->sendA(newReq);
+        SynchronizedDataPackage<MemoryAccessRequest> syncReq(newReq, addr);
+        clock_time currTick = refToEX->getCurrTime();
+        syncReq.sentAt = currTick;
+        fromEXtoLS->sendA(syncReq);
         refToEX->enterIdlingState();
-        while (!fromEXtoLS->pendingB())
-            refToEX->awaitClockSignal();
-        refToEX->returnFromIdlingState();
-        return fromEXtoLS->getB().data;
+        while (!fromEXtoLS->pendingB()) // TO DO: Check running here
+            refToEX->returnFromIdlingState();
+        SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
+        refToEX->awaitNextTickToHandle(receivedPckg);
+        return receivedPckg.data;
     }
 
     void storeDataAt(address addr, byte howManyWords, std::vector<word> data)
     {
         MemoryAccessRequest newReq(addr, howManyWords, true, data);
-        fromEXtoLS->sendA(newReq);
+        SynchronizedDataPackage<MemoryAccessRequest> syncReq(newReq, addr);
+        clock_time currTick = refToEX->getCurrTime();
+        syncReq.sentAt = currTick;
+        fromEXtoLS->sendA(syncReq);
         refToEX->enterIdlingState();
-        while (!fromEXtoLS->pendingB())
-            refToEX->awaitClockSignal();
-        refToEX->returnFromIdlingState();
-        fromEXtoLS->getB();
+        while (!fromEXtoLS->pendingB()) // TO DO: Same
+            refToEX->returnFromIdlingState();
+        SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
+        refToEX->awaitNextTickToHandle(receivedPckg);
         return;
     }
 

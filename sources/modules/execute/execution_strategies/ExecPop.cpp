@@ -17,5 +17,6 @@ void ExecPop::executeInstruction(Instruction instr)
     }
     *regs->stackPointer += WORD_BYTES;
     moveIP(instr);
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr));
+    clock_time lastTick = refToEX->waitTillLastTick();
+    logComplete(lastTick, LoggablePackage(instr));
 }

@@ -8,7 +8,7 @@ ExecRet::ExecRet(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 
 void ExecRet::executeInstruction(Instruction instr)
 {
-    // TO DO: Also check stack limits here.
+    assert((*regs->stackSize - *regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES));
     std::vector<word> restoredState = requestDataAt(*regs->stackBase + *regs->stackPointer, 10);
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
         *regs->registers[REGISTER_COUNT - 1 - reg] = restoredState[reg];
@@ -16,7 +16,8 @@ void ExecRet::executeInstruction(Instruction instr)
     *regs->IP = restoredState[REGISTER_COUNT + 1];
     *regs->stackPointer += (REGISTER_COUNT + 2) * WORD_BYTES;
     fromDEtoMe->sendB(restoredState[REGISTER_COUNT + 1]);
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr));
+    clock_time lastTick = refToEX->waitTillLastTick();
+    logComplete(lastTick, LoggablePackage(instr));
 }
 
 void ExecRet::log(LoggablePackage toLog)

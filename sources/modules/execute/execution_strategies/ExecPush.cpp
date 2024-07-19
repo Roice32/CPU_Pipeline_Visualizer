@@ -13,5 +13,6 @@ void ExecPush::executeInstruction(Instruction instr)
     word newSP = *regs->stackBase + *regs->stackPointer;
     storeDataAt(newSP, 1, std::vector<word> { actualParam });
     moveIP(instr);
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, actualParam));
+    clock_time lastTick = refToEX->waitTillLastTick();
+    logComplete(lastTick, LoggablePackage(instr, actualParam));
 }

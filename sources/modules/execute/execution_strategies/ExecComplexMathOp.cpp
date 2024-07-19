@@ -17,7 +17,8 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
 
         storeResultAtDest(result >> (8 * WORD_BYTES), R0);
         storeResultAtDest(result, R1);
-        logComplete(refToEX->getCurrTime(), LoggablePackage(instr, result >> (8 * WORD_BYTES), result));
+        clock_time lastTick = refToEX->waitTillLastTick();
+        logComplete(lastTick, LoggablePackage(instr, result >> (8 * WORD_BYTES), result));
     }
     else
     {
@@ -27,7 +28,8 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
             *regs->flags |= ZERO;
         storeResultAtDest(ratio, R0);
         storeResultAtDest(modulus, R1);
-        logComplete(refToEX->getCurrTime(), LoggablePackage(instr, ratio, modulus));
+        clock_time lastTick = refToEX->waitTillLastTick();
+        logComplete(lastTick, LoggablePackage(instr, ratio, modulus));
     }
     moveIP(instr);
 }

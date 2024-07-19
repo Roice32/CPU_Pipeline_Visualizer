@@ -57,20 +57,28 @@ bool Execute::executeModuleLogic()
     if (!fromDEtoMe->pendingA())
         return false;
 
-    SynchronizedDataPackage<Instruction> currInstr;
-    do
+    SynchronizedDataPackage<Instruction> currInstr = fromDEtoMe->getA();
+    while(currInstr.associatedIP != *registers->IP)
     {
-        currInstr = fromDEtoMe->getA();
-    } while (fromDEtoMe->pendingA() && currInstr.associatedIP != *registers->IP);
+        EXLogger::logDiscard(getCurrTime(), currInstr.data, currInstr.associatedIP, *registers->IP);
+        if (fromDEtoMe->pendingA())
+            currInstr = fromDEtoMe->getA();
+        else
+            break;
+    }
 
     if (currInstr.associatedIP != *registers->IP)
         return false;
     
     // TO DO: Handle UNDEFINED & UNINITIALIZED_MEM delivered by DE differently?
     if (currInstr.data.opCode == UNINITIALIZED_MEM || currInstr.data.opCode == UNDEFINED)
+    {
+        EXLogger::logDiscard(getCurrTime(), currInstr.data, currInstr.associatedIP);
         return false;
+    }
 
     awaitNextTickToHandle(currInstr);
+    EXLogger::logAccept(getCurrTime(), currInstr.data, *registers->IP);
     executeInstruction(currInstr.data);
     return true;
 }

@@ -8,7 +8,7 @@ ExecCall::ExecCall(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<M
 
 void ExecCall::executeInstruction(Instruction instr)
 {
-    // TO DO: Check that stack has enough space for this call
+    assert((*regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES) && "Insufficient stack space for method call");
     word methodAddress = getFinalArgValue(instr.src1, instr.param1);
     std::vector<word> savedState;
     for (byte reg = REGISTER_COUNT - 1; reg < REGISTER_COUNT; --reg)
@@ -17,9 +17,11 @@ void ExecCall::executeInstruction(Instruction instr)
     savedState.push_back(*regs->IP + 2 * WORD_BYTES);
     *regs->stackPointer -= (REGISTER_COUNT + 2) * WORD_BYTES;
     storeDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2, savedState);
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, methodAddress));
+    clock_time lastTick = refToEX->waitTillLastTick();
+    logComplete(lastTick, LoggablePackage(instr, methodAddress));
     *regs->IP = methodAddress;
     fromDEtoMe->sendB(methodAddress);
+    assert(lastTick == refToEX->getCurrTime());
 }
 
 void ExecCall::log(LoggablePackage toLog)

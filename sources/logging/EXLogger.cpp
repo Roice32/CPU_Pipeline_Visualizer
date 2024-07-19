@@ -35,6 +35,28 @@ void EXLogger::log(LoggablePackage toLog)
         printf("\n");
 }
 
+void EXLogger::logDiscard(clock_time timestamp, Instruction instr, address associatedIP, address expectedIP)
+{
+    char addrInHex[ADDRESS_WIDTH / 4 + 1] = "";
+    if (instr.opCode == UNINITIALIZED_MEM || instr.opCode == UNDEFINED)
+    {
+        printf("[EX@T=%lu]> Ignored malformed / rezidual instruction at #%s\n", timestamp, convDecToHex(associatedIP, addrInHex));
+        return;
+    }
+    printf("[EX@T=%lu]> Ignored instruction '", timestamp);
+    printPlainInstruction(instr);
+    printf("' from #%s", convDecToHex(associatedIP, addrInHex));
+    printf(" (expecting #%s)\n", convDecToHex(expectedIP, addrInHex));
+}
+
+void EXLogger::logAccept(clock_time timestamp, Instruction instr, address ip)
+{
+    char addrInHex[ADDRESS_WIDTH / 4 + 1] = "";
+    printf("[EX@T=%lu]> Began executing '", timestamp);
+    printPlainInstruction(instr);
+    printf("' from #%s\n", convDecToHex(ip, addrInHex));
+}
+
 void EXLogger::printFlagsChange(register_16b oldFlagsState, register_16b newFlagsState, bool initSpace)
 {
     if (oldFlagsState == newFlagsState)

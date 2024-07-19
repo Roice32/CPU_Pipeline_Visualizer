@@ -8,7 +8,8 @@ ExecEndSim::ExecEndSim(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPacka
 
 void ExecEndSim::executeInstruction(Instruction instr)
 {
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr));
-    printf("\t!EX ends simulation at T=%lu!\n", clockSyncVars->cycleCount);
+    clock_time lastTick = refToEX->waitTillLastTick();
     clockSyncVars->running = false;
+    logComplete(lastTick, LoggablePackage(instr));
+    printf("\t!EX ends simulation at T=%lu!\n", clockSyncVars->cycleCount);
 }

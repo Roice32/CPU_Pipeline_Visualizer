@@ -9,7 +9,8 @@ void ExecMov::executeInstruction(Instruction instr)
 {
     word movedValue = getFinalArgValue(instr.src2, instr.param2);
     storeResultAtDest(movedValue, instr.src1, instr.param1);
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, 0, movedValue)); 
+    clock_time lastTick = refToEX->waitTillLastTick();
+    logComplete(lastTick, LoggablePackage(instr, 0, movedValue)); 
     moveIP(instr);
 }
 

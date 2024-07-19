@@ -18,7 +18,8 @@ void ExecSimpleMathOp::executeInstruction(Instruction instr)
     if (result == 0)
         *regs->flags |= ZERO;
     moveIP(instr);
-    logComplete(refToEX->getCurrTime(), LoggablePackage(instr, actualParam1, result));
+    clock_time lastTick = refToEX->waitTillLastTick();
+    logComplete(lastTick, LoggablePackage(instr, actualParam1, result));
 }
 
 void ExecSimpleMathOp::log(LoggablePackage toLog)
