@@ -14,7 +14,10 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     while (!fromMetoLS->pendingB() && clockSyncVars->running)
         awaitClockSignal();
     returnFromIdlingState();
-    return fromMetoLS->getB().data;
+    if (clockSyncVars->running)
+        return fromMetoLS->getB().data;
+    else
+        return 0;
 }
 
 bool InstructionCache::executeModuleLogic()
@@ -34,7 +37,8 @@ bool InstructionCache::executeModuleLogic()
     waitTillLastTick();
     syncResponse.sentAt = clockSyncVars->cycleCount;
     fromMetoDE->sendA(syncResponse);
-    logComplete(getCurrTime(), LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch));
+    if (clockSyncVars->running)
+        logComplete(getCurrTime(), LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch));
     return true;
 }
 

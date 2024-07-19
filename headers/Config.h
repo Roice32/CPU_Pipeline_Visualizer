@@ -20,7 +20,7 @@ using clock_time = uint64_t;
 
 enum OpCode
 {
-    UNUSED,
+    UNINITIALIZED_MEM,
     ADD = 0x1,
     SUB, 
     MOV,

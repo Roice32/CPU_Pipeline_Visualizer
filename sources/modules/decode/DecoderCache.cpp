@@ -32,13 +32,14 @@ void DecoderCache::concatNewFW(fetch_window newFW)
     byte emptyWordsInFirstFW = FETCH_WINDOW_BYTES / WORD_BYTES - storedWordsCount;
     storedFWs[0] >>= (emptyWordsInFirstFW * WORD_BYTES * 8);
     storedFWs[1] = newFW;
-    storedWordsCount += FETCH_WINDOW_BYTES / WORD_BYTES;
+    storedWordsCount += FETCH_WINDOW_BYTES / WORD_BYTES + emptyWordsInFirstFW;
     cacheStartAddr -= emptyWordsInFirstFW * WORD_BYTES;
     *this << emptyWordsInFirstFW;
 }
 
 void DecoderCache::overwriteCache(fetch_window newFW, address associatedIP)
 {
+    storedFWs[0] = storedFWs[1] = 0;
     storedFWs[0] = newFW;
     cacheStartAddr = associatedIP;
     storedWordsCount = 4;

@@ -96,10 +96,11 @@ protected:
             printf(" ");
         if (mustDisplayParamValue(src))
         {
+            char addrInHex[WORD_BYTES * 2 + 1] = "";
             if (src == IMM)
                 printf("%hu", param);
             else
-                printf("[%hu]", param);
+                printf("[%s]", convDecToHex(param, addrInHex));
         }
         else
             printf("%s", typeNames.at((TypeCode) src));

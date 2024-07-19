@@ -48,10 +48,10 @@ bool Decode::argumentsAreNotMutuallyExclusive(byte opCode, byte src1, byte src2)
 Instruction Decode::decodeInstructionHeader(word instruction)
 {
     byte opCode = instruction >> 10;
-    if (opCode == UNUSED)
-        return Instruction(UNUSED);
-
-    assert((opCode != UNDEFINED && opCode <= POP) && "Unknown operation code");
+    if (opCode == UNINITIALIZED_MEM)
+        return Instruction(UNINITIALIZED_MEM);
+    if (opCode == UNDEFINED || opCode > POP)
+        return Instruction(UNDEFINED);
 
     byte src1 = (instruction >> 5) & 0b11111;
     byte src2 = instruction & 0b11111;
@@ -66,29 +66,33 @@ Instruction Decode::decodeInstructionHeader(word instruction)
 bool Decode::processFetchWindow(fetch_window newBatch)
 {
     Instruction instr = decodeInstructionHeader(word (newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8)));
-    if (instr.opCode == UNUSED)
+    if (instr.opCode == UNINITIALIZED_MEM)
     {
         cache.shiftUsedWords(1);
         return false;
     }
 
     byte paramsCount = 0;
-    if (instr.src1 == IMM || instr.src1 == ADDR)
+    if (instr.opCode != UNDEFINED)
     {
-        instr.param1 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * 2) * 8);
-        ++paramsCount;
-    }
-    if (instr.src2 == IMM || instr.src2 == ADDR)
-    {
-        instr.param2 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * (paramsCount == 0 ? 2 : 3)) * 8);
-        ++paramsCount;
+        if (instr.src1 == IMM || instr.src1 == ADDR)
+        {
+            instr.param1 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * 2) * 8);
+            ++paramsCount;
+        }
+        if (instr.src2 == IMM || instr.src2 == ADDR)
+        {
+            instr.param2 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * (paramsCount == 0 ? 2 : 3)) * 8);
+            ++paramsCount;
+        }
     }
     SynchronizedDataPackage<Instruction> syncResponse(instr, cache.getAssociatedInstrAddr());
     cache.shiftUsedWords(paramsCount + 1);
     waitTillLastTick();
     syncResponse.sentAt = clockSyncVars->cycleCount;
     fromMetoEX->sendA(syncResponse);
-    logComplete(getCurrTime(), LoggablePackage(syncResponse.associatedIP, instr));
+    if (instr.opCode != UNINITIALIZED_MEM && instr.opCode != UNDEFINED)
+        logComplete(getCurrTime(), LoggablePackage(syncResponse.associatedIP, instr));
     return true;
 }
 
@@ -97,8 +101,10 @@ bool Decode::executeModuleLogic()
     if (fromMetoEX->pendingB())
     {
         discardUntilAddr = fromMetoEX->getB();
-        fromICtoMe->sendB(discardUntilAddr);
         logJump(getCurrTime(), discardUntilAddr);
+        while (fromICtoMe->pendingA())
+            logDiscard(getCurrTime(), fromICtoMe->getA().associatedIP, discardUntilAddr);
+        fromICtoMe->sendB(discardUntilAddr);
     }
 
     while (fromICtoMe->pendingA() && discardUntilAddr != DUMMY_ADDRESS)
@@ -107,6 +113,7 @@ bool Decode::executeModuleLogic()
         if (nextBatch.associatedIP == discardUntilAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES)
         {
             cache.overwriteCache(nextBatch.data, nextBatch.associatedIP);
+            cache.shiftUsedWords((discardUntilAddr - nextBatch.associatedIP) / WORD_BYTES);
             discardUntilAddr = DUMMY_ADDRESS;
         }
         else

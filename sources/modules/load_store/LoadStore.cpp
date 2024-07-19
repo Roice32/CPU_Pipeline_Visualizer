@@ -85,6 +85,7 @@ bool LoadStore::executeModuleLogic()
     waitTillLastTick();
     syncResponse.sentAt = clockSyncVars->cycleCount;
     fromICtoMe->sendB(syncResponse);
-    logComplete(getCurrTime(), LoggablePackage(responseForIC, lsReq.data));
+    if (clockSyncVars->running)
+        logComplete(getCurrTime(), LoggablePackage(responseForIC, lsReq.data));
     return true;
 }

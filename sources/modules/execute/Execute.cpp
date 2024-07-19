@@ -65,6 +65,10 @@ bool Execute::executeModuleLogic()
 
     if (currInstr.associatedIP != *registers->IP)
         return false;
+    
+    // TO DO: Handle UNDEFINED & UNINITIALIZED_MEM delivered by DE differently?
+    if (currInstr.data.opCode == UNINITIALIZED_MEM || currInstr.data.opCode == UNDEFINED)
+        return false;
 
     awaitNextTickToHandle(currInstr);
     executeInstruction(currInstr.data);
