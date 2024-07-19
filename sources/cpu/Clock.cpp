@@ -3,12 +3,15 @@
 #include <cstdio>
 #include <thread>
 
-Clock::Clock(): clockSyncVars(std::make_shared<ClockSyncPackage>()) {};
+Clock::Clock(): clockSyncVars(std::make_shared<ClockSyncPackage>()), selfRunning(std::make_shared<bool>())
+{
+    *selfRunning = true;
+};
 
 void Clock::run()
 {
     // TO DO: Fix the clock stopping leaving other threads starving
-    while (clockSyncVars->running)
+    while (*selfRunning)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(CLOCK_PERIOD_MILLIS));
         {

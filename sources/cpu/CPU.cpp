@@ -21,15 +21,18 @@ CPU::CPU(std::shared_ptr<Memory> memory): memoryUnit(memory)
 
 void CPU::runSimulation()
 {
-    std::thread clkThread(&Clock::run, clock);
     std::thread lsThread(&LoadStore::run, LSModule);
     std::thread icThread(&InstructionCache::run, ICModule);
     std::thread deThread(&Decode::run, DEModule);
     std::thread exThread(&Execute::run, EXModule);
+    std::thread clkThread(&Clock::run, clock);
 
     lsThread.join();
     icThread.join();
     deThread.join();
     exThread.join();
+
+    *clock->selfRunning = false;
+
     clkThread.join();
 }
