@@ -25,8 +25,7 @@ dump logs to file
 	SYNCHRONIZATION ANALYSIS:
 
 LS: Working as intended: [t, t+14], final operations do not surpass 1 tick.
-IC:
-
+IC: Working as intended: [t, t+2], no issues with LS.
 DE:
 
 EX: Seems to be working as intended: [t, t+4], no sync loss on final ops, goes idle & awakes ok on calls to LS.

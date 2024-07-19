@@ -14,12 +14,14 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     logRequest(getCurrTime(), internalIP);
     enterIdlingState();
     while (!fromMetoLS->pendingB() && clockSyncVars->running)
-        awaitClockSignal();
-    returnFromIdlingState();
-    if (clockSyncVars->running)
-        return fromMetoLS->getB().data;
-    else
+        returnFromIdlingState();
+
+    if (!clockSyncVars->running)
         return 0;
+
+    SynchronizedDataPackage<fetch_window> receivedPckg = fromMetoLS->getB();
+    awaitNextTickToHandle(receivedPckg);
+    return receivedPckg.data;
 }
 
 bool InstructionCache::executeModuleLogic()
@@ -49,8 +51,6 @@ void InstructionCache::run()
 {
     startCurrOpTimer();
     printf("\t!IC begins simulation at T=%lu from #fff0!\n", getCurrTime());
-    bool moduleDidSomething = executeModuleLogic();
-    if (moduleDidSomething)
-        awaitClockSignal(); 
+    executeModuleLogic();
     IClockBoundModule::run();
 }
