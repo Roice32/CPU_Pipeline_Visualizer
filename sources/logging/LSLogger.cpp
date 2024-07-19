@@ -12,6 +12,12 @@ void LSLogger::printVector(std::vector<word> vec)
     printf("}");
 }
 
+void LSLogger::logAccept(clock_time timestamp, address reqAddr, bool isFromEX)
+{
+    char addrInHex[ADDRESS_WIDTH / 4 + 1] = "";
+    printf("[LS@T=%lu]> Accepted request from %s regarding address #%s\n", timestamp, isFromEX ? "EX" : "IC", convDecToHex(reqAddr, addrInHex));
+}
+
 void LSLogger::log(LoggablePackage toLog)
 {
     char hexAddr[ADDRESS_WIDTH / 4];

@@ -102,12 +102,12 @@ bool Decode::executeModuleLogic()
     {
         discardUntilAddr = fromMetoEX->getB();
         logJump(getCurrTime(), discardUntilAddr);
-        while (fromICtoMe->pendingA())
+        while (fromICtoMe->pendingA() && clockSyncVars->running)
             logDiscard(getCurrTime(), fromICtoMe->getA().associatedIP, discardUntilAddr);
         fromICtoMe->sendB(discardUntilAddr);
     }
 
-    while (fromICtoMe->pendingA() && discardUntilAddr != DUMMY_ADDRESS)
+    while (fromICtoMe->pendingA() && discardUntilAddr != DUMMY_ADDRESS && clockSyncVars->running)
     {
         SynchronizedDataPackage<fetch_window> nextBatch = fromICtoMe->getA();
         if (nextBatch.associatedIP == discardUntilAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES)

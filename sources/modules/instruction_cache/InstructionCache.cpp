@@ -9,7 +9,9 @@ InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<Synchroni
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     SynchronizedDataPackage<address> syncReq(addr, clockSyncVars->cycleCount);
+    syncReq.sentAt = getCurrTime();
     fromMetoLS->sendA(syncReq);
+    logRequest(getCurrTime(), internalIP);
     enterIdlingState();
     while (!fromMetoLS->pendingB() && clockSyncVars->running)
         awaitClockSignal();
@@ -35,10 +37,11 @@ bool InstructionCache::executeModuleLogic()
     internalIP += FETCH_WINDOW_BYTES;
     
     waitTillLastTick();
-    syncResponse.sentAt = clockSyncVars->cycleCount;
+    clock_time lastTick = getCurrTime();
+    syncResponse.sentAt = lastTick;
     fromMetoDE->sendA(syncResponse);
     if (clockSyncVars->running)
-        logComplete(getCurrTime(), LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch));
+        logComplete(lastTick, LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch));
     return true;
 }
 

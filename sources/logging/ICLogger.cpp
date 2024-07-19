@@ -8,7 +8,13 @@ void ICLogger::log(LoggablePackage toLog)
     char addrInHex[ADDRESS_WIDTH / 4];
     printf("Delivered ");
     printFetchWindow(toLog.fetchWindow);
-    printf(" from #%s\n", convDecToHex(toLog.ip, addrInHex));
+    printf(" from #%s to DE\n", convDecToHex(toLog.ip, addrInHex));
+}
+
+void ICLogger::logRequest(clock_time timestamp, address requested)
+{
+    char addrInHex[ADDRESS_WIDTH / 4 + 1] = "";
+    printf("[IC@T=%lu]> Requested fetch window starting at #%s from LS\n", timestamp, convDecToHex(requested, addrInHex));
 }
 
 void ICLogger::logJump(clock_time timestamp, address addr, address alignedAddr)

@@ -9,5 +9,6 @@ private:
 
 protected:
     LSLogger();
+    void logAccept(clock_time timestamp, address reqAddr, bool isFromEX);
     void log(LoggablePackage toLog) override;
 };

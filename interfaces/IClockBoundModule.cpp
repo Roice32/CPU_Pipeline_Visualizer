@@ -61,10 +61,10 @@ public:
         startTimeOfCurrOp = clockSyncVars->cycleCount;
     }
 
-    void waitTillLastTick()
+    clock_time waitTillLastTick()
     {
-        if (elapsedTimeOfCurrOp == clockTicksPerOperation - 1)
-            return;
+        if (elapsedTimeOfCurrOp >= clockTicksPerOperation - 1)
+            return clockSyncVars->cycleCount;
         awaitClockSignal();
         elapsedTimeOfCurrOp += clockSyncVars->cycleCount - startTimeOfCurrOp;
         while ((elapsedTimeOfCurrOp < clockTicksPerOperation - 1) && (clockSyncVars->running))
@@ -72,19 +72,17 @@ public:
             awaitClockSignal();
             ++elapsedTimeOfCurrOp;
         }
+        return clockSyncVars->cycleCount;
     }
 
     virtual bool executeModuleLogic() = 0;
 
     virtual void run()
     {
-        bool moduleDidSomething;
         while(clockSyncVars->running)
         {
             startCurrOpTimer();
-            moduleDidSomething = executeModuleLogic();
-            if (moduleDidSomething)
-                awaitClockSignal();
+            executeModuleLogic();
         }
     }
 };
