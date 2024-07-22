@@ -9,6 +9,5 @@ LS & IC speaking after EX announces end_sim.
 	- apparently those two were caused by faulty script?
 
 TO FIX:
-	jmp to unmarked addresses throws seg fault
 	where does that `mov r0, 3` appear in conditional jumps tests?
 	why does call.asm execute twice??
