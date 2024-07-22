@@ -4,6 +4,9 @@
 
 class ExecPop: public IExecutionStrategy
 {
+private:
+    std::string log(LoggablePackage toLog) override;
+
 public:
     ExecPop(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
         IClockBoundModule* refToEX,

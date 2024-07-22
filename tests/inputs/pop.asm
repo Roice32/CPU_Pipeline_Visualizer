@@ -3,8 +3,8 @@
 
 .code
 main:
-    mov r0, 3
-    push 4
+    mov r1, 3
+    push r1
     push 5
     pop
     pop r0
