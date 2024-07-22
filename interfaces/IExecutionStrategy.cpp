@@ -50,12 +50,16 @@ protected:
                 storeDataAt(destLocation, 1, std::vector<word> { result });
             break;
             case SP_REG:
+                assert(result <= *regs->stackSize && "Attempt to move stack pointer over the stack's size");
+                assert(result % 2 == 0 && "Attempt to misalign stack pointer");
                 *regs->stackPointer = result;
             break;
             case ST_BASE:
+                assert(result % 2 == 0 && "Attempt to misalign stack base");
                 *regs->stackBase = result;
             break;
             case ST_SIZE:
+                assert(result >= *regs->stackPointer && "Attempt to shrink stack below current stack pointer");
                 *regs->stackSize = result;
             break;
             case R0 ... R7:

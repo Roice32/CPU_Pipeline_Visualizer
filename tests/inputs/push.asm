@@ -10,9 +10,11 @@ main:
     mov r1, sp
     cmp r0, r1
 
-    mov stack_size, 3
+    mov stack_base, 200
     push 0
     mov r0, sp
+    pop r1
+    pop r2
     end_sim
 
 .data

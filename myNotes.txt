@@ -12,4 +12,3 @@ TO FIX:
 	jmp to unmarked addresses throws seg fault
 	where does that `mov r0, 3` appear in conditional jumps tests?
 	why does call.asm execute twice??
-	on push (and pop?), establish sticter rules on modifying stack registers (forbidden: size < sp, base > pointer, etc)
