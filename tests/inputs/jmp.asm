@@ -1,5 +1,5 @@
 .boot
-    jmp main
+    jmp 4050
 
 .code
 main:

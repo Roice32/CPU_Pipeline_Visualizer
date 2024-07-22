@@ -8,7 +8,7 @@ ExecRet::ExecRet(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 
 void ExecRet::executeInstruction(Instruction instr)
 {
-    assert((*regs->stackSize - *regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES));
+    assert((*regs->stackSize - *regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES) && "Stack too empty to consider return from method");
     std::vector<word> restoredState = requestDataAt(*regs->stackBase + *regs->stackPointer, 10);
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
         *regs->registers[REGISTER_COUNT - 1 - reg] = restoredState[reg];
@@ -23,7 +23,7 @@ void ExecRet::executeInstruction(Instruction instr)
 std::string ExecRet::log(LoggablePackage toLog)
 {
     std::string result = plainInstructionToString(toLog.instr) + "\nReturned to state:\n";
-    result += "\tIP = " + std::to_string(*regs->IP);
+    result += "\tIP = #" + convDecToHex(*regs->IP);
     result += "\n\t" + printFlagsChange(~*regs->flags, *regs->flags, false);
     result += "\n\tRegisters:";
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)

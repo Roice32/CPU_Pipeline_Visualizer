@@ -7,3 +7,10 @@ Ignore invalid opcodes in DE, signal them to EX, let EX decide what to do with t
 That one weird line of NULL's in output?
 LS & IC speaking after EX announces end_sim.
 	- apparently those two were caused by faulty script?
+
+TO FIX:
+	jmp to unmarked addresses throws seg fault
+	where does that `mov r0, 3` appear in conditional jumps tests?
+	why does call.asm execute twice??
+	on push (and pop?), establish sticter rules on modifying stack registers (forbidden: size < sp, base > pointer, etc)
+	pop with save does not properly display popped value
