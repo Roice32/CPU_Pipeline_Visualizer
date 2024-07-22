@@ -98,6 +98,7 @@ bool Decode::executeModuleLogic()
     if (fromMetoEX->pendingB())
     {
         discardUntilAddr = fromMetoEX->getB();
+        cache.discardCurrent();
         logComplete(getCurrTime(), logJump(discardUntilAddr));
         while (fromICtoMe->pendingA() && clockSyncVars->running)
             logComplete(getCurrTime(), logDiscard(fromICtoMe->getA().associatedIP, discardUntilAddr));

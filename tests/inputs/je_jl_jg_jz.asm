@@ -6,6 +6,7 @@ main:
     mov r3, sp
     cmp r3, 3000
     jg greater
+    
 end:
     end_sim
 

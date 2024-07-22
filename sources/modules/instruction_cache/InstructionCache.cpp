@@ -42,9 +42,12 @@ bool InstructionCache::executeModuleLogic()
     waitTillLastTick();
     clock_time lastTick = getCurrTime();
     syncResponse.sentAt = lastTick;
-    fromMetoDE->sendA(syncResponse);
-    if (clockSyncVars->running)
-        logComplete(lastTick, log(LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch)));
+    if (!fromMetoDE->pendingB())
+    {
+        fromMetoDE->sendA(syncResponse);
+        if (clockSyncVars->running)
+            logComplete(lastTick, log(LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch)));
+    }
     return true;
 }
 
