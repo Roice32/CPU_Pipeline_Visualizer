@@ -92,7 +92,7 @@ bool Decode::processFetchWindow(fetch_window newBatch)
     syncResponse.sentAt = clockSyncVars->cycleCount;
     fromMetoEX->sendA(syncResponse);
     if (instr.opCode != UNINITIALIZED_MEM && instr.opCode != UNDEFINED)
-        logComplete(getCurrTime(), LoggablePackage(syncResponse.associatedIP, instr));
+        logComplete(getCurrTime(), log(LoggablePackage(syncResponse.associatedIP, instr)));
     return true;
 }
 
@@ -101,15 +101,16 @@ bool Decode::executeModuleLogic()
     if (fromMetoEX->pendingB())
     {
         discardUntilAddr = fromMetoEX->getB();
-        logJump(getCurrTime(), discardUntilAddr);
+        logComplete(getCurrTime(), logJump(discardUntilAddr));
         while (fromICtoMe->pendingA() && clockSyncVars->running)
-            logDiscard(getCurrTime(), fromICtoMe->getA().associatedIP, discardUntilAddr);
+            logComplete(getCurrTime(), logDiscard(fromICtoMe->getA().associatedIP, discardUntilAddr));
         fromICtoMe->sendB(discardUntilAddr);
     }
 
     while (fromICtoMe->pendingA() && discardUntilAddr != DUMMY_ADDRESS && clockSyncVars->running)
     {
         SynchronizedDataPackage<fetch_window> nextBatch = fromICtoMe->getA();
+        awaitNextTickToHandle(nextBatch);
         if (nextBatch.associatedIP == discardUntilAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES)
         {
             cache.overwriteCache(nextBatch.data, nextBatch.associatedIP);
@@ -117,7 +118,7 @@ bool Decode::executeModuleLogic()
             discardUntilAddr = DUMMY_ADDRESS;
         }
         else
-            logDiscard(getCurrTime(), nextBatch.associatedIP, discardUntilAddr);
+            logComplete(getCurrTime(), logDiscard(nextBatch.associatedIP, discardUntilAddr));
     }
 
     if (discardUntilAddr != DUMMY_ADDRESS)

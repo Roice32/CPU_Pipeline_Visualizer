@@ -17,17 +17,21 @@ void ExecRet::executeInstruction(Instruction instr)
     *regs->stackPointer += (REGISTER_COUNT + 2) * WORD_BYTES;
     fromDEtoMe->sendB(restoredState[REGISTER_COUNT + 1]);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, LoggablePackage(instr));
+    logComplete(lastTick, log(LoggablePackage(instr)));
 }
 
-void ExecRet::log(LoggablePackage toLog)
+std::string ExecRet::log(LoggablePackage toLog)
 {
-    printPlainInstruction(toLog.instr);
-    printf("\nReturned to state:\n");
-    printf("\tIP = %hu\n\t", *regs->IP);
-    printFlagsChange(~*regs->flags, *regs->flags, false);
-    printf("\n\tRegisters:");
+    std::string result = plainInstructionToString(toLog.instr) + "\nReturned to state:\n";
+    result += "\tIP = " + std::to_string(*regs->IP);
+    result += "\n\t" + printFlagsChange(~*regs->flags, *regs->flags, false);
+    result += "\n\tRegisters:";
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
-        printf(" %s=%hu", typeNames.at(TypeCode (R0 + reg)), *regs->registers[reg]);
-    printf("\n");
+    {
+        result += " ";
+        result += typeNames.at(TypeCode(R0 + reg));
+        result += "=" + std::to_string(*regs->registers[reg]);
+    }
+    result += "\n";
+    return result;
 }

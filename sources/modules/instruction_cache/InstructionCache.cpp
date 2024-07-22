@@ -11,7 +11,7 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     SynchronizedDataPackage<address> syncReq(addr, clockSyncVars->cycleCount);
     syncReq.sentAt = getCurrTime();
     fromMetoLS->sendA(syncReq);
-    logRequest(getCurrTime(), internalIP);
+    logComplete(getCurrTime(), logRequest(internalIP));
     enterIdlingState();
     while (!fromMetoLS->pendingB() && clockSyncVars->running)
         returnFromIdlingState();
@@ -30,7 +30,7 @@ bool InstructionCache::executeModuleLogic()
     {
         address newAddr = fromMetoDE->getB();
         internalIP = newAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
-        logJump(getCurrTime(), newAddr, internalIP);
+        logComplete(getCurrTime(), logJump(newAddr, internalIP));
     }
 
     fetch_window currBatch;
@@ -43,14 +43,15 @@ bool InstructionCache::executeModuleLogic()
     syncResponse.sentAt = lastTick;
     fromMetoDE->sendA(syncResponse);
     if (clockSyncVars->running)
-        logComplete(lastTick, LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch));
+        logComplete(lastTick, log(LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch)));
     return true;
 }
 
 void InstructionCache::run()
 {
     startCurrOpTimer();
-    printf("\t!IC begins simulation at T=%lu from #fff0!\n", getCurrTime());
+    std::string startMessage = "\t!IC begins simulation at T=" + std::to_string(getCurrTime()) + " from #fff0!\n";
+    logAdditional(startMessage);
     executeModuleLogic();
     IClockBoundModule::run();
 }

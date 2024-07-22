@@ -3,35 +3,36 @@
 LSLogger::LSLogger():
     ILogger("LS") {};
 
-void LSLogger::printVector(std::vector<word> vec)
+std::string LSLogger::vectorToString(std::vector<word> vec)
 {
-    char valueInHex[WORD_BYTES * 2 + 1];
-    printf("{ ");
+    std::string result = "{ ";
     for (byte ind = 0; ind < vec.size(); ++ind)
-        printf("%s ", convDecToHex(vec.at(ind), valueInHex));
-    printf("}");
+        result += convDecToHex(vec.at(ind)) + " ";
+    result += "}";
+    return result;
 }
 
-void LSLogger::logAccept(clock_time timestamp, address reqAddr, bool isFromEX)
+std::string LSLogger::logAccept(address reqAddr, bool isFromEX)
 {
-    char addrInHex[ADDRESS_WIDTH / 4 + 1] = "";
-    printf("[LS@T=%lu]> Accepted request from %s regarding address #%s\n", timestamp, isFromEX ? "EX" : "IC", convDecToHex(reqAddr, addrInHex));
+    std::string result = "Accepted request from ";
+    result += (isFromEX ? "EX" : "IC");
+    result += " regarding #" + convDecToHex(reqAddr) + "\n";
+    return result;
 }
 
-void LSLogger::log(LoggablePackage toLog)
+std::string LSLogger::log(LoggablePackage toLog)
 {
-    char hexAddr[ADDRESS_WIDTH / 4];
+    std::string result = "";
     if (toLog.wasStoreOp)
     {
-        printf("Stored ");
-        printVector(toLog.data);
-        printf(" at #%s for EX\n", convDecToHex(toLog.ip, hexAddr));
-        return;
+        result = "Stored " + vectorToString(toLog.data) + " at #" + convDecToHex(toLog.ip) + " for EX\n";
+        return result;
     }
-    printf("Fetched ");
+    result = "Fetched ";
     if (toLog.wasForEX)
-        printVector(toLog.data);
+        result += vectorToString(toLog.data);
     else
-        printFetchWindow(toLog.fetchWindow);
-    printf(" from #%s for %s\n", convDecToHex(toLog.ip, hexAddr), toLog.wasForEX ? "EX" : "IC");
+        result += fetchWindowToString(toLog.fetchWindow);
+    result += " from #" + convDecToHex(toLog.ip) + " for " + (toLog.wasForEX ? "EX" : "IC") + "\n";
+    return result;
 }

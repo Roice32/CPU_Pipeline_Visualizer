@@ -18,21 +18,23 @@ void ExecCall::executeInstruction(Instruction instr)
     *regs->stackPointer -= (REGISTER_COUNT + 2) * WORD_BYTES;
     storeDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2, savedState);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, LoggablePackage(instr, methodAddress));
+    logComplete(lastTick, log(LoggablePackage(instr, methodAddress)));
     *regs->IP = methodAddress;
     fromDEtoMe->sendB(methodAddress);
-    assert(lastTick == refToEX->getCurrTime());
 }
 
-void ExecCall::log(LoggablePackage toLog)
+std::string ExecCall::log(LoggablePackage toLog)
 {
-    char valueInHex[ADDRESS_WIDTH / 4 + 1];
-    printPlainInstruction(toLog.instr);
-    printf("\nSaved state:\n");
-    printf("\tIP = #%s\n\t", convDecToHex(*regs->IP + 2 * WORD_BYTES, valueInHex));
-    printFlagsChange(~*regs->flags, *regs->flags, false);
-    printf("\n\tRegisters:");
+    std::string result = plainInstructionToString(toLog.instr) + "\nSaved state:\n";
+    result += "\tIP = #" + convDecToHex(*regs->IP + 2 * WORD_BYTES) + "\n\t";
+    result += printFlagsChange(~*regs->flags, *regs->flags, false);
+    result += "\n\tRegisters:";
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
-        printf(" %s=%hu", typeNames.at(TypeCode (R0 + reg)), *regs->registers[reg]);
-    printf("\n");
+    {
+        result += " ";
+        result += typeNames.at(TypeCode (R0 + reg));
+        result += "=" + std::to_string(*regs->registers[reg]);
+    }
+    result += "\n";
+    return result;
 }

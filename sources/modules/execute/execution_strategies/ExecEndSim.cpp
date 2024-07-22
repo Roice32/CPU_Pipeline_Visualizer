@@ -10,6 +10,7 @@ void ExecEndSim::executeInstruction(Instruction instr)
 {
     clock_time lastTick = refToEX->waitTillLastTick();
     clockSyncVars->running = false;
-    logComplete(lastTick, LoggablePackage(instr));
-    printf("\t!EX ends simulation at T=%lu!\n", clockSyncVars->cycleCount);
+    logComplete(lastTick, log(LoggablePackage(instr)));
+    std::string endMessage = "\t!EX ends simulation at T=" + std::to_string(clockSyncVars->cycleCount) + "!\n";
+    logAdditional(endMessage);
 }

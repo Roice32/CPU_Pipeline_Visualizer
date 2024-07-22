@@ -66,22 +66,22 @@ bool LoadStore::executeModuleLogic()
     {
         SynchronizedDataPackage<MemoryAccessRequest> exReq = fromEXtoMe->getA();
         awaitNextTickToHandle(exReq);
-        logAccept(getCurrTime(), exReq.data.reqAddr, true);
+        logComplete(getCurrTime(), logAccept(exReq.data.reqAddr, true));
         std::vector<word> responseForEX = handleRequestFromEX(exReq.data);
         clock_time lastTick = waitTillLastTick();
         SynchronizedDataPackage<std::vector<word>> syncResponse(responseForEX);
         syncResponse.sentAt = lastTick;
         fromEXtoMe->sendB(syncResponse);
         if (exReq.data.isStoreOperation)
-            logComplete(lastTick, LoggablePackage(exReq.data.reqData, exReq.data.reqAddr, true, true));
+            logComplete(lastTick, log(LoggablePackage(exReq.data.reqData, exReq.data.reqAddr, true, true)));
         else
-            logComplete(lastTick, LoggablePackage(responseForEX, exReq.data.reqAddr, false, true));
+            logComplete(lastTick, log(LoggablePackage(responseForEX, exReq.data.reqAddr, false, true)));
         return true;
     }
     
     SynchronizedDataPackage<address> lsReq = fromICtoMe->getA();
     awaitNextTickToHandle(lsReq);
-    logAccept(getCurrTime(), lsReq.data, false);
+    logComplete(getCurrTime(), logAccept(lsReq.data, false));
     fetch_window responseForIC = bufferedLoadFrom(lsReq.data);
     SynchronizedDataPackage<fetch_window> syncResponse(responseForIC, lsReq.data);
     
@@ -89,6 +89,6 @@ bool LoadStore::executeModuleLogic()
     syncResponse.sentAt = lastTick;
     fromICtoMe->sendB(syncResponse);
     if (clockSyncVars->running)
-        logComplete(lastTick, LoggablePackage(responseForIC, lsReq.data));
+        logComplete(lastTick, log(LoggablePackage(responseForIC, lsReq.data)));
     return true;
 }

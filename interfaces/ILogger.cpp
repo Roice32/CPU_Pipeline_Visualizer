@@ -2,7 +2,11 @@
 
 #include "LoggablePackage.h"
 
-#include <cstdio>
+#include <cassert>
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <string>
 #include <unordered_map>
 
 class ILogger
@@ -11,6 +15,7 @@ protected:
     const char* moduleName;
     static inline std::unordered_map<OpCode, const char*> opNames;
     static inline std::unordered_map<TypeCode, const char*> typeNames;
+    static inline std::shared_ptr<std::ofstream> outputFile;
 
     ILogger(const char* moduleName): moduleName(moduleName)
     {
@@ -59,30 +64,32 @@ protected:
         }
     };
 
-    static void printFetchWindow(fetch_window fw)
+    static std::string fetchWindowToString(fetch_window fw)
     {
+        std::string result = "[";
         byte wordsPerFW = FETCH_WINDOW_BYTES / WORD_BYTES;
         char valuesInHex[WORD_BYTES * 2 + 1];
-        printf("[");
         for (byte ind = 0; ind < wordsPerFW; ++ind)
         {
-            printf("%s", convDecToHex(fw >> ((wordsPerFW - ind - 1) * 16), valuesInHex));
+            result += convDecToHex(fw >> ((wordsPerFW - ind - 1) * 16));
             if (ind != wordsPerFW - 1)
-                printf(" ");
+                result += " ";
         }
-        printf("]");
+        result += "]";
+        return result;
     }
 
-    static char* convDecToHex(word source, char* dest)
+    static std::string convDecToHex(word source)
     {
+        std::string result = "xxxx";
         byte bytesGroup;
         for (byte ind = 0; ind < WORD_BYTES * 2; ++ind)
         {
             bytesGroup = source & 0xf;
-            dest[WORD_BYTES * 2 - ind - 1] = (bytesGroup > 9) ? ('a' + bytesGroup - 10) : ('0' + bytesGroup);
+            result.at(WORD_BYTES * 2 - ind - 1) = (bytesGroup > 9) ? ('a' + bytesGroup - 10) : ('0' + bytesGroup);
             source >>= 4;
         }
-        return dest;
+        return result;
     }
 
     static bool mustDisplayParamValue(byte src)
@@ -90,37 +97,64 @@ protected:
         return src == IMM || src == ADDR;
     }
 
-    static void printPlainArg(byte src, word param, bool spaced = true)
+    static std::string plainArgToString(byte src, word param, bool spaced = true)
     {
+        std::string result = "";
         if (spaced)
-            printf(" ");
+            result += " ";
         if (mustDisplayParamValue(src))
         {
-            char addrInHex[WORD_BYTES * 2 + 1] = "";
             if (src == IMM)
-                printf("%hu", param);
+                result += std::to_string(param);
             else
-                printf("[%s]", convDecToHex(param, addrInHex));
+                result += "[" + convDecToHex(param) + "]";
         }
         else
-            printf("%s", typeNames.at((TypeCode) src));
+            result += typeNames.at((TypeCode) src);
+        return result;
     }
 
-    static void printPlainInstruction(Instruction instr)
+    static std::string plainInstructionToString(Instruction instr)
     {
-        printf("%s", opNames.at((OpCode) instr.opCode));
-        printPlainArg(instr.src1, instr.param1);
+        std::string result = opNames.at((OpCode) instr.opCode);
+        result += plainArgToString(instr.src1, instr.param1);
         if (instr.src1 * instr.src2 != NULL_VAL)
-            printf(",");
-        printPlainArg(instr.src2, instr.param2);
+            result += ", ";
+        result += plainArgToString(instr.src2, instr.param2);
+        return result;
     }
 
-    virtual void log(LoggablePackage toLog) = 0;
+    std::string buildMessageHeader(clock_time timestamp)
+    {
+        std::string result = "[";
+        result += moduleName;
+        result += "@T=" + std::to_string(timestamp) + "]> ";
+        return result;
+    }
+
+    virtual std::string log(LoggablePackage toLog) = 0;
 
 public:
-    void logComplete(clock_time timestamp, LoggablePackage toLog)
+    void logComplete(clock_time timestamp, std::string messageBody)
     {
-        printf("[%s@T=%lu]> ", moduleName, timestamp);
-        log(toLog);
+        std::string message = buildMessageHeader(timestamp) + messageBody;
+        if (outputFile->is_open())
+            (*outputFile) << message;
+        else
+            std::cout << message;
+    }
+
+    void logAdditional(std::string message)
+    {
+        if (outputFile->is_open())
+            (*outputFile) << message;
+        else
+            std::cout << message;
+    }
+
+    static void openDumpFile(const char* outputFilePath)
+    {
+        outputFile = std::make_shared<std::ofstream>(outputFilePath);
+        assert(outputFile->is_open() && "Could not create specified dump output file");
     }
 };

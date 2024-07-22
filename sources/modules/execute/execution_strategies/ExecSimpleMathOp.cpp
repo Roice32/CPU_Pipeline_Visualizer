@@ -19,16 +19,15 @@ void ExecSimpleMathOp::executeInstruction(Instruction instr)
         *regs->flags |= ZERO;
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, LoggablePackage(instr, actualParam1, result));
+    logComplete(lastTick, log(LoggablePackage(instr, actualParam1, result)));
 }
 
-void ExecSimpleMathOp::log(LoggablePackage toLog)
+std::string ExecSimpleMathOp::log(LoggablePackage toLog)
 {
-    printPlainInstruction(toLog.instr);
-    printf(" (");
-    printPlainArg(toLog.instr.src1, toLog.instr.param1, false);
-    printf(" = %hu)", toLog.actualParam2);
+    std::string result = plainInstructionToString(toLog.instr) + " (" + plainArgToString(toLog.instr.src1, toLog.instr.param1, false);
+    result += " = " + std::to_string(toLog.actualParam2) + ")";
     if (toLog.actualParam2 == 0)
-        printf(" Flags.Z=1");
-    printf("\n");
+        result += " Flags.Z=1";
+    result += "\n";
+    return result;
 }

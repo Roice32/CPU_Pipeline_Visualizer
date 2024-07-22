@@ -6,7 +6,7 @@ class DELogger: public ILogger
 {
 public:
     DELogger();
-    void log(LoggablePackage toLog) override;
-    void logJump(clock_time timestamp, address newAddr);
-    void logDiscard(clock_time timestamp, address ignored, address awaited);
+    std::string log(LoggablePackage toLog) override;
+    std::string logJump(address newAddr);
+    std::string logDiscard(address ignored, address awaited);
 };

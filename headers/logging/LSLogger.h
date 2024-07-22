@@ -5,10 +5,10 @@
 class LSLogger: public ILogger
 {
 private:
-    void printVector(std::vector<word> vec);
+    std::string vectorToString(std::vector<word> vec);
 
 protected:
     LSLogger();
-    void logAccept(clock_time timestamp, address reqAddr, bool isFromEX);
-    void log(LoggablePackage toLog) override;
+    std::string logAccept(address reqAddr, bool isFromEX);
+    std::string log(LoggablePackage toLog) override;
 };

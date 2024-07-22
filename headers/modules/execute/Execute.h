@@ -8,7 +8,7 @@
 
 #include <memory>
 
-class Execute: public IClockBoundModule
+class Execute: public IClockBoundModule, public EXLogger
 {
 private:
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> fromMeToLS;

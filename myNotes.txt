@@ -10,6 +10,8 @@ IC *may* sometimes deliver the jumped-to FW because of incremental run, but then
 	- this slipping may occur randomly. no idea rn how to fix
 
 dump logs to file
+	- see why nothing is being written to file
+	- slap a mutex on logging to make sure no intertwining happens
 
 	SYNCHRONIZATION ANALYSIS:
 

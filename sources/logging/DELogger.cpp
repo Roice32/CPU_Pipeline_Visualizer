@@ -3,24 +3,20 @@
 DELogger::DELogger():
     ILogger("DE") {};
 
-void DELogger::log(LoggablePackage toLog)
+std::string DELogger::log(LoggablePackage toLog)
 {
-    char hexAddr[ADDRESS_WIDTH / 4 + 1];
-    printf("Decoded '");
-    printPlainInstruction(toLog.instr);
-    printf("' from #%s\n", convDecToHex(toLog.ip, hexAddr));
+    std::string result = "Decoded '" + plainInstructionToString(toLog.instr) + "' from #" + convDecToHex(toLog.ip) + "\n";
+    return result;
 }
 
-void DELogger::logJump(clock_time timestamp, address newAddr)
+std::string DELogger::logJump(address newAddr)
 {
-    char addrHex[ADDRESS_WIDTH / 4 + 1] = "";
-    printf("[DE@T=%lu]> Received signal of jump to #%s; Sent signal further to IC\n", timestamp, convDecToHex(newAddr, addrHex));
+    std::string result = "Received signal to jump to #" + convDecToHex(newAddr) + "; Sent signal furter to IC\n";
+    return result;
 }
 
-void DELogger::logDiscard(clock_time timestamp, address ignored, address awaited)
+std::string DELogger::logDiscard(address ignored, address awaited)
 {
-    char ignoredAddr[ADDRESS_WIDTH / 4 + 1] = "";
-    char awaitedAddr[ADDRESS_WIDTH / 4 + 1] = "";
-    printf("[DE@T=%lu]> Ignored fetch window with start address #%s (awaiting one containing #%s)\n",
-        timestamp, convDecToHex(ignored, ignoredAddr), convDecToHex(awaited, awaitedAddr));
+    std::string result = "Ignored fetch window with start address #" + convDecToHex(ignored) + " (awaiting one containing #" + convDecToHex(awaited) + ")\n";
+    return result;
 }

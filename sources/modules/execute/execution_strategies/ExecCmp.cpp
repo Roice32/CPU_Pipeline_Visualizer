@@ -18,13 +18,13 @@ void ExecCmp::executeInstruction(Instruction instr)
         *regs->flags |= GREATER;
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, LoggablePackage(instr, actualParam1, actualParam2));
+    logComplete(lastTick, log(LoggablePackage(instr, actualParam1, actualParam2)));
 }
 
-void ExecCmp::log(LoggablePackage toLog)
+std::string ExecCmp::log(LoggablePackage toLog)
 {
-    printPlainInstruction(toLog.instr);
-    printf(" (%hu ? %hu)", toLog.actualParam1, toLog.actualParam2);
-    printFlagsChange(~*regs->flags, *regs->flags);
-    printf("\n");
+    std::string result = plainInstructionToString(toLog.instr);
+    result += " (" + std::to_string(toLog.actualParam1) + " ? " + std::to_string(toLog.actualParam2) + ")";
+    result += printFlagsChange(~*regs->flags, *regs->flags) + "\n";
+    return result;
 }

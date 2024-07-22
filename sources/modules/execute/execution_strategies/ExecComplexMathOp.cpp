@@ -18,7 +18,7 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
         storeResultAtDest(result >> (8 * WORD_BYTES), R0);
         storeResultAtDest(result, R1);
         clock_time lastTick = refToEX->waitTillLastTick();
-        logComplete(lastTick, LoggablePackage(instr, result >> (8 * WORD_BYTES), result));
+        logComplete(lastTick, log(LoggablePackage(instr, result >> (8 * WORD_BYTES), result)));
     }
     else
     {
@@ -29,17 +29,18 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
         storeResultAtDest(ratio, R0);
         storeResultAtDest(modulus, R1);
         clock_time lastTick = refToEX->waitTillLastTick();
-        logComplete(lastTick, LoggablePackage(instr, ratio, modulus));
+        logComplete(lastTick, log(LoggablePackage(instr, ratio, modulus)));
     }
     moveIP(instr);
 }
 
 
-void ExecComplexMathOp::log(LoggablePackage toLog)
+std::string ExecComplexMathOp::log(LoggablePackage toLog)
 {
-    printPlainInstruction(toLog.instr);
-    printf(" (r0 = %hu, r1 = %hu)", toLog.actualParam1, toLog.actualParam2);
-    if (toLog.actualParam1 == 0 && toLog.actualParam2 == 0)
-        printf(" Flags.Z=1");
-    printf("\n");
+    std::string result = plainInstructionToString(toLog.instr) + " (r0 = ";
+    result += std::to_string(toLog.actualParam1) + ", r1 = " + std::to_string(toLog.actualParam2) + ")";
+    if (toLog.actualParam1 == 0 && toLog.actualParam1 == 0)
+        result += " Flags.Z=1";
+    result += "\n";
+    return result;
 }

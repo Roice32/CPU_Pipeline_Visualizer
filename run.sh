@@ -12,11 +12,14 @@ echo "    > Building project executable with Makefile"
 make
 
 echo "    > Running Program"
-if [ $# != 1 ]
+if [ $# == 2 ]
 then
-    echo "Usage: run.sh <.hex source code file>"
+    ./cpp_processor_model $1 $2
+elif [ $# == 1 ]
+then
+    ./cpp_processor_model $1 ""
 else
-    ./cpp_processor_model $1
+    echo "Usage: run.sh <.hex source code file> <output file>"
 fi
 
 cd ../

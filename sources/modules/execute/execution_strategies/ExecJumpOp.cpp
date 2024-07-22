@@ -18,16 +18,16 @@ void ExecJumpOp::executeInstruction(Instruction instr)
     bool zeroJump = (instr.opCode == JZ && (*regs->flags & ZERO));
     
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, LoggablePackage(instr, jumpAddress, 0, false));
+    logComplete(lastTick, log(LoggablePackage(instr, jumpAddress, 0, false)));
     if (plainJump || equalJump || lessJump || greaterJump || zeroJump)
     {
-        printf(" (yes)\n");
+        logAdditional(" (yes)\n");
         *regs->IP = jumpAddress;
         fromDEtoMe->sendB(jumpAddress);
     }
     else
     {
-        printf(" (no)\n");
+        logAdditional(" (no)\n");
         moveIP(instr);
     }
     assert(lastTick == refToEX->getCurrTime());

@@ -14,7 +14,7 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
     std::shared_ptr<CPURegisters> registers,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
-        IClockBoundModule(clockSyncVars, 5, "Execute"), 
+        IClockBoundModule(clockSyncVars, 5, "Execute"), EXLogger(),
         fromMeToLS(commPipeWithLS), fromDEtoMe(commPipeWithDE), registers(registers)
 {
     std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, this, registers);
@@ -60,7 +60,7 @@ bool Execute::executeModuleLogic()
     SynchronizedDataPackage<Instruction> currInstr = fromDEtoMe->getA();
     while(currInstr.associatedIP != *registers->IP)
     {
-        EXLogger::logDiscard(getCurrTime(), currInstr.data, currInstr.associatedIP, *registers->IP);
+        logComplete(getCurrTime(), logDiscard(currInstr.data, currInstr.associatedIP, *registers->IP));
         if (fromDEtoMe->pendingA())
             currInstr = fromDEtoMe->getA();
         else
@@ -73,12 +73,12 @@ bool Execute::executeModuleLogic()
     // TO DO: Handle UNDEFINED & UNINITIALIZED_MEM delivered by DE differently?
     if (currInstr.data.opCode == UNINITIALIZED_MEM || currInstr.data.opCode == UNDEFINED)
     {
-        EXLogger::logDiscard(getCurrTime(), currInstr.data, currInstr.associatedIP);
+        logComplete(getCurrTime(), logDiscard(currInstr.data, currInstr.associatedIP));
         return false;
     }
 
     awaitNextTickToHandle(currInstr);
-    EXLogger::logAccept(getCurrTime(), currInstr.data, *registers->IP);
+    logComplete(getCurrTime(), logAccept(currInstr.data, *registers->IP));
     executeInstruction(currInstr.data);
     return true;
 }

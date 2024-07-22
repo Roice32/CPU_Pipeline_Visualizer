@@ -10,14 +10,13 @@ void ExecMov::executeInstruction(Instruction instr)
     word movedValue = getFinalArgValue(instr.src2, instr.param2);
     storeResultAtDest(movedValue, instr.src1, instr.param1);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, LoggablePackage(instr, 0, movedValue)); 
+    logComplete(lastTick, log(LoggablePackage(instr, 0, movedValue))); 
     moveIP(instr);
 }
 
-void ExecMov::log(LoggablePackage toLog)
+std::string ExecMov::log(LoggablePackage toLog)
 {
-    printPlainInstruction(toLog.instr);
-    printf(" (");
-    printPlainArg(toLog.instr.src1, toLog.instr.param1, false);
-    printf(" = %hu)\n", toLog.actualParam2);
+    std::string result = plainInstructionToString(toLog.instr) + " (" + plainArgToString(toLog.instr.src1, toLog.instr.param1, false);
+    result += " = " + std::to_string(toLog.actualParam2) + ")\n";
+    return result;
 }

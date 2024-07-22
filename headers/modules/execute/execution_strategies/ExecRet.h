@@ -7,7 +7,7 @@ class ExecRet: public IExecutionStrategy
 private:
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromDEtoMe;
 
-    void log(LoggablePackage toLog) override; 
+    std::string log(LoggablePackage toLog) override; 
 
 public:
     ExecRet(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
