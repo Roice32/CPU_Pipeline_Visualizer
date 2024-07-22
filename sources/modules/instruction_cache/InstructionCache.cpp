@@ -11,7 +11,8 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     SynchronizedDataPackage<address> syncReq(addr, clockSyncVars->cycleCount);
     syncReq.sentAt = getCurrTime();
     fromMetoLS->sendA(syncReq);
-    logComplete(getCurrTime(), logRequest(internalIP));
+    if (clockSyncVars->running)
+        logComplete(getCurrTime(), logRequest(internalIP));
     enterIdlingState();
     while (!fromMetoLS->pendingB() && clockSyncVars->running)
         returnFromIdlingState();

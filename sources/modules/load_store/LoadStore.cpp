@@ -86,7 +86,8 @@ bool LoadStore::executeModuleLogic()
     
     SynchronizedDataPackage<address> lsReq = fromICtoMe->getA();
     awaitNextTickToHandle(lsReq);
-    logComplete(getCurrTime(), logAccept(lsReq.data, false));
+    if (clockSyncVars->running)
+        logComplete(getCurrTime(), logAccept(lsReq.data, false));
     fetch_window responseForIC = bufferedLoadFrom(lsReq.data);
     SynchronizedDataPackage<fetch_window> syncResponse(responseForIC, lsReq.data);
     

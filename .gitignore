@@ -2,6 +2,7 @@
 .cache/*
 build/*
 program_files/*
+tests/outputs/*
 
 # Singular files
 utils/pyasm.exe
