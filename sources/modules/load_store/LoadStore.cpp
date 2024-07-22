@@ -62,7 +62,12 @@ bool LoadStore::executeModuleLogic()
     if (!EXMadeARequest && !ICMadeARequest)
         return false;
 
-    if (EXMadeARequest)
+    bool EXShouldHavePriority = true;
+    if (EXMadeARequest && ICMadeARequest)
+        if (fromEXtoMe->peekA().sentAt == getCurrTime())
+            EXShouldHavePriority = false;
+
+    if (EXMadeARequest && EXShouldHavePriority)
     {
         SynchronizedDataPackage<MemoryAccessRequest> exReq = fromEXtoMe->getA();
         awaitNextTickToHandle(exReq);

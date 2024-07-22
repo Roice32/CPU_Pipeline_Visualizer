@@ -27,6 +27,11 @@ public:
         return AQueue.pop();
     }
 
+    SentByA peekA()
+    {
+        return AQueue.peek();
+    }
+
     void sendB(SentByB b)
     {
         BQueue.push(b);
@@ -40,5 +45,10 @@ public:
     SentByB getB()
     {
         return BQueue.pop();
+    }
+
+    SentByB peekB()
+    {
+        return BQueue.peek();
     }
 };

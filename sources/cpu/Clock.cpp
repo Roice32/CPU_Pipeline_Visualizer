@@ -7,7 +7,6 @@ Clock::Clock(): clockSyncVars(std::make_shared<ClockSyncPackage>()), selfRunning
 
 void Clock::run()
 {
-    // TO DO: Fix the clock stopping leaving other threads starving
     while (*selfRunning)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(CLOCK_PERIOD_MILLIS));

@@ -34,4 +34,12 @@ public:
         container.pop();
         return data;
     }
+
+    T peek()
+    {
+        std::lock_guard<std::mutex> lock(guard);
+        assert(!container.empty() && "Popping from an empty queue");
+        T data = container.front();
+        return data;
+    }
 };
