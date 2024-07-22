@@ -11,7 +11,7 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
     word actualParam2 = getFinalArgValue(instr.src2, instr.param2);
     if (instr.opCode == MUL)
     {
-        unsigned int result = ((unsigned int) actualParam1) * actualParam2;
+        uint32_t result = ((uint32_t) actualParam1) * actualParam2;
         if (result == 0)
             *regs->flags |= ZERO;
 
@@ -39,7 +39,7 @@ std::string ExecComplexMathOp::log(LoggablePackage toLog)
 {
     std::string result = plainInstructionToString(toLog.instr) + " (r0 = ";
     result += std::to_string(toLog.actualParam1) + ", r1 = " + std::to_string(toLog.actualParam2) + ")";
-    if (toLog.actualParam1 == 0 && toLog.actualParam1 == 0)
+    if (toLog.actualParam1 == 0 && toLog.actualParam2 == 0)
         result += " Flags.Z=1";
     result += "\n";
     return result;

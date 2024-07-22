@@ -71,5 +71,4 @@ enum Flags
     ZERO = 0x8000,
     EQUAL = 0x4000,
     GREATER = 0x2000,
-    RUNNING = 0x0001
 };
