@@ -3,3 +3,7 @@ Have relevant access modifiers.
 
 Ignore invalid opcodes in DE, signal them to EX, let EX decide what to do with them based on IP.
 	- more on this when I do exceptions
+
+That one weird line of NULL's in output?
+LS & IC speaking after EX announces end_sim.
+	- apparently those two were caused by faulty script?
