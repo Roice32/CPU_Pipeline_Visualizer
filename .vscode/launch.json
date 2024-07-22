@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/cpp_processor_model",
-            "args": ["${workspaceFolder}/program_files/allOpsTest.hex", "${workspaceFolder}/program_files/dump.txt"],
+            "args": ["${workspaceFolder}/tests/inputs/jmp.hex"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

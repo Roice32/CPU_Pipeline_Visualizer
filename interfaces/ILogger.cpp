@@ -157,4 +157,10 @@ public:
         outputFile = std::make_shared<std::ofstream>(outputFilePath);
         assert(outputFile->is_open() && "Could not create specified dump output file");
     }
+
+    static void markOutputForTerminal()
+    {
+        outputFile = std::make_shared<std::ofstream>();
+        assert(!outputFile->is_open());
+    }
 };

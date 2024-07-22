@@ -16,4 +16,5 @@ protected:
 public:
     static std::string logDiscard(Instruction instr, address associatedIP, address expectedIP = 0);
     static std::string logAccept(Instruction instr, address ip);
+    static std::string logSkip(address emptyAddress, address newAwaitedIP);
 };

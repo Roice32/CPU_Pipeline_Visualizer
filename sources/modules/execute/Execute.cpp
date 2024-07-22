@@ -66,12 +66,20 @@ bool Execute::executeModuleLogic()
         else
             break;
     }
+    
+    if (currInstr.data.opCode == UNINITIALIZED_MEM)
+    {
+        if (currInstr.associatedIP == *registers->IP)
+            *registers->IP += 2;
+        logComplete(getCurrTime(), logSkip(currInstr.associatedIP, *registers->IP));
+        return false;
+    }
 
     if (currInstr.associatedIP != *registers->IP)
         return false;
-    
+
     // TO DO: Handle UNDEFINED & UNINITIALIZED_MEM delivered by DE differently?
-    if (currInstr.data.opCode == UNINITIALIZED_MEM || currInstr.data.opCode == UNDEFINED)
+    if (currInstr.data.opCode == UNDEFINED)
     {
         logComplete(getCurrTime(), logDiscard(currInstr.data, currInstr.associatedIP));
         return false;

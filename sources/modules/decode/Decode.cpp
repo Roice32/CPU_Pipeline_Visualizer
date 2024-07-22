@@ -66,24 +66,21 @@ Instruction Decode::decodeInstructionHeader(word instruction)
 bool Decode::processFetchWindow(fetch_window newBatch)
 {
     Instruction instr = decodeInstructionHeader(word (newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8)));
-    if (instr.opCode == UNINITIALIZED_MEM)
-    {
-        cache.shiftUsedWords(1);
-        return false;
-    }
-
     byte paramsCount = 0;
-    if (instr.opCode != UNDEFINED)
+    if (instr.opCode != UNINITIALIZED_MEM)
     {
-        if (instr.src1 == IMM || instr.src1 == ADDR)
+        if (instr.opCode != UNDEFINED)
         {
-            instr.param1 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * 2) * 8);
-            ++paramsCount;
-        }
-        if (instr.src2 == IMM || instr.src2 == ADDR)
-        {
-            instr.param2 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * (paramsCount == 0 ? 2 : 3)) * 8);
-            ++paramsCount;
+            if (instr.src1 == IMM || instr.src1 == ADDR)
+            {
+                instr.param1 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * 2) * 8);
+                ++paramsCount;
+            }
+            if (instr.src2 == IMM || instr.src2 == ADDR)
+            {
+                instr.param2 = newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES * (paramsCount == 0 ? 2 : 3)) * 8);
+                ++paramsCount;
+            }
         }
     }
     SynchronizedDataPackage<Instruction> syncResponse(instr, cache.getAssociatedInstrAddr());

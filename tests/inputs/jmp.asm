@@ -1,20 +1,24 @@
 .boot
-    jmp 4050
 
 .code
 main:
-first:
-    jmp second
+;first:
+;    jmp second
+;end:
+;    end_sim
+;
+;second:
+;    mov r0, 3
+;    jmp third
+;
+;third:
+;    cmp 2, 3
+;    jl end
+
+    jmp end
+
 end:
     end_sim
-
-second:
-    mov r0, 3
-    jmp third
-
-third:
-    cmp 2, 3
-    jl end
 
 .data
 someVar:

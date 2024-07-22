@@ -50,6 +50,13 @@ std::string EXLogger::logDiscard(Instruction instr, address associatedIP, addres
     return result;
 }
 
+std::string EXLogger::logSkip(address emptyAddress, address newAwaitedIP)
+{
+    std::string result = "Skiped empty instruction from #" + convDecToHex(emptyAddress) + " (trying to wait for #" + convDecToHex(newAwaitedIP) + ")\n";
+    return result;
+
+}
+
 std::string EXLogger::logAccept(Instruction instr, address ip)
 {
     std::string result = "Began executing '" + plainInstructionToString(instr) + "' from #" + convDecToHex(ip) + "\n";
