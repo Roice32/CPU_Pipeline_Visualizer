@@ -1,20 +1,10 @@
 Have consistent `const`s.
 
 Clock Synchronization
-Make sure data responses are not processed in the exact same cycle they are received.
-	- i. e., pack the data between threads with metadata (cycle it was delivered + maybe corresp. IP)
-	- so that module X+1 does not process at time N some data delivered by module X at time N
-Periods.
-Swap the delay between Same-Module-Ops and Request-Response-Ops (1st - 0 ticks, 2nd - 1 tick).
-Should Call & Ret take ~50-60 ticks each?
-	- Maaaybe?
-Check that modules actually execute stuff in the right order.
 
 Ignore invalid opcodes in DE, signal them to EX, let EX decide what to do with them based on IP.
 
 Find a way to make LoggablePackage be reasonable...
-
-*Something* keeps the process hanging at the end sometimes
 
 IC *may* sometimes deliver the jumped-to FW because of incremental run, but then behavior is undefined
 	- this slipping may occur randomly. no idea rn how to fix

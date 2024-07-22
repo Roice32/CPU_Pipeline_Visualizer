@@ -3,10 +3,7 @@
 #include <cstdio>
 #include <thread>
 
-Clock::Clock(): clockSyncVars(std::make_shared<ClockSyncPackage>()), selfRunning(std::make_shared<bool>())
-{
-    *selfRunning = true;
-};
+Clock::Clock(): clockSyncVars(std::make_shared<ClockSyncPackage>()), selfRunning(std::make_shared<bool>(true)) {};
 
 void Clock::run()
 {

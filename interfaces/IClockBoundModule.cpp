@@ -84,7 +84,5 @@ public:
             startCurrOpTimer();
             executeModuleLogic();
         }
-        printf("!!%s is done!!", moduleName);
-        fflush(stdout);
     }
 };
