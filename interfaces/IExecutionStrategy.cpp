@@ -173,9 +173,9 @@ public:
         storeDataAt(SAVE_STATE_ADDR, REGISTER_COUNT + 4, savedState);
 
         std::string message = "Calling exception handler at #" + convDecToHex(methodAddress) + "\n";
-        clock_time lastTick = refToEX->waitTillLastTick();
         *regs->IP = methodAddress;
+        clock_time lastTick = refToEX->waitTillLastTick();
         fromDEtoMe->sendB(methodAddress);
-        logComplete(refToEX->getCurrTime(), message);
+        logComplete(lastTick, message);
     }
 };

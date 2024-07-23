@@ -10,4 +10,5 @@ public:
         IClockBoundModule* refToEX,
         std::shared_ptr<CPURegisters> registers);
     void executeInstruction(SynchronizedDataPackage<Instruction> instrPackage) override;
+    std::string log(LoggablePackage toLog) override;
 };

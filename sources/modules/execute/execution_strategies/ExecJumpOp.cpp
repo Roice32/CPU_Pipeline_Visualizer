@@ -16,7 +16,6 @@ void ExecJumpOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPa
     bool lessJump = (instr.opCode == JL && !(*regs->flags & EQUAL) && !(*regs->flags & GREATER));
     bool greaterJump = (instr.opCode == JG && (*regs->flags & GREATER));
     bool zeroJump = (instr.opCode == JZ && (*regs->flags & ZERO));
-    
     clock_time lastTick = refToEX->waitTillLastTick();
     logComplete(lastTick, log(LoggablePackage(instr, jumpAddress, 0, false)));
     if (plainJump || equalJump || lessJump || greaterJump || zeroJump)
@@ -31,4 +30,12 @@ void ExecJumpOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPa
         moveIP(instr);
     }
     assert(lastTick == refToEX->getCurrTime());
+}
+
+std::string ExecJumpOp::log(LoggablePackage toLog)
+{
+    std::string result = "";
+    result += opNames.at((OpCode) toLog.instr.opCode);
+    result += " #" + convDecToHex(toLog.actualParam1);
+    return result;
 }
