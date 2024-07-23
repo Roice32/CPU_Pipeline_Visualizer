@@ -28,7 +28,8 @@ private:
 public:
     Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> commPipeWithIC,
         std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithEX,
-        std::shared_ptr<ClockSyncPackage> clockSyncVars);
+        std::shared_ptr<ClockSyncPackage> clockSyncVars,
+        std::shared_ptr<register_16b> flags);
 
     bool executeModuleLogic() override;
 };

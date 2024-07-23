@@ -9,7 +9,6 @@ ExecExcpExit::ExecExcpExit(std::shared_ptr<InterThreadCommPipe<SynchronizedDataP
 void ExecExcpExit::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    assert((*regs->stackSize - *regs->stackPointer >= (REGISTER_COUNT + 4) * WORD_BYTES) && "Stack too empty to consider return from exception handler");
     std::vector<word> restoredState = requestDataAt(SAVE_STATE_ADDR, REGISTER_COUNT + 4);
     
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)

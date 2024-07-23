@@ -3,9 +3,10 @@
 
 Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> commPipeWithIC,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithEX,
-    std::shared_ptr<ClockSyncPackage> clockSyncVars):
+    std::shared_ptr<ClockSyncPackage> clockSyncVars,
+    std::shared_ptr<register_16b> flags):
         IClockBoundModule(clockSyncVars, 2, "Decode"),
-        fromICtoMe(commPipeWithIC), fromMetoEX(commPipeWithEX), discardUntilAddr(DUMMY_ADDRESS) {};
+        fromICtoMe(commPipeWithIC), fromMetoEX(commPipeWithEX), flags(flags), discardUntilAddr(DUMMY_ADDRESS) {};
 
 byte Decode::getExpectedParamCount(byte opCode)
 {

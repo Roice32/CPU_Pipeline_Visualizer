@@ -37,6 +37,7 @@ protected:
             opNames.insert({END_SIM, "end_sim"});
             opNames.insert({PUSH, "push"});
             opNames.insert({POP, "pop"});
+            opNames.insert({EXCP_EXIT, "excp_exit"});
         }
         if (typeNames.empty())
         {

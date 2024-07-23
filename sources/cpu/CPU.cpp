@@ -15,7 +15,7 @@ CPU::CPU(std::shared_ptr<Memory> memory): memoryUnit(memory)
     
     LSModule = std::make_shared<LoadStore>(memory, fromICtoLS, fromEXtoLS, clock->clockSyncVars);
     ICModule = std::make_shared<InstructionCache>(fromICtoLS, fromICtoDE, clock->clockSyncVars, registers->IP);
-    DEModule = std::make_shared<Decode>(fromICtoDE, fromDEtoEX, clock->clockSyncVars);
+    DEModule = std::make_shared<Decode>(fromICtoDE, fromDEtoEX, clock->clockSyncVars, registers->flags);
     EXModule = std::make_shared<Execute>(fromEXtoLS, fromDEtoEX, registers, clock->clockSyncVars);
 }
 

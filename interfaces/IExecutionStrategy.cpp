@@ -159,10 +159,8 @@ public:
             logAdditional(endMessage);
             return;
         }
-
         *regs->flags |= EXCEPTION;
 
-        assert((*regs->stackPointer >= (REGISTER_COUNT + 4) * WORD_BYTES) && "Insufficient stack space for exception handler call");
         word methodAddress = requestDataAt(faultyInstr.handlerAddr, 1)[0];
         // if (methodAddress == 0) throw some hands
         std::vector<word> savedState;
