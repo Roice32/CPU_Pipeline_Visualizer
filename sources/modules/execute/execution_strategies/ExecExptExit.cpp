@@ -36,6 +36,6 @@ std::string ExecExcpExit::log(LoggablePackage toLog)
         result += typeNames.at(TypeCode(R0 + reg));
         result += "=" + std::to_string(*regs->registers[reg]);
     }
-    result += "\n";
+    result += "\n\tException flag cleared\n";
     return result;
 }

@@ -70,7 +70,7 @@ bool Decode::processFetchWindow(fetch_window newBatch)
 {
     Instruction instr = decodeInstructionHeader(word (newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8)));
     byte paramsCount = 0;
-    if (instr.opCode != UNINITIALIZED_MEM)
+    if (instr.opCode != UNINITIALIZED_MEM && instr.opCode != UNDEFINED)
     {
         if (instr.opCode != UNDEFINED)
         {
@@ -87,11 +87,17 @@ bool Decode::processFetchWindow(fetch_window newBatch)
         }
     }
     SynchronizedDataPackage<Instruction> syncResponse(instr, cache.getAssociatedInstrAddr());
+    if (instr.opCode == UNDEFINED)
+    {
+        syncResponse.exceptionTriggered = true;
+        syncResponse.excpData = UNKNOWN_OP_CODE;
+        syncResponse.handlerAddr = INVALID_DECODE_HANDL;
+    }
     cache.shiftUsedWords(paramsCount + 1);
     waitTillLastTick();
     syncResponse.sentAt = clockSyncVars->cycleCount;
     fromMetoEX->sendA(syncResponse);
-    if (instr.opCode != UNINITIALIZED_MEM && instr.opCode != UNDEFINED)
+    if (instr.opCode != UNINITIALIZED_MEM && instr.opCode != UNDEFINED && clockSyncVars->running)
         logComplete(getCurrTime(), log(LoggablePackage(syncResponse.associatedIP, instr)));
     return true;
 }

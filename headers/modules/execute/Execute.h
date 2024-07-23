@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CPURegisters.h"
+#include "GeneralExceptionHandler.h"
 #include "Instruction.h"
 #include "IClockBoundModule.cpp"
 #include "IExecutionStrategy.cpp"
@@ -13,6 +14,7 @@ private:
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromDEtoMe;
     std::unordered_map<OpCode, std::shared_ptr<IExecutionStrategy>> execStrategies;
     std::shared_ptr<CPURegisters> registers;
+    GeneralExceptionHandler exceptionHandler;
 
     word requestDataAt(word addr);
     void storeDataAt(word addr, word data);

@@ -16,7 +16,7 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
     std::shared_ptr<CPURegisters> registers,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
         IClockBoundModule(clockSyncVars, 5, "Execute"), EXLogger(),
-        fromMeToLS(commPipeWithLS), fromDEtoMe(commPipeWithDE), registers(registers)
+        fromMeToLS(commPipeWithLS), fromDEtoMe(commPipeWithDE), registers(registers), exceptionHandler(GeneralExceptionHandler(commPipeWithLS, commPipeWithDE, this, registers))
 {
     std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, commPipeWithDE, this, registers);
     execStrategies.insert({ADD, addOrSub});
@@ -80,16 +80,9 @@ bool Execute::executeModuleLogic()
     if (currInstr.associatedIP != *registers->IP)
         return false;
 
-    // TO DO: Handle UNDEFINED & UNINITIALIZED_MEM delivered by DE differently?
-    if (currInstr.data.opCode == UNDEFINED)
-    {
-        logComplete(getCurrTime(), logDiscard(currInstr.data, currInstr.associatedIP));
-        return false;
-    }
-
     awaitNextTickToHandle(currInstr);
     if (currInstr.exceptionTriggered)
-        ; // exceptionHandler->handleException(currInstr); - later with overall exceptions
+        exceptionHandler.handleException(currInstr);
     else
     {
         logComplete(getCurrTime(), logAccept(currInstr.data, *registers->IP));
