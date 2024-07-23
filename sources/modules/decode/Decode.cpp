@@ -33,23 +33,16 @@ char Decode::providedVsExpectedArgsCountDif(byte opCode, byte src1, byte src2)
     return 0;
 }
 
-bool Decode::argumentsMatchExpectedTypes(byte opCode, byte src1, byte src2)
+bool Decode::argumentsAreIncompatible(byte opCode, byte src1, byte src2)
 {
-    bool missingEitherMandatoryParam = opCode < JMP && (src1 * src2 == NULL_VAL);
-    bool immGivenAsDestination = (opCode < MUL || opCode == POP) && src1 == IMM;
-    bool missingOrExtraParamForSingleParamOp = (opCode >= JMP && opCode <= CALL || opCode == PUSH) && (src1 == NULL_VAL || src2 != NULL_VAL);
-    bool parameterWhereNoneNeeded = (opCode == RET || opCode == END_SIM) && (src1 + src2 != NULL_VAL);
+    bool param1IsStack = src1 >= SP_REG && src1 <= ST_SIZE;
+    bool param2IsStack = src2 >= SP_REG && src2 <= ST_SIZE;
+    
+    bool immGivenAsDestination = src1 == IMM && (opCode < MUL || opCode == POP);
+    bool twoStackSrcsForMov = opCode == MOV && param1IsStack && param2IsStack;
+    bool stackSrcAnywhereOtherThanMov = opCode != MOV && (param1IsStack || param2IsStack);
 
-    return !missingEitherMandatoryParam && !immGivenAsDestination && !missingOrExtraParamForSingleParamOp && !parameterWhereNoneNeeded;
-}
-
-bool Decode::argumentsAreNotMutuallyExclusive(byte opCode, byte src1, byte src2)
-{
-    if (opCode == MOV &&
-        (src1 >= SP_REG && src1 <= ST_SIZE &&
-            src2 >= SP_REG && src2 <= ST_SIZE))
-        return false;
-    return true;
+    return immGivenAsDestination || twoStackSrcsForMov || stackSrcAnywhereOtherThanMov;
 }
 
 Instruction Decode::decodeInstructionHeader(word instruction)
@@ -64,9 +57,6 @@ Instruction Decode::decodeInstructionHeader(word instruction)
 
     byte src1 = (instruction >> 5) & 0b11111;
     byte src2 = instruction & 0b11111;
-
-    //assert(argumentsMatchExpectedTypes(opCode, src1, src2) && "Wrong arguments' types for this operation");
-    assert(argumentsAreNotMutuallyExclusive(opCode, src1, src2) && "Arguments are mutually exclusive for this operation");
 
     return Instruction(opCode, src1, src2);
 }
@@ -88,6 +78,13 @@ bool Decode::processFetchWindow(fetch_window newBatch)
     {
         syncResponse.exceptionTriggered = true;
         syncResponse.excpData = argsCountDif < 0 ? NULL_SRC : NON_NULL_SRC;
+        syncResponse.handlerAddr = INVALID_DECODE_HANDL;
+    }
+
+    if (argumentsAreIncompatible(instr.opCode, instr.src1, instr.src2))
+    {
+        syncResponse.exceptionTriggered = true;
+        syncResponse.excpData = INCOMPATIBLE_PARAMS;
         syncResponse.handlerAddr = INVALID_DECODE_HANDL;
     }
 
