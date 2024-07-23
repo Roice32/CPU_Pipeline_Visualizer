@@ -96,7 +96,7 @@ protected:
         syncReq.sentAt = currTick;
         fromEXtoLS->sendA(syncReq);
         refToEX->enterIdlingState();
-        while (!fromEXtoLS->pendingB()) // TO DO: Same
+        while (!fromEXtoLS->pendingB())
             refToEX->returnFromIdlingState();
         SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
         refToEX->awaitNextTickToHandle(receivedPckg);

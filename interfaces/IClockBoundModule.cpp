@@ -9,7 +9,6 @@
 class IClockBoundModule
 {
 protected:
-    const char* moduleName; // Used mainly for debug.
     std::shared_ptr<ClockSyncPackage> clockSyncVars;
     byte clockTicksPerOperation;
     clock_time startTimeOfCurrOp;
@@ -17,7 +16,7 @@ protected:
 
 public:
     IClockBoundModule(std::shared_ptr<ClockSyncPackage> clockSyncVars, byte clockTicksPerOperation, const char* moduleName):
-        clockSyncVars(clockSyncVars), clockTicksPerOperation(clockTicksPerOperation), moduleName(moduleName) {};
+        clockSyncVars(clockSyncVars), clockTicksPerOperation(clockTicksPerOperation) {};
 
     clock_time getCurrTime()
     {
@@ -73,6 +72,11 @@ public:
             ++elapsedTimeOfCurrOp;
         }
         return clockSyncVars->cycleCount;
+    }
+
+    void endSimulation()
+    {
+        clockSyncVars->running = false;
     }
 
     virtual bool executeModuleLogic() = 0;

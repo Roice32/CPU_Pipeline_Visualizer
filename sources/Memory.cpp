@@ -53,10 +53,7 @@ byte Memory::getMemoryCell(address addr)
 {
     auto foundMemoryCell = data.find(addr);
     if (foundMemoryCell == data.end())
-    {
-        data.insert({addr, 0});
         return 0;
-    }
     return foundMemoryCell->second;
 }
 

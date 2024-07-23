@@ -10,6 +10,7 @@
 #define DECODER_CACHE_FW_SIZE 2
 #define CLOCK_PERIOD_MILLIS 1
 #define DUMMY_ADDRESS address (-1)
+#define SAVE_STATE_ADDR 0x0010
 
 using byte = uint8_t;
 using register_16b = uint16_t;
@@ -37,7 +38,8 @@ enum OpCode
     RET,
     END_SIM,
     PUSH,
-    POP
+    POP,
+    EXCP_EXIT
 };
 
 enum TypeCode
@@ -71,4 +73,26 @@ enum Flags
     ZERO = 0x8000,
     EQUAL = 0x4000,
     GREATER = 0x2000,
+    EXCEPTION = 0x0800,
+};
+
+enum ExceptionHandlerAddress
+{
+    DIV_BY_ZERO_HANDL = 0x0000,
+    INVALID_DECODE_HANDL = 0x0002,
+    MISALIGNED_ACCESS_HANDL = 0x0004,
+    STACK_OVERFLOW_HANDL = 0x0006,
+    MISALIGNED_IP_HANDL = 0x0008
+};
+
+enum Exception
+{
+    DIV_BY_ZERO = 0x0000,
+    UNKNOWN_OP_CODE = 0x0001,
+    NULL_SRC = 0x0002,
+    NON_NULL_SRC = 0x0004,
+    MUTUALLY_EXCLUSIVE_SRCS = 0x0008,
+    PUSH_OVERFLOW = 0x0000,
+    POP_OVERFLOW = 0xffff,
+    MISALIGNED_IP = 0x0000
 };

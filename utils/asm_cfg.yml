@@ -141,11 +141,41 @@
     - imm
     - addr_reg
     - addr
+    - sp:
+      - reg
+      - addr
+      - addr_reg
+      - imm
+    - stack_base:
+      - reg
+      - addr
+      - addr_reg
+      - imm
+    - stack_size:
+      - reg
+      - addr
+      - addr_reg
+      - imm
   src2:
     - reg
     - imm
     - addr_reg
     - addr
+    - sp:
+      - reg
+      - addr
+      - addr_reg
+      - imm
+    - stack_base:
+      - reg
+      - addr
+      - addr_reg
+      - imm
+    - stack_size:
+      - reg
+      - addr
+      - addr_reg
+      - imm
 
 - mnemonic: jmp
   opcode: 0x7

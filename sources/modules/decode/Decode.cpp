@@ -11,7 +11,7 @@ byte Decode::getExpectedParamCount(byte opCode)
 {
     if (opCode < JMP)
         return 2;
-    if (opCode == RET || opCode == END_SIM)
+    if (opCode == RET || opCode == END_SIM || opCode == EXCP_EXIT)
         return 0;
     return 1;
 }
@@ -50,7 +50,9 @@ Instruction Decode::decodeInstructionHeader(word instruction)
     byte opCode = instruction >> 10;
     if (opCode == UNINITIALIZED_MEM)
         return Instruction(UNINITIALIZED_MEM);
-    if (opCode == UNDEFINED || opCode > POP)
+    if (opCode == UNDEFINED || opCode > EXCP_EXIT)
+        return Instruction(UNDEFINED);
+    if (opCode == EXCP_EXIT && !(*flags & EXCEPTION))
         return Instruction(UNDEFINED);
 
     byte src1 = (instruction >> 5) & 0b11111;

@@ -9,6 +9,7 @@
 #include "ExecEndSim.h"
 #include "ExecPush.h"
 #include "ExecPop.h"
+#include "ExecExcpExit.h"
 
 Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
@@ -43,12 +44,15 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
     execStrategies.insert({RET, ret});
     std::shared_ptr<ExecEndSim> endSim = std::make_shared<ExecEndSim>(commPipeWithLS, this, registers, clockSyncVars);
     execStrategies.insert({END_SIM, endSim});
+    std::shared_ptr<ExecExcpExit> excpExit = std::make_shared<ExecExcpExit>(commPipeWithLS, commPipeWithDE, this, registers);
+    execStrategies.insert({EXCP_EXIT, excpExit});
+
+    exceptionHandler = std::make_shared<ExceptionHandler>(commPipeWithLS, commPipeWithDE, this, registers);
 };
 
 void Execute::executeInstruction(Instruction instr)
 {
-    auto foundStrategy = execStrategies.find((OpCode) instr.opCode); 
-    assert(foundStrategy != execStrategies.end() && "Undefined instruction");
+    auto foundStrategy = execStrategies.find((OpCode) instr.opCode);
     foundStrategy->second->executeInstruction(instr);
 }
 
@@ -86,7 +90,15 @@ bool Execute::executeModuleLogic()
     }
 
     awaitNextTickToHandle(currInstr);
-    logComplete(getCurrTime(), logAccept(currInstr.data, *registers->IP));
-    executeInstruction(currInstr.data);
+    if (currInstr.exceptionTriggered)
+    {
+        // logException
+        // pass to handler
+    }
+    else
+    {
+        logComplete(getCurrTime(), logAccept(currInstr.data, *registers->IP));
+        executeInstruction(currInstr.data);
+    }
     return true;
 }

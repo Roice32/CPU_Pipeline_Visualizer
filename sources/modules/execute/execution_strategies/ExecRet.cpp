@@ -9,7 +9,7 @@ ExecRet::ExecRet(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 void ExecRet::executeInstruction(Instruction instr)
 {
     assert((*regs->stackSize - *regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES) && "Stack too empty to consider return from method");
-    std::vector<word> restoredState = requestDataAt(*regs->stackBase + *regs->stackPointer, 10);
+    std::vector<word> restoredState = requestDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2);
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
         *regs->registers[REGISTER_COUNT - 1 - reg] = restoredState[reg];
     *regs->flags = restoredState[REGISTER_COUNT];
