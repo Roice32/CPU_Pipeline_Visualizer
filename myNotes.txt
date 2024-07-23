@@ -7,9 +7,14 @@ Ignore invalid opcodes in DE, signal them to EX, let EX decide what to do with t
 
 Start doing exception handling.
 
-Say that a jump is made to 0x0000 and the first bit of code is found at 0xff00. Wouldn't that cause memory overflow in Memory?
-	- maybe plain return 0 when asked about unused memory cells instead of adding them to the hashmap?
+Maybe displaying the saved state upon encountering an exception?
+
+Treat the case where an exception has no handler.
 
 Does `executeModuleLogic` still need to return bool?
 
 Make `Memory` be able to handle .vector_<num>
+
+Stress test (LS).
+
+Ask how important it really is for methods to be static.

@@ -1,9 +1,10 @@
 #include "ExecPop.h"
 
 ExecPop::ExecPop(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, refToEX, registers) {};
+        IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
 
 std::string ExecPop::log(LoggablePackage toLog)
 {
@@ -17,8 +18,9 @@ std::string ExecPop::log(LoggablePackage toLog)
     return result;
 }
 
-void ExecPop::executeInstruction(Instruction instr)
+void ExecPop::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
+    Instruction instr = instrPackage.data;
     assert((*regs->stackSize - *regs->stackPointer >= WORD_BYTES) && "Lower limit of the stack exceeded");
 
     word valueOnTop;

@@ -4,10 +4,11 @@ ExecExcpExit::ExecExcpExit(std::shared_ptr<InterThreadCommPipe<SynchronizedDataP
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, refToEX, registers), fromDEtoMe(commPipeWithDE) {};
+        IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
 
-void ExecExcpExit::executeInstruction(Instruction instr)
+void ExecExcpExit::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
+    Instruction instr = instrPackage.data;
     assert((*regs->stackSize - *regs->stackPointer >= (REGISTER_COUNT + 4) * WORD_BYTES) && "Stack too empty to consider return from exception handler");
     std::vector<word> restoredState = requestDataAt(SAVE_STATE_ADDR, REGISTER_COUNT + 4);
     

@@ -1,12 +1,14 @@
 #include "ExecMov.h"
 
 ExecMov::ExecMov(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, refToEX, registers) {};
+        IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
 
-void ExecMov::executeInstruction(Instruction instr)
+void ExecMov::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
+    Instruction instr = instrPackage.data;
     word movedValue = getFinalArgValue(instr.src2, instr.param2);
     storeResultAtDest(movedValue, instr.src1, instr.param1);
     clock_time lastTick = refToEX->waitTillLastTick();

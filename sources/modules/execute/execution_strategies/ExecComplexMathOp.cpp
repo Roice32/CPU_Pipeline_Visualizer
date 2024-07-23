@@ -1,12 +1,14 @@
 #include "ExecComplexMathOp.h"
 
 ExecComplexMathOp::ExecComplexMathOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, refToEX, registers) {};
+        IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
 
-void ExecComplexMathOp::executeInstruction(Instruction instr)
+void ExecComplexMathOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
+    Instruction instr = instrPackage.data;
     word actualParam1 = getFinalArgValue(instr.src1, instr.param1);
     word actualParam2 = getFinalArgValue(instr.src2, instr.param2);
     if (instr.opCode == MUL)
@@ -22,6 +24,15 @@ void ExecComplexMathOp::executeInstruction(Instruction instr)
     }
     else
     {
+        if(actualParam2 == 0)
+        {
+            instrPackage.exceptionTriggered = true;
+            instrPackage.handlerAddr = 0x0000;
+            instrPackage.excpData = 0x0000;
+            handleException(instrPackage);
+            return;
+        }
+
         word ratio = actualParam1 / actualParam2;
         word modulus = actualParam1 % actualParam2;
         if (ratio == 0 && modulus == 0)

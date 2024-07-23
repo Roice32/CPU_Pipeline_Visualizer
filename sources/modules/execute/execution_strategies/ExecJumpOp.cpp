@@ -4,11 +4,11 @@ ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPacka
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, refToEX, registers),
-        fromDEtoMe(commPipeWithDE) {};
+        IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
 
-void ExecJumpOp::executeInstruction(Instruction instr)
+void ExecJumpOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
+    Instruction instr = instrPackage.data;
     word jumpAddress = getFinalArgValue(instr.src1, instr.param1);
 
     bool plainJump = (instr.opCode == JMP);

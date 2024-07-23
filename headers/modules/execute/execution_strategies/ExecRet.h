@@ -5,8 +5,6 @@
 class ExecRet: public IExecutionStrategy
 {
 private:
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromDEtoMe;
-
     std::string log(LoggablePackage toLog) override; 
 
 public:
@@ -14,5 +12,5 @@ public:
         std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
         IClockBoundModule* refToEX,
         std::shared_ptr<CPURegisters> registers);
-    void executeInstruction(Instruction instr) override;
+    void executeInstruction(SynchronizedDataPackage<Instruction> instrPackage) override;
 };

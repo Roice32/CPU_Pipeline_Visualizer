@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CPURegisters.h"
-#include "ExceptionHandler.h"
 #include "Instruction.h"
 #include "IClockBoundModule.cpp"
 #include "IExecutionStrategy.cpp"
@@ -13,12 +12,11 @@ private:
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> fromMeToLS;
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromDEtoMe;
     std::unordered_map<OpCode, std::shared_ptr<IExecutionStrategy>> execStrategies;
-    std::shared_ptr<ExceptionHandler> exceptionHandler;
     std::shared_ptr<CPURegisters> registers;
 
     word requestDataAt(word addr);
     void storeDataAt(word addr, word data);
-    void executeInstruction(Instruction instr);
+    void executeInstruction(SynchronizedDataPackage<Instruction> instr);
 
 public:
     Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,

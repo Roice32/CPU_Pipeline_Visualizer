@@ -4,10 +4,11 @@ ExecRet::ExecRet(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, refToEX, registers), fromDEtoMe(commPipeWithDE) {};
+        IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
 
-void ExecRet::executeInstruction(Instruction instr)
+void ExecRet::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
+    Instruction instr = instrPackage.data;
     assert((*regs->stackSize - *regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES) && "Stack too empty to consider return from method");
     std::vector<word> restoredState = requestDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2);
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)

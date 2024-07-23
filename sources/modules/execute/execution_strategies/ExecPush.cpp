@@ -1,12 +1,14 @@
 #include "ExecPush.h"
 
 ExecPush::ExecPush(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, refToEX, registers) {};
+        IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
 
-void ExecPush::executeInstruction(Instruction instr)
+void ExecPush::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
+    Instruction instr = instrPackage.data;
     word actualParam = getFinalArgValue(instr.src1, instr.param1);
     assert((*regs->stackPointer >= WORD_BYTES) && "Upper limit of the stack exceeded");
     *regs->stackPointer -= WORD_BYTES;

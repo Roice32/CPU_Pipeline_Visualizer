@@ -2,12 +2,13 @@
 
 ExecCall::ExecCall(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
-        IClockBoundModule* refToEX,
+    IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
-        IExecutionStrategy(commPipeWithLS, refToEX, registers), fromDEtoMe(commPipeWithDE) {};
+        IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
 
-void ExecCall::executeInstruction(Instruction instr)
+void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
+    Instruction instr = instrPackage.data;
     assert((*regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES) && "Insufficient stack space for method call");
     word methodAddress = getFinalArgValue(instr.src1, instr.param1);
     std::vector<word> savedState;
