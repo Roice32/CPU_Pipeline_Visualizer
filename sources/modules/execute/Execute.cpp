@@ -69,6 +69,12 @@ bool Execute::executeModuleLogic()
             break;
     }
     
+    if (currInstr.exceptionTriggered && currInstr.excpData == MISALIGNED_IP)
+    {
+        exceptionHandler.handleException(currInstr);
+        return false;
+    }
+
     if (currInstr.data.opCode == UNINITIALIZED_MEM)
     {
         if (currInstr.associatedIP == *registers->IP)

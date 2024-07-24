@@ -123,6 +123,14 @@ bool Decode::executeModuleLogic()
     if (fromMetoEX->pendingB())
     {
         discardUntilAddr = fromMetoEX->getB();
+        if (discardUntilAddr % 2 == 1)
+        {
+            fromMetoEX->sendA(SynchronizedDataPackage<Instruction> (discardUntilAddr,
+                MISALIGNED_IP,
+                MISALIGNED_IP_HANDL));
+            discardUntilAddr = DUMMY_ADDRESS;
+            return false;
+        }
         cache.discardCurrent();
         logComplete(getCurrTime(), logJump(discardUntilAddr));
         while (fromICtoMe->pendingA() && clockSyncVars->running)
