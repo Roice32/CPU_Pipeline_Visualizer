@@ -18,3 +18,5 @@ Make `Memory` be able to handle .vector_<num>
 Stress test (LS).
 
 Ask how important it really is for methods to be static.
+
+Maybe slap a couple `inline`'s here and there?

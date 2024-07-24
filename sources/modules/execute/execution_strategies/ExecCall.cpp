@@ -10,18 +10,34 @@ void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
 {
     Instruction instr = instrPackage.data;
     assert((*regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES) && "Insufficient stack space for method call");
-    word methodAddress = getFinalArgValue(instr.src1, instr.param1);
+
+    SynchronizedDataPackage<word> methodAddressPckg = getFinalArgValue(instr.src1, instr.param1);
+    if (methodAddressPckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            methodAddressPckg.excpData,
+            MISALIGNED_ACCESS_HANDL));
+        return;
+    }
+    
     std::vector<word> savedState;
     for (byte reg = REGISTER_COUNT - 1; reg < REGISTER_COUNT; --reg)
         savedState.push_back(*regs->registers[reg]);
     savedState.push_back(*regs->flags);
     savedState.push_back(*regs->IP + 2 * WORD_BYTES);
     *regs->stackPointer -= (REGISTER_COUNT + 2) * WORD_BYTES;
-    storeDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2, savedState);
+    SynchronizedDataPackage<std::vector<word>> storeResultPckg = storeDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2, savedState);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, methodAddress)));
-    *regs->IP = methodAddress;
-    fromDEtoMe->sendB(methodAddress);
+    if (storeResultPckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            storeResultPckg.excpData,
+            MISALIGNED_ACCESS_HANDL));
+        return;
+    }
+    logComplete(lastTick, log(LoggablePackage(instr, methodAddressPckg.data)));
+    *regs->IP = methodAddressPckg.data;
+    fromDEtoMe->sendB(methodAddressPckg.data);
 }
 
 std::string ExecCall::log(LoggablePackage toLog)

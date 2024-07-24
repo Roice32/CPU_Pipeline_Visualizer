@@ -9,10 +9,28 @@ ExecMov::ExecMov(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 void ExecMov::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    word movedValue = getFinalArgValue(instr.src2, instr.param2);
-    storeResultAtDest(movedValue, instr.src1, instr.param1);
+    SynchronizedDataPackage<word> movedValuePckg = getFinalArgValue(instr.src2, instr.param2);
+
+    if (movedValuePckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            movedValuePckg.excpData,
+            MISALIGNED_ACCESS_HANDL));
+        return;
+    }
+
+    SynchronizedDataPackage<word> storeResultPckg = storeResultAtDest(movedValuePckg.data,instr.src1, instr.param1);
+    
+    if (storeResultPckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            storeResultPckg.excpData,
+            MISALIGNED_ACCESS_HANDL));
+        return;
+    }
+    
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, 0, movedValue))); 
+    logComplete(lastTick, log(LoggablePackage(instr, 0, movedValuePckg.data))); 
     moveIP(instr);
 }
 

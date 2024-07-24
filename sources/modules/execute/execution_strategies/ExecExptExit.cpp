@@ -9,16 +9,16 @@ ExecExcpExit::ExecExcpExit(std::shared_ptr<InterThreadCommPipe<SynchronizedDataP
 void ExecExcpExit::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    std::vector<word> restoredState = requestDataAt(SAVE_STATE_ADDR, REGISTER_COUNT + 4);
+    SynchronizedDataPackage<std::vector<word>> restoredStatePckg = requestDataAt(SAVE_STATE_ADDR, REGISTER_COUNT + 4);
     
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
-        *regs->registers[reg] = restoredState[4 + reg];
-    *regs->flags = restoredState[2];
-    *regs->stackPointer = restoredState[1];
-    *regs->IP = restoredState[0];
+        *regs->registers[reg] = restoredStatePckg.data[4 + reg];
+    *regs->flags = restoredStatePckg.data[2];
+    *regs->stackPointer = restoredStatePckg.data[1];
+    *regs->IP = restoredStatePckg.data[0];
     *regs->flags &= ~EXCEPTION;
 
-    fromDEtoMe->sendB(restoredState[0]);
+    fromDEtoMe->sendB(restoredStatePckg.data[0]);
     clock_time lastTick = refToEX->waitTillLastTick();
     logComplete(lastTick, log(LoggablePackage(instr)));   
 }

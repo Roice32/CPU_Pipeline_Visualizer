@@ -9,11 +9,20 @@ ExecComplexMathOp::ExecComplexMathOp(std::shared_ptr<InterThreadCommPipe<Synchro
 void ExecComplexMathOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    word actualParam1 = getFinalArgValue(instr.src1, instr.param1);
-    word actualParam2 = getFinalArgValue(instr.src2, instr.param2);
+    SynchronizedDataPackage<word> actualParam1Pckg = getFinalArgValue(instr.src1, instr.param1);
+    SynchronizedDataPackage<word> actualParam2Pckg = getFinalArgValue(instr.src2, instr.param2);
+
+    if (actualParam1Pckg.exceptionTriggered || actualParam2Pckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            (actualParam1Pckg.exceptionTriggered ? actualParam1Pckg.excpData : actualParam2Pckg.excpData),
+            MISALIGNED_ACCESS_HANDL));
+        return;
+    }
+
     if (instr.opCode == MUL)
     {
-        uint32_t result = ((uint32_t) actualParam1) * actualParam2;
+        uint32_t result = ((uint32_t) actualParam1Pckg.data) * actualParam2Pckg.data;
         if (result == 0)
             *regs->flags |= ZERO;
 
@@ -24,17 +33,16 @@ void ExecComplexMathOp::executeInstruction(SynchronizedDataPackage<Instruction> 
     }
     else
     {
-        if(actualParam2 == 0)
+        if(actualParam2Pckg.data == 0)
         {
-            instrPackage.exceptionTriggered = true;
-            instrPackage.handlerAddr = 0x0000;
-            instrPackage.excpData = 0x0000;
-            handleException(instrPackage);
+            handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+                DIV_BY_ZERO,
+                DIV_BY_ZERO_HANDL));
             return;
         }
 
-        word ratio = actualParam1 / actualParam2;
-        word modulus = actualParam1 % actualParam2;
+        word ratio = actualParam1Pckg.data / actualParam2Pckg.data;
+        word modulus = actualParam1Pckg.data % actualParam2Pckg.data;
         if (ratio == 0 && modulus == 0)
             *regs->flags |= ZERO;
         storeResultAtDest(ratio, R0);

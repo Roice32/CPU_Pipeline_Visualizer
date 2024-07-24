@@ -33,6 +33,13 @@ char Decode::providedVsExpectedArgsCountDif(byte opCode, byte src1, byte src2)
     return 0;
 }
 
+bool Decode::argumentIsUndefined(byte src)
+{
+    return !((src >= NULL_VAL && src <= ST_SIZE) ||
+        (src >= R0 && src <= R7) ||
+        (src >= ADDR_R0 && src <= ADDR_R7));
+}
+
 bool Decode::argumentsAreIncompatible(byte opCode, byte src1, byte src2)
 {
     bool param1IsStack = src1 >= SP_REG && src1 <= ST_SIZE;
@@ -40,9 +47,9 @@ bool Decode::argumentsAreIncompatible(byte opCode, byte src1, byte src2)
     
     bool immGivenAsDestination = src1 == IMM && (opCode < MUL || opCode == POP);
     bool twoStackSrcsForMov = opCode == MOV && param1IsStack && param2IsStack;
-    bool stackSrcAnywhereOtherThanMov = opCode != MOV && (param1IsStack || param2IsStack);
+    bool stackSrcAnywhereOtherThanMovOrCmp = opCode != MOV && opCode != CMP && (param1IsStack || param2IsStack);
 
-    return immGivenAsDestination || twoStackSrcsForMov || stackSrcAnywhereOtherThanMov;
+    return immGivenAsDestination || twoStackSrcsForMov || stackSrcAnywhereOtherThanMovOrCmp;
 }
 
 Instruction Decode::decodeInstructionHeader(word instruction)
@@ -81,7 +88,7 @@ bool Decode::processFetchWindow(fetch_window newBatch)
         syncResponse.handlerAddr = INVALID_DECODE_HANDL;
     }
 
-    if (argumentsAreIncompatible(instr.opCode, instr.src1, instr.src2))
+    if (argumentIsUndefined(instr.src1) || argumentIsUndefined(instr.src2) || argumentsAreIncompatible(instr.opCode, instr.src1, instr.src2))
     {
         syncResponse.exceptionTriggered = true;
         syncResponse.excpData = INCOMPATIBLE_PARAMS;

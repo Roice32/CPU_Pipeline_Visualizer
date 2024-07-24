@@ -10,13 +10,22 @@ void ExecRet::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
 {
     Instruction instr = instrPackage.data;
     assert((*regs->stackSize - *regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES) && "Stack too empty to consider return from method");
-    std::vector<word> restoredState = requestDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2);
+    SynchronizedDataPackage<std::vector<word>> restoredStatePckg = requestDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2);
+
+    if (restoredStatePckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            restoredStatePckg.excpData,
+            MISALIGNED_ACCESS_HANDL));
+        return;
+    }
+
     for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
-        *regs->registers[REGISTER_COUNT - 1 - reg] = restoredState[reg];
-    *regs->flags = restoredState[REGISTER_COUNT];
-    *regs->IP = restoredState[REGISTER_COUNT + 1];
+        *regs->registers[REGISTER_COUNT - 1 - reg] = restoredStatePckg.data[reg];
+    *regs->flags = restoredStatePckg.data[REGISTER_COUNT];
+    *regs->IP = restoredStatePckg.data[REGISTER_COUNT + 1];
     *regs->stackPointer += (REGISTER_COUNT + 2) * WORD_BYTES;
-    fromDEtoMe->sendB(restoredState[REGISTER_COUNT + 1]);
+    fromDEtoMe->sendB(restoredStatePckg.data[REGISTER_COUNT + 1]);
     clock_time lastTick = refToEX->waitTillLastTick();
     logComplete(lastTick, log(LoggablePackage(instr)));
 }

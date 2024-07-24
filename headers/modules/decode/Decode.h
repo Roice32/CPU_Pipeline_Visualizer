@@ -20,6 +20,7 @@ private:
 
     static byte getExpectedParamCount(byte opCode);
     static char providedVsExpectedArgsCountDif(byte opCode, byte src1, byte src2);
+    static bool argumentIsUndefined(byte src);
     static bool argumentsAreIncompatible(byte opCode, byte src1, byte src2);
     Instruction decodeInstructionHeader(word header);
     bool processFetchWindow(fetch_window newBatch);

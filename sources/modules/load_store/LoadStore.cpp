@@ -71,13 +71,24 @@ bool LoadStore::executeModuleLogic()
     {
         SynchronizedDataPackage<MemoryAccessRequest> exReq = fromEXtoMe->getA();
         awaitNextTickToHandle(exReq);
-        logComplete(getCurrTime(), logAccept(exReq.data.reqAddr, true));
+        SynchronizedDataPackage<std::vector<word>> syncResponse{};
         std::vector<word> responseForEX = handleRequestFromEX(exReq.data);
+        if (exReq.data.reqAddr % 2 == 1)
+        {
+            syncResponse.exceptionTriggered = true;
+            syncResponse.excpData = exReq.data.reqAddr;
+            syncResponse.handlerAddr = MISALIGNED_ACCESS_HANDL;
+        }
+        else
+        {
+            logComplete(getCurrTime(), logAccept(exReq.data.reqAddr, true));
+            responseForEX = handleRequestFromEX(exReq.data);
+            syncResponse.data = responseForEX;
+        }
         clock_time lastTick = waitTillLastTick();
-        SynchronizedDataPackage<std::vector<word>> syncResponse(responseForEX);
         syncResponse.sentAt = lastTick;
         fromEXtoMe->sendB(syncResponse);
-        if (exReq.data.isStoreOperation)
+        if (exReq.data.isStoreOperation && !syncResponse.exceptionTriggered)
             logComplete(lastTick, log(LoggablePackage(exReq.data.reqData, exReq.data.reqAddr, true, true)));
         else
             logComplete(lastTick, log(LoggablePackage(responseForEX, exReq.data.reqAddr, false, true)));

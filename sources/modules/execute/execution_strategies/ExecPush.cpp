@@ -9,12 +9,31 @@ ExecPush::ExecPush(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<M
 void ExecPush::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    word actualParam = getFinalArgValue(instr.src1, instr.param1);
+    SynchronizedDataPackage<word> actualParamPckg = getFinalArgValue(instr.src1, instr.param1);
+
+    if (actualParamPckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            actualParamPckg.excpData,
+            MISALIGNED_ACCESS_HANDL));
+        return;
+    }
+
     assert((*regs->stackPointer >= WORD_BYTES) && "Upper limit of the stack exceeded");
     *regs->stackPointer -= WORD_BYTES;
     word newSP = *regs->stackBase + *regs->stackPointer;
-    storeDataAt(newSP, 1, std::vector<word> { actualParam });
+
+    SynchronizedDataPackage<std::vector<word>> storeResultPckg = storeDataAt(newSP, 1, std::vector<word> { actualParamPckg.data });
+
+    if (storeResultPckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            storeResultPckg.excpData,
+            MISALIGNED_ACCESS_HANDL));
+        return;
+    }
+
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, actualParam)));
+    logComplete(lastTick, log(LoggablePackage(instr, actualParamPckg.data)));
 }

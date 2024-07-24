@@ -9,19 +9,28 @@ ExecSimpleMathOp::ExecSimpleMathOp(std::shared_ptr<InterThreadCommPipe<Synchroni
 void ExecSimpleMathOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    word actualParam1 = getFinalArgValue(instr.src1, instr.param1);
-    word actualParam2 = getFinalArgValue(instr.src2, instr.param2);
+    SynchronizedDataPackage<word> actualParam1Pckg = getFinalArgValue(instr.src1, instr.param1);
+    SynchronizedDataPackage<word> actualParam2Pckg = getFinalArgValue(instr.src2, instr.param2);
+
+    if (actualParam1Pckg.exceptionTriggered || actualParam2Pckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            (actualParam1Pckg.exceptionTriggered ? actualParam1Pckg.excpData : actualParam2Pckg.excpData),
+            MISALIGNED_ACCESS_HANDL));
+            return;
+    }
+
     word result;
     if (instr.opCode == ADD)
-        result = actualParam1 + actualParam2;
+        result = actualParam1Pckg.data + actualParam2Pckg.data;
     else
-        result = actualParam1 - actualParam2;
+        result = actualParam1Pckg.data - actualParam2Pckg.data;
     storeResultAtDest(result, instr.src1, instr.param1);
     if (result == 0)
         *regs->flags |= ZERO;
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, actualParam1, result)));
+    logComplete(lastTick, log(LoggablePackage(instr, actualParam1Pckg.data, result)));
 }
 
 std::string ExecSimpleMathOp::log(LoggablePackage toLog)

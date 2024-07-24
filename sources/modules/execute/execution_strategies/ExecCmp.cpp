@@ -10,17 +10,27 @@ void ExecCmp::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
 {
     Instruction instr = instrPackage.data;
     *regs->flags &= ~(ZERO | EQUAL | GREATER);
-    word actualParam1 = getFinalArgValue(instr.src1, instr.param1);
-    word actualParam2 = getFinalArgValue(instr.src2, instr.param2);
-    if (actualParam1 == 0 && actualParam2 == 0)
+
+    SynchronizedDataPackage<word> actualParam1Pckg = getFinalArgValue(instr.src1, instr.param1);
+    SynchronizedDataPackage<word> actualParam2Pckg = getFinalArgValue(instr.src2, instr.param2);
+    
+    if (actualParam1Pckg.exceptionTriggered || actualParam2Pckg.exceptionTriggered)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP, 
+            (actualParam1Pckg.exceptionTriggered ? actualParam1Pckg.excpData : actualParam2Pckg.excpData),
+            MISALIGNED_ACCESS_HANDL));
+        return;
+    }
+
+    if (actualParam1Pckg.data == 0 && actualParam2Pckg.data == 0)
         *regs->flags |= ZERO;
-    if (actualParam1 == actualParam2)
+    if (actualParam1Pckg.data == actualParam2Pckg.data)
         *regs->flags |= EQUAL;
-    if (actualParam1 > actualParam2)
+    if (actualParam1Pckg.data > actualParam2Pckg.data)
         *regs->flags |= GREATER;
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, actualParam1, actualParam2)));
+    logComplete(lastTick, log(LoggablePackage(instr, actualParam1Pckg.data, actualParam2Pckg.data)));
 }
 
 std::string ExecCmp::log(LoggablePackage toLog)

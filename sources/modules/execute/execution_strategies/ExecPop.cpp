@@ -23,15 +23,31 @@ void ExecPop::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
     Instruction instr = instrPackage.data;
     assert((*regs->stackSize - *regs->stackPointer >= WORD_BYTES) && "Lower limit of the stack exceeded");
 
-    word valueOnTop;
+    SynchronizedDataPackage<std::vector<word>> valueOnTopPckg;
     if (instr.src1 != NULL_VAL)
     {
         word topOfStack = *regs->stackBase + *regs->stackPointer;
-        valueOnTop = requestDataAt(topOfStack, 1)[0];
-        storeResultAtDest(valueOnTop, instr.src1, instr.param1);
+        valueOnTopPckg = requestDataAt(topOfStack, 1);
+
+        if (valueOnTopPckg.exceptionTriggered)
+        {
+            handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+                valueOnTopPckg.excpData, MISALIGNED_ACCESS_HANDL));
+            return;
+        }
+
+        SynchronizedDataPackage<word> storeResultPckg = storeResultAtDest(valueOnTopPckg.data[0],instr.src1, instr.param1);
+
+        if (storeResultPckg.exceptionTriggered)
+        {
+            handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+                storeResultPckg.excpData,
+                MISALIGNED_ACCESS_HANDL));
+            return;
+        }
     }
     *regs->stackPointer += WORD_BYTES;
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, valueOnTop)));
+    logComplete(lastTick, log(LoggablePackage(instr, valueOnTopPckg.data[0])));
 }
