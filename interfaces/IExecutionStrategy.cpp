@@ -182,14 +182,6 @@ public:
 
         SynchronizedDataPackage<std::vector<word>> methodAddressPckg = requestDataAt(faultyInstr.handlerAddr, 1);
         word methodAddress = methodAddressPckg.data[0];
-        
-        if (methodAddress == 0)
-        {
-            refToEX->endSimulation();
-            std::string endMessage = "\t!EX forcefully ends simulation at T=" + std::to_string(refToEX->getCurrTime()) + " due to exception with no handler!\n";
-            logAdditional(endMessage);
-            return;
-        }
 
         std::vector<word> savedState;
         savedState.push_back(faultyInstr.associatedIP);
