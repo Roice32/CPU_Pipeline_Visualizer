@@ -55,12 +55,12 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
     }
 }
 
-bool LoadStore::executeModuleLogic()
+void LoadStore::executeModuleLogic()
 {
     bool EXMadeARequest = fromEXtoMe->pendingA();
     bool ICMadeARequest = fromICtoMe->pendingA();
     if (!EXMadeARequest && !ICMadeARequest)
-        return false;
+        return;
 
     bool EXShouldHavePriority = true;
     if (EXMadeARequest && ICMadeARequest)
@@ -92,7 +92,7 @@ bool LoadStore::executeModuleLogic()
             logComplete(lastTick, log(LoggablePackage(exReq.data.reqData, exReq.data.reqAddr, true, true)));
         else
             logComplete(lastTick, log(LoggablePackage(responseForEX, exReq.data.reqAddr, false, true)));
-        return true;
+        return;
     }
     
     SynchronizedDataPackage<address> lsReq = fromICtoMe->getA();
@@ -107,5 +107,5 @@ bool LoadStore::executeModuleLogic()
     fromICtoMe->sendB(syncResponse);
     if (clockSyncVars->running)
         logComplete(lastTick, log(LoggablePackage(responseForIC, lsReq.data)));
-    return true;
+    return;
 }

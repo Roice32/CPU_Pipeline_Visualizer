@@ -77,7 +77,7 @@ public:
         clockSyncVars->running = false;
     }
 
-    virtual bool executeModuleLogic() = 0;
+    virtual void executeModuleLogic() = 0;
 
     virtual void run()
     {

@@ -23,5 +23,5 @@ public:
         std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithEX,
         std::shared_ptr<ClockSyncPackage> clockSyncVars);
 
-    bool executeModuleLogic() override;
+    void executeModuleLogic() override;
 };

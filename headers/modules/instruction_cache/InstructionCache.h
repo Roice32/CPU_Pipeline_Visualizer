@@ -20,6 +20,6 @@ public:
         std::shared_ptr<ClockSyncPackage> clockSyncVars,
         std::shared_ptr<register_16b> ip);
     
-    bool executeModuleLogic() override;
+    void executeModuleLogic() override;
     void run() override;
 };

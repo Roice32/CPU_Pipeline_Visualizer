@@ -118,7 +118,7 @@ bool Decode::processFetchWindow(fetch_window newBatch)
     return true;
 }
 
-bool Decode::executeModuleLogic()
+void Decode::executeModuleLogic()
 {
     if (fromMetoEX->pendingB())
     {
@@ -129,7 +129,7 @@ bool Decode::executeModuleLogic()
                 MISALIGNED_IP,
                 MISALIGNED_IP_HANDL));
             discardUntilAddr = DUMMY_ADDRESS;
-            return false;
+            return;
         }
         cache.discardCurrent();
         logComplete(getCurrTime(), logJump(discardUntilAddr));
@@ -153,11 +153,14 @@ bool Decode::executeModuleLogic()
     }
 
     if (discardUntilAddr != DUMMY_ADDRESS)
-        return false;
+        return;
 
     if (cache.canProvideFullInstruction())
-        return processFetchWindow(cache.getFullInstrFetchWindow());
-    
+    {
+        processFetchWindow(cache.getFullInstrFetchWindow());
+        return;
+    }
+
     if (fromICtoMe->pendingA())
     {
         SynchronizedDataPackage<fetch_window> receivedFW = fromICtoMe->getA();
@@ -166,8 +169,6 @@ bool Decode::executeModuleLogic()
             cache.overwriteCache(receivedFW.data, receivedFW.associatedIP);
         else
             cache.concatNewFW(receivedFW.data);
-        return processFetchWindow(cache.getFullInstrFetchWindow());
+        processFetchWindow(cache.getFullInstrFetchWindow());
     }
-    else
-        return false;
 }

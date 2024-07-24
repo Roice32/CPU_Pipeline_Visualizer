@@ -54,10 +54,10 @@ void Execute::executeInstruction(SynchronizedDataPackage<Instruction> instr)
     foundStrategy->second->executeInstruction(instr);
 }
 
-bool Execute::executeModuleLogic()
+void Execute::executeModuleLogic()
 {
     if (!fromDEtoMe->pendingA())
-        return false;
+        return;
 
     SynchronizedDataPackage<Instruction> currInstr = fromDEtoMe->getA();
     while(currInstr.associatedIP != *registers->IP)
@@ -72,7 +72,7 @@ bool Execute::executeModuleLogic()
     if (currInstr.exceptionTriggered && currInstr.excpData == MISALIGNED_IP)
     {
         exceptionHandler.handleException(currInstr);
-        return false;
+        return;
     }
 
     if (currInstr.data.opCode == UNINITIALIZED_MEM)
@@ -80,11 +80,11 @@ bool Execute::executeModuleLogic()
         if (currInstr.associatedIP == *registers->IP)
             *registers->IP += 2;
         logComplete(getCurrTime(), logSkip(currInstr.associatedIP, *registers->IP));
-        return false;
+        return;
     }
 
     if (currInstr.associatedIP != *registers->IP)
-        return false;
+        return;
 
     awaitNextTickToHandle(currInstr);
     if (currInstr.exceptionTriggered)
@@ -94,5 +94,4 @@ bool Execute::executeModuleLogic()
         logComplete(getCurrTime(), logAccept(currInstr.data, *registers->IP));
         executeInstruction(currInstr);
     }
-    return true;
 }

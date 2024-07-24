@@ -25,7 +25,7 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     return receivedPckg.data;
 }
 
-bool InstructionCache::executeModuleLogic()
+void InstructionCache::executeModuleLogic()
 {
     if (fromMetoDE->pendingB())
     {
@@ -48,7 +48,6 @@ bool InstructionCache::executeModuleLogic()
         if (clockSyncVars->running)
             logComplete(lastTick, log(LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch)));
     }
-    return true;
 }
 
 void InstructionCache::run()
