@@ -1,10 +1,8 @@
 #pragma once
 
-#include "ClockSyncPackage.h"
 #include "LSLogger.h"
 #include "MemoryAccessRequest.h"
 #include "InterThreadCommPipe.h"
-#include "SynchronizedDataPackage.h"
 #include "IMemoryHandler.cpp"
 #include "IClockBoundModule.cpp"
 

@@ -2,18 +2,11 @@ Have consistent `const`s.
 Have relevant access modifiers.
 Clean-up #include's
 
-Ignore invalid opcodes in DE, signal them to EX, let EX decide what to do with them based on IP.
-	- more on this when I do exceptions
-
-Start doing exception handling.
-
 Maybe displaying the saved state upon encountering an exception?
 
 Treat the case where an exception has no handler.
 
 Does `executeModuleLogic` still need to return bool?
-
-Make `Memory` be able to handle .vector_<num>
 
 Stress test (LS).
 

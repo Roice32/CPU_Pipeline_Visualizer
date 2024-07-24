@@ -2,8 +2,6 @@
 
 #include "LoadStore.h"
 
-#include <memory>
-
 class IFetchWindowRequester
 {
 protected:

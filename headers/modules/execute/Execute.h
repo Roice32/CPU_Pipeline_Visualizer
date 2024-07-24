@@ -1,11 +1,6 @@
 #pragma once
 
-#include "CPURegisters.h"
 #include "GeneralExceptionHandler.h"
-#include "Instruction.h"
-#include "IClockBoundModule.cpp"
-#include "IExecutionStrategy.cpp"
-#include "SynchronizedDataPackage.h"
 
 class Execute: public IClockBoundModule, public EXLogger
 {

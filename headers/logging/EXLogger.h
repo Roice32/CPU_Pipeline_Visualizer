@@ -2,8 +2,6 @@
 
 #include "ILogger.cpp"
 
-#include <cstdio>
-
 class EXLogger: public ILogger
 {
 protected:

@@ -1,12 +1,8 @@
 #pragma once
 
-#include "Config.h"
 #include "ICLogger.h"
 #include "InterThreadCommPipe.h"
-#include "SynchronizedDataPackage.h"
 #include "IClockBoundModule.cpp"
-
-#include <memory>
 
 class InstructionCache: public IClockBoundModule, public ICLogger
 {

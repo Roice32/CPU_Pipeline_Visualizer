@@ -2,12 +2,8 @@
 
 #include "DELogger.h"
 #include "InterThreadCommPipe.h"
-#include "Instruction.h"
 #include "DecoderCache.h"
-#include "SynchronizedDataPackage.h"
 #include "IClockBoundModule.cpp"
-
-#include <memory>
 
 class Decode: public IClockBoundModule, public DELogger
 {

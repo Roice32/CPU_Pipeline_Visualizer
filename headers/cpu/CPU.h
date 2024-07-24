@@ -1,6 +1,5 @@
 #pragma once
 
-#include "CPURegisters.h"
 #include "LoadStore.h"
 #include "InstructionCache.h"
 #include "Decode.h"
