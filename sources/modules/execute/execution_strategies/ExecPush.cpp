@@ -19,7 +19,14 @@ void ExecPush::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
         return;
     }
 
-    assert((*regs->stackPointer >= WORD_BYTES) && "Upper limit of the stack exceeded");
+    if(*regs->stackSize < *regs->stackPointer || *regs->stackPointer < WORD_BYTES)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            PUSH_OVERFLOW,
+            STACK_OVERFLOW_HANDL));
+        return;
+    }
+
     *regs->stackPointer -= WORD_BYTES;
     word newSP = *regs->stackBase + *regs->stackPointer;
 

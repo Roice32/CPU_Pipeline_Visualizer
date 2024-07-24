@@ -9,7 +9,14 @@ ExecCall::ExecCall(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<M
 void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    assert((*regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES) && "Insufficient stack space for method call");
+
+    if (*regs->stackSize < *regs->stackPointer || *regs->stackPointer < (REGISTER_COUNT + 2) * WORD_BYTES)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            PUSH_OVERFLOW,
+            STACK_OVERFLOW_HANDL));
+        return;
+    }
 
     SynchronizedDataPackage<word> methodAddressPckg = getFinalArgValue(instr.src1, instr.param1);
     if (methodAddressPckg.exceptionTriggered)

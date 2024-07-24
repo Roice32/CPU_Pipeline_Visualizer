@@ -21,7 +21,14 @@ std::string ExecPop::log(LoggablePackage toLog)
 void ExecPop::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    assert((*regs->stackSize - *regs->stackPointer >= WORD_BYTES) && "Lower limit of the stack exceeded");
+
+    if (*regs->stackSize < *regs->stackPointer || *regs->stackSize - *regs->stackPointer < WORD_BYTES)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            POP_OVERFLOW,
+            STACK_OVERFLOW_HANDL));
+        return;
+    }
 
     SynchronizedDataPackage<std::vector<word>> valueOnTopPckg;
     if (instr.src1 != NULL_VAL)

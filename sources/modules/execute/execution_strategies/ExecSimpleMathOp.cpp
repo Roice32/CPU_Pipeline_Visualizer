@@ -17,7 +17,7 @@ void ExecSimpleMathOp::executeInstruction(SynchronizedDataPackage<Instruction> i
         handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
             (actualParam1Pckg.exceptionTriggered ? actualParam1Pckg.excpData : actualParam2Pckg.excpData),
             MISALIGNED_ACCESS_HANDL));
-            return;
+        return;
     }
 
     word result;

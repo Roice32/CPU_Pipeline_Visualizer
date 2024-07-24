@@ -9,7 +9,15 @@ ExecRet::ExecRet(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 void ExecRet::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    assert((*regs->stackSize - *regs->stackPointer >= (REGISTER_COUNT + 2) * WORD_BYTES) && "Stack too empty to consider return from method");
+
+    if(*regs->stackSize < *regs->stackPointer || *regs->stackSize - *regs->stackPointer < (REGISTER_COUNT + 2) * WORD_BYTES)
+    {
+        handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
+            POP_OVERFLOW,
+            STACK_OVERFLOW_HANDL));
+        return;
+    }
+
     SynchronizedDataPackage<std::vector<word>> restoredStatePckg = requestDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2);
 
     if (restoredStatePckg.exceptionTriggered)
