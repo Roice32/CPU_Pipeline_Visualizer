@@ -18,7 +18,7 @@ void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
         return;
     }
 
-    SynchronizedDataPackage<word> methodAddressPckg = getFinalArgValue(instr.src1, instr.param1);
+    SynchronizedDataPackage<std::vector<word>> methodAddressPckg = getFinalArgValue(instr.src1, instr.param1);
     if (methodAddressPckg.exceptionTriggered)
     {
         handleException(SynchronizedDataPackage<Instruction> (*regs->IP,
@@ -42,9 +42,9 @@ void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
             MISALIGNED_ACCESS_HANDL));
         return;
     }
-    logComplete(lastTick, log(LoggablePackage(instr, methodAddressPckg.data)));
-    *regs->IP = methodAddressPckg.data;
-    fromDEtoMe->sendB(methodAddressPckg.data);
+    logComplete(lastTick, log(LoggablePackage(instr, methodAddressPckg.data[0])));
+    *regs->IP = methodAddressPckg.data[0];
+    fromDEtoMe->sendB(methodAddressPckg.data[0]);
 }
 
 std::string ExecCall::log(LoggablePackage toLog)

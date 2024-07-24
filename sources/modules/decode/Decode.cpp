@@ -37,6 +37,7 @@ bool Decode::argumentIsUndefined(byte src)
 {
     return !((src >= NULL_VAL && src <= ST_SIZE) ||
         (src >= R0 && src <= R7) ||
+        (src >= Z0 && src <= Z3) || 
         (src >= ADDR_R0 && src <= ADDR_R7));
 }
 
@@ -44,12 +45,30 @@ bool Decode::argumentsAreIncompatible(byte opCode, byte src1, byte src2)
 {
     bool param1IsStack = src1 >= SP_REG && src1 <= ST_SIZE;
     bool param2IsStack = src2 >= SP_REG && src2 <= ST_SIZE;
+    bool param1IsZReg = src1 >= Z0 && src1 <= Z3;
+    bool param2IzZReg = src2 >= Z0 && src2 <= Z3;
     
-    bool immGivenAsDestination = src1 == IMM && (opCode < MUL || opCode == POP);
-    bool twoStackSrcsForMov = opCode == MOV && param1IsStack && param2IsStack;
-    bool stackSrcAnywhereOtherThanMovOrCmp = opCode != MOV && opCode != CMP && (param1IsStack || param2IsStack);
+    bool immGivenAsDestination = src1 == IMM && 
+        (opCode < MUL || opCode == POP);
+    bool twoStackSrcsForMov = opCode == MOV && 
+        param1IsStack && param2IsStack;
+    bool stackSrcAnywhereOtherThanMovOrCmp = opCode != MOV && 
+        opCode != CMP && (param1IsStack || param2IsStack);
+    bool zRegWithForbiddenOp = (param1IsZReg || param2IsStack) && 
+        !(opCode >= ADD && opCode <= DIV);
+    bool arithmOpWithOnlyOneZReg = (param1IsZReg || param2IzZReg) && 
+        !(param1IsZReg && param2IzZReg) &&
+        (opCode == ADD || opCode == SUB || opCode == MUL || opCode == DIV);
+    bool movWithZRegAndNonAddress = opCode == MOV &&
+        ((param1IsZReg ? src2 != ADDR && !(src2 >= ADDR_R0 && src2 <= ADDR_R7) : !param2IzZReg) ||
+        (param2IzZReg ? src1 != ADDR && !(src1 >= ADDR_R0 && src1 <= ADDR_R0) : !param1IsZReg));
 
-    return immGivenAsDestination || twoStackSrcsForMov || stackSrcAnywhereOtherThanMovOrCmp;
+    return immGivenAsDestination || 
+        twoStackSrcsForMov || 
+        stackSrcAnywhereOtherThanMovOrCmp || 
+        zRegWithForbiddenOp || 
+        arithmOpWithOnlyOneZReg || 
+        movWithZRegAndNonAddress;
 }
 
 Instruction Decode::decodeInstructionHeader(word instruction)

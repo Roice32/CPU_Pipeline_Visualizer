@@ -9,7 +9,7 @@ ExecPush::ExecPush(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<M
 void ExecPush::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    SynchronizedDataPackage<word> actualParamPckg = getFinalArgValue(instr.src1, instr.param1);
+    SynchronizedDataPackage<std::vector<word>> actualParamPckg = getFinalArgValue(instr.src1, instr.param1);
 
     if (actualParamPckg.exceptionTriggered)
     {
@@ -42,5 +42,5 @@ void ExecPush::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
 
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, actualParamPckg.data)));
+    logComplete(lastTick, log(LoggablePackage(instr, actualParamPckg.data[0])));
 }

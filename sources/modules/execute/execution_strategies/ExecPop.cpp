@@ -43,7 +43,7 @@ void ExecPop::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
             return;
         }
 
-        SynchronizedDataPackage<word> storeResultPckg = storeResultAtDest(valueOnTopPckg.data[0],instr.src1, instr.param1);
+        SynchronizedDataPackage<word> storeResultPckg = storeResultAtDest(valueOnTopPckg.data,instr.src1, instr.param1);
 
         if (storeResultPckg.exceptionTriggered)
         {

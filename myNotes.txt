@@ -3,6 +3,8 @@ Have relevant access modifiers.
 
 Stress test (LS).
 
+Left at: implemented (didn't run) MUL & DIV for Z Regs.
+
 Întrebări:
     - metode statice
     - metode inline

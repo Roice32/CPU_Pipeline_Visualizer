@@ -19,74 +19,77 @@ protected:
         std::shared_ptr<CPURegisters> registers):
             IMemoryAccesser(commPipeWithLS), EXLogger(), fromDEtoMe(fromDEtoMe), refToEX(refToEX), regs(registers) {};
 
-    SynchronizedDataPackage<word> getFinalArgValue(byte src, word param = 0)
+    SynchronizedDataPackage<std::vector<word>> getFinalArgValue(byte src, word param = 0)
     {
         switch(src)
         {
             case NULL_VAL:
-                return 0;
+                return std::vector<word> { 0 };
             case IMM:
-                return param;
+                return std::vector<word> { param };
             case ADDR:
                 {
                     SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(param, 1);
                     if (!respFromLS.exceptionTriggered)
-                        return respFromLS.data[0];
-                    return SynchronizedDataPackage<word>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
+                        return respFromLS;
+                    return SynchronizedDataPackage<std::vector<word>>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
                 }
             case SP_REG:
-                return *regs->stackPointer;
+                return std::vector<word> { *regs->stackPointer };
             case ST_BASE:
-                return *regs->stackBase;
+                return std::vector<word> { *regs->stackBase };
             case ST_SIZE:
-                return *regs->stackSize;
+                return std::vector<word> { *regs->stackSize };
             case R0 ... R7:
-                return *regs->registers[src - R0];
+                return std::vector<word> { *regs->registers[src - R0] };
             case ADDR_R0 ... ADDR_R7:
                 {
                     SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(*regs->registers[src - ADDR_R0], 1);
                     if (!respFromLS.exceptionTriggered)
-                        return respFromLS.data[0];
-                    return SynchronizedDataPackage<word>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
+                        return respFromLS.data;
+                    return SynchronizedDataPackage<std::vector<word>>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
                 }
+            case Z0 ... Z3:
+                return *regs->zRegisters[src - Z0];
             default:
                 assert(0 && "Wrong or unimplemented parameter type");
         }
     }
 
-    SynchronizedDataPackage<word> storeResultAtDest(word result, byte destType, word destLocation = 0)
+    SynchronizedDataPackage<word> storeResultAtDest(std::vector<word> result, byte destType, word destLocation = 0)
     {
         switch (destType)
         {
             case ADDR:
                 {
-                    SynchronizedDataPackage<std::vector<word>> respFromLS = storeDataAt(destLocation, 1, std::vector<word> { result });
+                    SynchronizedDataPackage<std::vector<word>> respFromLS = storeDataAt(destLocation, result.size(), result);
                     if (!respFromLS.exceptionTriggered)
                         return respFromLS.data.size() > 0 ? respFromLS.data[0] : 0;
                     return SynchronizedDataPackage<word>(*regs->IP, destLocation, MISALIGNED_ACCESS_HANDL);
                 }
             break;
             case SP_REG:
-                *regs->stackPointer = result;
+                *regs->stackPointer = result[0];
             break;
             case ST_BASE:
-                *regs->stackBase = result;
+                *regs->stackBase = result[0];
             break;
             case ST_SIZE:
-                *regs->stackSize = result;
+                *regs->stackSize = result[0];
             break;
             case R0 ... R7:
-                *regs->registers[destType - R0] = result;
+                *regs->registers[destType - R0] = result[0];
             break;
             case ADDR_R0 ... ADDR_R7:
                 {
-                    SynchronizedDataPackage<std::vector<word>> respFromLS = storeDataAt(*regs->registers[destType - ADDR_R0], 1, std::vector<word> { result });
+                    SynchronizedDataPackage<std::vector<word>> respFromLS = storeDataAt(*regs->registers[destType - ADDR_R0], result.size(), result);
                     if (!respFromLS.exceptionTriggered)
                         return respFromLS.data.size() > 0 ? respFromLS.data[0] : 0;
                     return SynchronizedDataPackage<word>(*regs->IP, *regs->registers[destType - ADDR_R0], MISALIGNED_ACCESS_HANDL);
                 }
-                storeDataAt(*regs->registers[destType - ADDR_R0], 1, std::vector<word> { result });
             break;
+            case Z0 ... Z3:
+                *regs->zRegisters[destType - Z0] = result;
             default:
                 assert(0 && "Wrong or unimplemented parameter type");
         }
@@ -101,7 +104,7 @@ protected:
         syncReq.sentAt = currTick;
         fromEXtoLS->sendA(syncReq);
         refToEX->enterIdlingState();
-        while (!fromEXtoLS->pendingB()) // TO DO: Check running here
+        while (!fromEXtoLS->pendingB())
             refToEX->returnFromIdlingState();
         SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
         refToEX->awaitNextTickToHandle(receivedPckg);

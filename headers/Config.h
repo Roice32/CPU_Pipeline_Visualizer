@@ -5,6 +5,8 @@
 #define ADDRESS_WIDTH 16
 #define MEMORY_SIZE 0xffff
 #define REGISTER_COUNT 8
+#define Z_REGISTER_COUNT 4
+#define WORDS_PER_Z_REGISTER 4
 #define WORD_BYTES 2
 #define FETCH_WINDOW_BYTES 8
 #define DECODER_CACHE_FW_SIZE 2
@@ -58,6 +60,10 @@ enum TypeCode
     R5,
     R6,
     R7,
+    Z0 = 0x10,
+    Z1,
+    Z2,
+    Z3,
     ADDR_R0 = 0x18,
     ADDR_R1,
     ADDR_R2,
@@ -65,7 +71,7 @@ enum TypeCode
     ADDR_R4,
     ADDR_R5,
     ADDR_R6,
-    ADDR_R7,
+    ADDR_R7
 };
 
 enum Flags

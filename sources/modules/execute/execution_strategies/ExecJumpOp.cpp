@@ -9,7 +9,7 @@ ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPacka
 void ExecJumpOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    SynchronizedDataPackage<word> jumpAddressPckg = getFinalArgValue(instr.src1, instr.param1);
+    SynchronizedDataPackage<std::vector<word>> jumpAddressPckg = getFinalArgValue(instr.src1, instr.param1);
 
     if (jumpAddressPckg.exceptionTriggered)
     {
@@ -25,12 +25,12 @@ void ExecJumpOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPa
     bool greaterJump = (instr.opCode == JG && (*regs->flags & GREATER));
     bool zeroJump = (instr.opCode == JZ && (*regs->flags & ZERO));
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, jumpAddressPckg.data, 0, false)));
+    logComplete(lastTick, log(LoggablePackage(instr, jumpAddressPckg.data[0], 0, false)));
     if (plainJump || equalJump || lessJump || greaterJump || zeroJump)
     {
         logAdditional(" (yes)\n");
-        *regs->IP = jumpAddressPckg.data;
-        fromDEtoMe->sendB(jumpAddressPckg.data);
+        *regs->IP = jumpAddressPckg.data[0];
+        fromDEtoMe->sendB(jumpAddressPckg.data[0]);
     }
     else
     {

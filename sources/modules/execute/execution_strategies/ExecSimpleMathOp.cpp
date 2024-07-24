@@ -9,8 +9,8 @@ ExecSimpleMathOp::ExecSimpleMathOp(std::shared_ptr<InterThreadCommPipe<Synchroni
 void ExecSimpleMathOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    SynchronizedDataPackage<word> actualParam1Pckg = getFinalArgValue(instr.src1, instr.param1);
-    SynchronizedDataPackage<word> actualParam2Pckg = getFinalArgValue(instr.src2, instr.param2);
+    SynchronizedDataPackage<std::vector<word>> actualParam1Pckg = getFinalArgValue(instr.src1, instr.param1);
+    SynchronizedDataPackage<std::vector<word>> actualParam2Pckg = getFinalArgValue(instr.src2, instr.param2);
 
     if (actualParam1Pckg.exceptionTriggered || actualParam2Pckg.exceptionTriggered)
     {
@@ -20,17 +20,31 @@ void ExecSimpleMathOp::executeInstruction(SynchronizedDataPackage<Instruction> i
         return;
     }
 
-    word result;
-    if (instr.opCode == ADD)
-        result = actualParam1Pckg.data + actualParam2Pckg.data;
+    std::vector<word> result;
+    if (instr.src1 >= Z0 && instr.src1 <= Z3)
+    {
+        result.push_back( instr.opCode == ADD ?
+            actualParam1Pckg.data[0] + actualParam2Pckg.data[0] :
+            actualParam1Pckg.data[0] - actualParam2Pckg.data[0]);
+        if (result[0] == 0)
+            *regs->flags |= ZERO;
+    }
     else
-        result = actualParam1Pckg.data - actualParam2Pckg.data;
+        for (byte wordInd = 0; wordInd < WORDS_PER_Z_REGISTER; ++wordInd)
+        {
+            result.push_back(instr.opCode == ADD ?
+                actualParam1Pckg.data[wordInd] + actualParam2Pckg.data[wordInd] :
+                actualParam1Pckg.data[wordInd] - actualParam2Pckg.data[wordInd]);
+            if (result[wordInd] == 0)
+                *regs->flags |= ZERO;
+        }
     storeResultAtDest(result, instr.src1, instr.param1);
-    if (result == 0)
-        *regs->flags |= ZERO;
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, actualParam1Pckg.data, result)));
+    if (instr.src1 >= Z0 && instr.src1 <= Z3)
+        logComplete(lastTick, logComplex(instr));
+    else
+        logComplete(lastTick, log(LoggablePackage(instr, actualParam1Pckg.data[0], result[0])));
 }
 
 std::string ExecSimpleMathOp::log(LoggablePackage toLog)
@@ -39,6 +53,29 @@ std::string ExecSimpleMathOp::log(LoggablePackage toLog)
     result += " = " + std::to_string(toLog.actualParam2) + ")";
     if (toLog.actualParam2 == 0)
         result += " Flags.Z=1";
+    result += "\n";
+    return result;
+}
+
+std::string ExecSimpleMathOp::logComplex(Instruction instr)
+{
+    std::string result = opNames.at((OpCode) instr.opCode);
+    result += " ";
+    result += typeNames.at((TypeCode) instr.src1);
+    result += ", ";
+    result += typeNames.at((TypeCode) instr.src2);
+    result += "(";
+    result += typeNames.at((TypeCode) instr.src1);
+    result += "=";
+    for (byte wordInd = 0; wordInd < WORDS_PER_Z_REGISTER; ++wordInd)
+        result += " " + convDecToHex((*regs->zRegisters[instr.src1 - Z0])[wordInd]);
+    result += ")";
+    for (byte wordInt = 0; wordInt < WORDS_PER_Z_REGISTER; ++wordInt)
+        if ((*regs->zRegisters[instr.src1 - Z0])[wordInt] == 0)
+        {
+            result += " Flags.Z=1";
+            break;
+        }
     result += "\n";
     return result;
 }

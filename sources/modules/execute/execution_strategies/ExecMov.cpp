@@ -9,7 +9,7 @@ ExecMov::ExecMov(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 void ExecMov::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    SynchronizedDataPackage<word> movedValuePckg = getFinalArgValue(instr.src2, instr.param2);
+    SynchronizedDataPackage<std::vector<word>> movedValuePckg = getFinalArgValue(instr.src2, instr.param2);
 
     if (movedValuePckg.exceptionTriggered)
     {
@@ -30,7 +30,11 @@ void ExecMov::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
     }
     
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, 0, movedValuePckg.data))); 
+    if (instr.src1 >= Z0 && instr.src1 <= Z3 ||
+        instr.src2 >= Z0 && instr.src2 <= Z3)
+        logComplete(lastTick, logComplex(instr, movedValuePckg.data));
+    else
+        logComplete(lastTick, log(LoggablePackage(instr, 0, movedValuePckg.data[0]))); 
     moveIP(instr);
 }
 
@@ -38,5 +42,21 @@ std::string ExecMov::log(LoggablePackage toLog)
 {
     std::string result = plainInstructionToString(toLog.instr) + " (" + plainArgToString(toLog.instr.src1, toLog.instr.param1, false);
     result += " = " + std::to_string(toLog.actualParam2) + ")\n";
+    return result;
+}
+
+std::string ExecMov::logComplex(Instruction instr, std::vector<word> movedVal)
+{
+    std::string result = plainInstructionToString(instr) + "(" + plainArgToString(instr.src1, instr.param1, false) + " =";
+    for (byte wordInd = 0; wordInd < WORDS_PER_Z_REGISTER; ++wordInd)
+        result += " " + convDecToHex(movedVal[wordInd]);
+    result += ")";
+    for (byte wordInd = 0; wordInd < WORDS_PER_Z_REGISTER; ++wordInd)
+        if (movedVal[wordInd] == 0)
+        {
+            result += " Flags.Z=1";
+            break;
+        }
+    result += "\n";
     return result;
 }

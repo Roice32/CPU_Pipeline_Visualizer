@@ -11,8 +11,8 @@ void ExecCmp::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
     Instruction instr = instrPackage.data;
     *regs->flags &= ~(ZERO | EQUAL | GREATER);
 
-    SynchronizedDataPackage<word> actualParam1Pckg = getFinalArgValue(instr.src1, instr.param1);
-    SynchronizedDataPackage<word> actualParam2Pckg = getFinalArgValue(instr.src2, instr.param2);
+    SynchronizedDataPackage<std::vector<word>> actualParam1Pckg = getFinalArgValue(instr.src1, instr.param1);
+    SynchronizedDataPackage<std::vector<word>> actualParam2Pckg = getFinalArgValue(instr.src2, instr.param2);
     
     if (actualParam1Pckg.exceptionTriggered || actualParam2Pckg.exceptionTriggered)
     {
@@ -22,15 +22,15 @@ void ExecCmp::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
         return;
     }
 
-    if (actualParam1Pckg.data == 0 && actualParam2Pckg.data == 0)
+    if (actualParam1Pckg.data[0] == 0 && actualParam2Pckg.data[0] == 0)
         *regs->flags |= ZERO;
-    if (actualParam1Pckg.data == actualParam2Pckg.data)
+    if (actualParam1Pckg.data[0] == actualParam2Pckg.data[0])
         *regs->flags |= EQUAL;
-    if (actualParam1Pckg.data > actualParam2Pckg.data)
+    if (actualParam1Pckg.data[0] > actualParam2Pckg.data[0])
         *regs->flags |= GREATER;
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, actualParam1Pckg.data, actualParam2Pckg.data)));
+    logComplete(lastTick, log(LoggablePackage(instr, actualParam1Pckg.data[0], actualParam2Pckg.data[0])));
 }
 
 std::string ExecCmp::log(LoggablePackage toLog)

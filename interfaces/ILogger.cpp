@@ -61,6 +61,10 @@ protected:
             typeNames.insert({ADDR_R5, "[r5]"});
             typeNames.insert({ADDR_R6, "[r6]"});
             typeNames.insert({ADDR_R7, "[r7]"});
+            typeNames.insert({Z0, "z0"});
+            typeNames.insert({Z1, "z1"});
+            typeNames.insert({Z2, "z2"});
+            typeNames.insert({Z3, "z3"});
             // If registers' count ever changes, this needs changing, too.
         }
     };
