@@ -1,14 +1,11 @@
 Have consistent `const`s.
 Have relevant access modifiers.
 
-Maybe displaying the saved state upon encountering an exception?
-
-Treat the case where an exception has no handler.
-
-Does `executeModuleLogic` still need to return bool?
-
 Stress test (LS).
 
-Ask how important it really is for methods to be static.
-
-Maybe slap a couple `inline`'s here and there?
+Întrebări:
+    - metode statice
+    - metode inline
+    - excepții la tipuri de parametri necunoscute
+    - de ce LS & DE trimit excepțiile de IP nealiniat
+    - suficient logging la excepții
