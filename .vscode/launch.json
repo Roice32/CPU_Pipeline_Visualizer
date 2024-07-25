@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/cpp_processor_model",
-            "args": ["${workspaceFolder}/tests/inputs/z_registers/gather.hex"],
+            "args": ["${workspaceFolder}/tests/inputs/z_registers/scatter.hex"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

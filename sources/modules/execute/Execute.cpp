@@ -11,6 +11,7 @@
 #include "ExecPush.h"
 #include "ExecPop.h"
 #include "ExecExcpExit.h"
+#include "ExecScatter.h"
 
 Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
@@ -49,6 +50,8 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
     execStrategies.insert({EXCP_EXIT, excpExit});
     std::shared_ptr<ExecGather> gather = std::make_shared<ExecGather>(commPipeWithLS, commPipeWithDE, this, registers);
     execStrategies.insert({GATHER, gather});
+    std::shared_ptr<ExecScatter> scatter = std::make_shared<ExecScatter>(commPipeWithLS, commPipeWithDE, this, registers);
+    execStrategies.insert({SCATTER, scatter});
 };
 
 void Execute::executeInstruction(SynchronizedDataPackage<Instruction> instr)
