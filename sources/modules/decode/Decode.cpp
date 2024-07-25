@@ -10,7 +10,7 @@ Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch
 
 byte Decode::getExpectedParamCount(byte opCode)
 {
-    if (opCode < JMP)
+    if (opCode < JMP || opCode == GATHER || opCode == SCATTER)
         return 2;
     if (opCode == RET || opCode == END_SIM || opCode == EXCP_EXIT)
         return 0;
@@ -55,15 +55,18 @@ bool Decode::argumentsAreIncompatible(byte opCode, byte src1, byte src2)
     bool stackSrcAnywhereOtherThanMovOrCmp = opCode != MOV && 
         opCode != CMP && (param1IsStack || param2IsStack);
     bool zRegWithForbiddenOp = (param1IsZReg || param2IsZReg) && 
-        !(opCode >= ADD && opCode <= DIV);
+        !(opCode >= ADD && opCode <= DIV || opCode == GATHER || opCode == SCATTER);
     bool forbiddenOtherParameterForZReg = (param1IsZReg && src2 != ADDR && !isAddrReg(src2) && !param2IsZReg) ||
         (param2IsZReg && src1 != ADDR && !isAddrReg(src1) && !param1IsZReg);
+    bool notTwoZRegsForGatherScatter = (opCode == GATHER || opCode == SCATTER) &&
+        !(param1IsZReg && param2IsZReg);
 
     return immGivenAsDestination || 
         twoStackSrcsForMov || 
         stackSrcAnywhereOtherThanMovOrCmp || 
         zRegWithForbiddenOp || 
-        forbiddenOtherParameterForZReg;
+        forbiddenOtherParameterForZReg ||
+        notTwoZRegsForGatherScatter;
 }
 
 Instruction Decode::decodeInstructionHeader(word instruction)
@@ -71,7 +74,7 @@ Instruction Decode::decodeInstructionHeader(word instruction)
     byte opCode = instruction >> 10;
     if (opCode == UNINITIALIZED_MEM)
         return Instruction(UNINITIALIZED_MEM);
-    if (opCode == UNDEFINED || opCode > EXCP_EXIT)
+    if (opCode == UNDEFINED || opCode > EXCP_EXIT && (opCode != GATHER && opCode != SCATTER))
         return Instruction(UNDEFINED);
     if (opCode == EXCP_EXIT && !(*flags & EXCEPTION))
         return Instruction(UNDEFINED);

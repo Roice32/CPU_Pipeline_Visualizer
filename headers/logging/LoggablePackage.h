@@ -30,4 +30,6 @@ public:
 
     LoggablePackage(fetch_window fw, address addr):
         fetchWindow(fw), ip(addr), wasForEX(false), wasStoreOp(false) {};
+
+    LoggablePackage() {};
 };

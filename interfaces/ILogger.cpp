@@ -38,6 +38,8 @@ protected:
             opNames.insert({PUSH, "push"});
             opNames.insert({POP, "pop"});
             opNames.insert({EXCP_EXIT, "excp_exit"});
+            opNames.insert({GATHER, "gather"});
+            opNames.insert({SCATTER, "scatter"});
         }
         if (typeNames.empty())
         {

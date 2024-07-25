@@ -41,7 +41,9 @@ enum OpCode
     END_SIM,
     PUSH,
     POP,
-    EXCP_EXIT
+    EXCP_EXIT,
+    GATHER = 0x16,
+    SCATTER
 };
 
 enum TypeCode

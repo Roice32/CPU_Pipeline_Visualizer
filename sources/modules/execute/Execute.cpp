@@ -1,4 +1,5 @@
 #include "Execute.h"
+#include "ExecGather.h"
 #include "ExecSimpleMathOp.h"
 #include "ExecComplexMathOp.h"
 #include "ExecMov.h"
@@ -46,6 +47,8 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
     execStrategies.insert({END_SIM, endSim});
     std::shared_ptr<ExecExcpExit> excpExit = std::make_shared<ExecExcpExit>(commPipeWithLS, commPipeWithDE, this, registers);
     execStrategies.insert({EXCP_EXIT, excpExit});
+    std::shared_ptr<ExecGather> gather = std::make_shared<ExecGather>(commPipeWithLS, commPipeWithDE, this, registers);
+    execStrategies.insert({GATHER, gather});
 };
 
 void Execute::executeInstruction(SynchronizedDataPackage<Instruction> instr)
