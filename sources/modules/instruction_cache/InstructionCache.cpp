@@ -8,11 +8,12 @@ InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<Synchroni
         fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), internalIP(0xfff0) {};
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
+    clock_time reqSendTime = getCurrTime();
     SynchronizedDataPackage<address> syncReq(addr, clockSyncVars->cycleCount);
-    syncReq.sentAt = getCurrTime();
+    syncReq.sentAt = reqSendTime;
     fromMetoLS->sendA(syncReq);
     if (clockSyncVars->running)
-        logComplete(getCurrTime(), logRequest(internalIP));
+        logComplete(reqSendTime, logRequest(internalIP));
     enterIdlingState();
     while (!fromMetoLS->pendingB() && clockSyncVars->running)
         returnFromIdlingState();
@@ -52,9 +53,10 @@ void InstructionCache::executeModuleLogic()
 
 void InstructionCache::run()
 {
-    startCurrOpTimer();
-    std::string startMessage = "\t!IC begins simulation at T=" + std::to_string(getCurrTime()) + " from #fff0!\n";
+    std::string startMessage = "\t!IC signals beginning of simulation at T=" + std::to_string(getCurrTime()) + " from #fff0!\n";
     logAdditional(startMessage);
+    clockSyncVars->ICReady = true;
+    startCurrOpTimer();
     executeModuleLogic();
     IClockBoundModule::run();
 }

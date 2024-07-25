@@ -60,8 +60,8 @@ bool Decode::argumentsAreIncompatible(byte opCode, byte src1, byte src2)
         !(param1IsZReg && param2IzZReg) &&
         (opCode == ADD || opCode == SUB || opCode == MUL || opCode == DIV);
     bool movWithZRegAndNonAddress = opCode == MOV &&
-        ((param1IsZReg ? src2 != ADDR && !(src2 >= ADDR_R0 && src2 <= ADDR_R7) : !param2IzZReg) ||
-        (param2IzZReg ? src1 != ADDR && !(src1 >= ADDR_R0 && src1 <= ADDR_R0) : !param1IsZReg));
+        (param1IsZReg && src2 != ADDR && !(src2 >= ADDR_R0 && src2 <= ADDR_R7)) ||
+        (param2IzZReg && src1 != ADDR && !(src1 >= ADDR_R0 && src1 <= ADDR_R0));
 
     return immGivenAsDestination || 
         twoStackSrcsForMov || 

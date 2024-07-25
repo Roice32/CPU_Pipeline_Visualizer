@@ -8,6 +8,4 @@ Left at: implemented (didn't run) MUL & DIV for Z Regs.
 Întrebări:
     - metode statice
     - metode inline
-    - excepții la tipuri de parametri necunoscute
-    - de ce LS & DE trimit excepțiile de IP nealiniat
     - suficient logging la excepții

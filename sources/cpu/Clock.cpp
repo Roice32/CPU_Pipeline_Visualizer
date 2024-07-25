@@ -7,6 +7,8 @@ Clock::Clock(): clockSyncVars(std::make_shared<ClockSyncPackage>()), selfRunning
 
 void Clock::run()
 {
+    while(!clockSyncVars->ICReady)
+        std::this_thread::sleep_for(std::chrono::milliseconds(CLOCK_PERIOD_MILLIS));
     while (*selfRunning)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(CLOCK_PERIOD_MILLIS));
