@@ -42,7 +42,7 @@ void ExecJumpOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPa
 
 std::string ExecJumpOp::log(LoggablePackage toLog)
 {
-    std::string result = "";
+    std::string result = "Finished executing: ";
     result += opNames.at((OpCode) toLog.instr.opCode);
     result += " #" + convDecToHex(toLog.actualParam1);
     return result;

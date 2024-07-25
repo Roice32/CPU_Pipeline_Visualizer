@@ -102,3 +102,18 @@ enum Exception
     POP_OVERFLOW = 0xffff,
     MISALIGNED_IP = 0x0000
 };
+
+inline bool isReg(byte src)
+{
+    return src >= R0 && src <= R7;
+}
+
+inline bool isAddrReg(byte src)
+{
+    return src >= ADDR_R0 && src <= ADDR_R7;
+}
+
+inline bool isZReg(byte src)
+{
+    return src >= Z0 && src <= Z3;
+}

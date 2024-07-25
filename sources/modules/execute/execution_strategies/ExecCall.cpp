@@ -49,7 +49,7 @@ void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
 
 std::string ExecCall::log(LoggablePackage toLog)
 {
-    std::string result = plainInstructionToString(toLog.instr) + "\nSaved state:\n";
+    std::string result = "Finished executing: " + plainInstructionToString(toLog.instr) + "\nSaved state:\n";
     result += "\tIP = #" + convDecToHex(*regs->IP + 2 * WORD_BYTES) + "\n\t";
     result += printFlagsChange(~*regs->flags, *regs->flags, false);
     result += "\n\tRegisters:";

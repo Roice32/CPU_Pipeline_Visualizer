@@ -30,7 +30,7 @@ std::string EXLogger::printInstructionWithParamsReplaced(Instruction instr, word
 
 std::string EXLogger::log(LoggablePackage toLog)
 {
-    std::string result = plainInstructionToString(toLog.instr);
+    std::string result = "Finished executing: " + plainInstructionToString(toLog.instr);
     if (canBeReplacedByValue(toLog.instr.src1) && toLog.instr.opCode != MOV || canBeReplacedByValue(toLog.instr.src2))
         result += printInstructionWithParamsReplaced(toLog.instr, toLog.actualParam1, toLog.actualParam2);
     if (toLog.newLine)

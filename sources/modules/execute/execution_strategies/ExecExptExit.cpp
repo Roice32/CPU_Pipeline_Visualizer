@@ -25,7 +25,7 @@ void ExecExcpExit::executeInstruction(SynchronizedDataPackage<Instruction> instr
 
 std::string ExecExcpExit::log(LoggablePackage toLog)
 {
-    std::string result = plainInstructionToString(toLog.instr) + "\nReturned from exception handler to state:\n";
+    std::string result = "Finished executing: " + plainInstructionToString(toLog.instr) + "\nReturned from exception handler to state:\n";
     result += "\tIP = #" + convDecToHex(*regs->IP);
     result += "\n\tSP = " + std::to_string(*regs->stackPointer);
     result += "\n\t" + printFlagsChange(~*regs->flags, *regs->flags, false);

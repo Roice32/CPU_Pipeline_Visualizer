@@ -74,7 +74,7 @@ bool ExecComplexMathOp::handleZRegComplexOp(Instruction instr, std::vector<word>
         }
     }
     clock_time lastTick = refToEX->waitTillLastTick();
-    if (instr.src1 >= Z0 && instr.src1 <= Z3)
+    if (isZReg(instr.src1))
         logComplete(lastTick, log(LoggablePackage(instr,
             (instr.opCode == MUL ? product >> (8 * WORD_BYTES) : ratio),
             (instr.opCode == MUL ? product : modulus))));
@@ -98,7 +98,7 @@ void ExecComplexMathOp::executeInstruction(SynchronizedDataPackage<Instruction> 
     }
 
     bool exceptionOccuredDuringOp;
-    if (instr.src1 >= Z0 && instr.src1 <= Z3)
+    if (isZReg(instr.src1))
         exceptionOccuredDuringOp = handleZRegComplexOp(instr, actualParam1Pckg.data, actualParam2Pckg.data);
     else
         exceptionOccuredDuringOp = handleNormalComplexOp(instr, actualParam1Pckg.data[0], actualParam2Pckg.data[0]);
@@ -109,7 +109,7 @@ void ExecComplexMathOp::executeInstruction(SynchronizedDataPackage<Instruction> 
 
 std::string ExecComplexMathOp::log(LoggablePackage toLog)
 {
-    std::string result = plainInstructionToString(toLog.instr) + " (r0 = ";
+    std::string result = "Finished executing: " + plainInstructionToString(toLog.instr) + " (r0 = ";
     result += std::to_string(toLog.actualParam1) + ", r1 = " + std::to_string(toLog.actualParam2) + ")";
     if (toLog.actualParam1 == 0 && toLog.actualParam2 == 0)
         result += " Flags.Z=1";
@@ -119,7 +119,8 @@ std::string ExecComplexMathOp::log(LoggablePackage toLog)
 
 std::string ExecComplexMathOp::logComplex(Instruction instr)
 {
-    std::string result = opNames.at((OpCode) instr.opCode);
+    std::string result = "Finished executing: ";
+    result += opNames.at((OpCode) instr.opCode);
     result += " ";
     result += typeNames.at((TypeCode) instr.src1);
     result += ", ";

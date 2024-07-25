@@ -40,7 +40,7 @@ void ExecRet::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
 
 std::string ExecRet::log(LoggablePackage toLog)
 {
-    std::string result = plainInstructionToString(toLog.instr) + "\nReturned to state:\n";
+    std::string result = "Finished executing: " + plainInstructionToString(toLog.instr) + "\nReturned to state:\n";
     result += "\tIP = #" + convDecToHex(*regs->IP);
     result += "\n\t" + printFlagsChange(~*regs->flags, *regs->flags, false);
     result += "\n\tRegisters:";

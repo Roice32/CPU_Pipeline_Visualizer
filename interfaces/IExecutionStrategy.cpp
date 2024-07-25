@@ -19,7 +19,7 @@ protected:
         std::shared_ptr<CPURegisters> registers):
             IMemoryAccesser(commPipeWithLS), EXLogger(), fromDEtoMe(fromDEtoMe), refToEX(refToEX), regs(registers) {};
 
-    SynchronizedDataPackage<std::vector<word>> getFinalArgValue(byte src, word param = 0)
+    SynchronizedDataPackage<std::vector<word>> getFinalArgValue(byte src, word param = 0, byte isForZReg = false)
     {
         switch(src)
         {
@@ -29,7 +29,7 @@ protected:
                 return std::vector<word> { param };
             case ADDR:
                 {
-                    SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(param, 1);
+                    SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(param, isForZReg ? WORDS_PER_Z_REGISTER : 1);
                     if (!respFromLS.exceptionTriggered)
                         return respFromLS;
                     return SynchronizedDataPackage<std::vector<word>>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
@@ -44,7 +44,7 @@ protected:
                 return std::vector<word> { *regs->registers[src - R0] };
             case ADDR_R0 ... ADDR_R7:
                 {
-                    SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(*regs->registers[src - ADDR_R0], 1);
+                    SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(*regs->registers[src - ADDR_R0], isForZReg ? WORDS_PER_Z_REGISTER : 1);
                     if (!respFromLS.exceptionTriggered)
                         return respFromLS.data;
                     return SynchronizedDataPackage<std::vector<word>>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
@@ -90,6 +90,7 @@ protected:
             break;
             case Z0 ... Z3:
                 *regs->zRegisters[destType - Z0] = result;
+            break;
             default:
                 assert(0 && "Wrong or unimplemented parameter type");
         }

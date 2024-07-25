@@ -6,6 +6,6 @@ Stress test (LS).
 Left at: implemented (didn't run) MUL & DIV for Z Regs.
 
 Întrebări:
-    - metode statice
-    - metode inline
-    - suficient logging la excepții
+    - regiștrii Z când ar trebui să seteze Flags.Z = 1?
+    - de ce câteodată merge autocomplete-ul în terminal și câteodată nu?
+    - e acceptat add/sub/mul/div z_reg, addr / addr_r?

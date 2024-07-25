@@ -35,7 +35,7 @@ void ExecCmp::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
 
 std::string ExecCmp::log(LoggablePackage toLog)
 {
-    std::string result = plainInstructionToString(toLog.instr);
+    std::string result = "Finished executing: " + plainInstructionToString(toLog.instr);
     result += " (" + std::to_string(toLog.actualParam1) + " ? " + std::to_string(toLog.actualParam2) + ")";
     result += printFlagsChange(~*regs->flags, *regs->flags) + "\n";
     return result;

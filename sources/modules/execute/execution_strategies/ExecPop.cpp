@@ -8,7 +8,7 @@ ExecPop::ExecPop(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
 
 std::string ExecPop::log(LoggablePackage toLog)
 {
-    std::string result = plainInstructionToString(toLog.instr);
+    std::string result = "Finished executing: " + plainInstructionToString(toLog.instr);
     if (toLog.instr.src1 != NULL_VAL)
     {
         result += "(" + plainArgToString(toLog.instr.src1, toLog.instr.param1);
