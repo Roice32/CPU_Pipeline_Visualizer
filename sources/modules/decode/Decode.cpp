@@ -46,7 +46,7 @@ bool Decode::argumentsAreIncompatible(byte opCode, byte src1, byte src2)
     bool param1IsStack = src1 >= SP_REG && src1 <= ST_SIZE;
     bool param2IsStack = src2 >= SP_REG && src2 <= ST_SIZE;
     bool param1IsZReg = isZReg(src1);
-    bool param2IzZReg = isZReg(src1);
+    bool param2IsZReg = isZReg(src2);
     
     bool immGivenAsDestination = src1 == IMM && 
         (opCode < MUL || opCode == POP);
@@ -54,10 +54,10 @@ bool Decode::argumentsAreIncompatible(byte opCode, byte src1, byte src2)
         param1IsStack && param2IsStack;
     bool stackSrcAnywhereOtherThanMovOrCmp = opCode != MOV && 
         opCode != CMP && (param1IsStack || param2IsStack);
-    bool zRegWithForbiddenOp = (param1IsZReg || param2IsStack) && 
+    bool zRegWithForbiddenOp = (param1IsZReg || param2IsZReg) && 
         !(opCode >= ADD && opCode <= DIV);
-    bool forbiddenOtherParameterForZReg = (param1IsZReg && src2 != ADDR && !isAddrReg(src2) && !param2IzZReg) ||
-        (param2IzZReg && src1 != ADDR && !isAddrReg(src1) && !param1IsZReg);
+    bool forbiddenOtherParameterForZReg = (param1IsZReg && src2 != ADDR && !isAddrReg(src2) && !param2IsZReg) ||
+        (param2IsZReg && src1 != ADDR && !isAddrReg(src1) && !param1IsZReg);
 
     return immGivenAsDestination || 
         twoStackSrcsForMov || 
