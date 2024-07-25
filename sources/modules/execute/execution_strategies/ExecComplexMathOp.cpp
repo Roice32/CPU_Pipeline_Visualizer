@@ -74,20 +74,18 @@ bool ExecComplexMathOp::handleZRegComplexOp(Instruction instr, std::vector<word>
         }
     }
     clock_time lastTick = refToEX->waitTillLastTick();
-    if (isZReg(instr.src1))
-        logComplete(lastTick, log(LoggablePackage(instr,
-            (instr.opCode == MUL ? product >> (8 * WORD_BYTES) : ratio),
-            (instr.opCode == MUL ? product : modulus))));
-    else
-        logComplete(lastTick, logComplex(instr));
+    storeResultAtDest(zHigh, Z0);
+    storeResultAtDest(zLow, Z1);
+    logComplete(lastTick, logComplex(instr, zHigh, zLow));
     return false;
 }
 
 void ExecComplexMathOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
     Instruction instr = instrPackage.data;
-    SynchronizedDataPackage<std::vector<word>> actualParam1Pckg = getFinalArgValue(instr.src1, instr.param1);
-    SynchronizedDataPackage<std::vector<word>> actualParam2Pckg = getFinalArgValue(instr.src2, instr.param2);
+    bool zRegInvolved = isZReg(instr.src1) || isZReg(instr.src2);
+    SynchronizedDataPackage<std::vector<word>> actualParam1Pckg = getFinalArgValue(instr.src1, instr.param1, zRegInvolved);
+    SynchronizedDataPackage<std::vector<word>> actualParam2Pckg = getFinalArgValue(instr.src2, instr.param2, zRegInvolved);
 
     if (actualParam1Pckg.exceptionTriggered || actualParam2Pckg.exceptionTriggered)
     {
@@ -98,7 +96,7 @@ void ExecComplexMathOp::executeInstruction(SynchronizedDataPackage<Instruction> 
     }
 
     bool exceptionOccuredDuringOp;
-    if (isZReg(instr.src1))
+    if (zRegInvolved)
         exceptionOccuredDuringOp = handleZRegComplexOp(instr, actualParam1Pckg.data, actualParam2Pckg.data);
     else
         exceptionOccuredDuringOp = handleNormalComplexOp(instr, actualParam1Pckg.data[0], actualParam2Pckg.data[0]);
@@ -117,23 +115,18 @@ std::string ExecComplexMathOp::log(LoggablePackage toLog)
     return result;
 }
 
-std::string ExecComplexMathOp::logComplex(Instruction instr)
+std::string ExecComplexMathOp::logComplex(Instruction instr, std::vector<word> highResult, std::vector<word> lowResult)
 {
-    std::string result = "Finished executing: ";
-    result += opNames.at((OpCode) instr.opCode);
-    result += " ";
-    result += typeNames.at((TypeCode) instr.src1);
-    result += ", ";
-    result += typeNames.at((TypeCode) instr.src2);
-    result += "(z0 =";
+    std::string result = "Finished executing: " + plainInstructionToString(instr);
+    result += " (z0 =";
     for (byte wordInd = 0; wordInd < WORDS_PER_Z_REGISTER; ++wordInd)
-        result += " " + convDecToHex((*regs->zRegisters[0])[wordInd]);
-    result += "z1 = ";
+        result += " " + convDecToHex(highResult[wordInd]);
+    result += ", z1 =";
     for (byte wordInd = 0; wordInd < WORDS_PER_Z_REGISTER; ++wordInd)
-        result += " " + convDecToHex((*regs->zRegisters[1])[wordInd]);
+        result += " " + convDecToHex(lowResult[wordInd]);
     result += ")";
     for (byte wordInt = 0; wordInt < WORDS_PER_Z_REGISTER; ++wordInt)
-        if ((*regs->zRegisters[0])[wordInt] == 0 && (*regs->zRegisters[1])[wordInt] == 0)
+        if (highResult[wordInt] == 0 && lowResult[wordInt] == 0)
         {
             result += " Flags.Z=1";
             break;

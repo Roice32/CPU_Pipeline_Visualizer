@@ -6,7 +6,7 @@ class ExecComplexMathOp: public IExecutionStrategy
 {
 private:
     std::string log(LoggablePackage toLog) override;
-    std::string logComplex(Instruction instr);
+    std::string logComplex(Instruction instr, std::vector<word> highResult, std::vector<word> lowResult);
     bool handleNormalComplexOp(Instruction instr, word actualParam1, word actualParam2);
     bool handleZRegComplexOp(Instruction instr, std::vector<word> actualParam1, std::vector<word> actualParam2);
     
