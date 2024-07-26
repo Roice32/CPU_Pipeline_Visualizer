@@ -1,7 +1,7 @@
 #include "ExecExcpExit.h"
 
 ExecExcpExit::ExecExcpExit(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
         IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
@@ -18,8 +18,10 @@ void ExecExcpExit::executeInstruction(SynchronizedDataPackage<Instruction> instr
     *regs->IP = restoredStatePckg.data[0];
     *regs->flags &= ~EXCEPTION;
 
-    fromDEtoMe->sendB(restoredStatePckg.data[0]);
+    SynchronizedDataPackage<address> mssgToDE(restoredStatePckg.data[0]);
     clock_time lastTick = refToEX->waitTillLastTick();
+    mssgToDE.sentAt = lastTick;
+    fromDEtoMe->sendB(mssgToDE);
     logComplete(lastTick, log(LoggablePackage(instr)));   
 }
 

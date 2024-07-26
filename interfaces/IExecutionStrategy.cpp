@@ -9,12 +9,12 @@
 class IExecutionStrategy: public IMemoryAccesser, public EXLogger
 {
 protected:
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromDEtoMe;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> fromDEtoMe;
     IClockBoundModule* refToEX;
     std::shared_ptr<CPURegisters> regs;
 
     IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromDEtoMe,
+        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> fromDEtoMe,
         IClockBoundModule* refToEX,
         std::shared_ptr<CPURegisters> registers):
             IMemoryAccesser(commPipeWithLS), EXLogger(), fromDEtoMe(fromDEtoMe), refToEX(refToEX), regs(registers) {};

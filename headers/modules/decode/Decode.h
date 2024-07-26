@@ -2,16 +2,16 @@
 
 #include "DELogger.h"
 #include "InterThreadCommPipe.h"
-#include "DecoderCache.h"
+#include "WorkTempStorage.h"
 #include "IClockBoundModule.cpp"
 
 class Decode: public IClockBoundModule, public DELogger
 {
 private:
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> fromICtoMe;
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> fromMetoEX;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> fromICtoMe;
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> fromMetoEX;
     std::shared_ptr<register_16b> const flags;
-    DecoderCache cache;
+    WorkTempStorage fwTempStorage;
     address discardUntilAddr;
 
     static byte getExpectedParamCount(byte opCode);
@@ -22,8 +22,8 @@ private:
     bool processFetchWindow(fetch_window newBatch);
 
 public:
-    Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> commPipeWithIC,
-        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithEX,
+    Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithIC,
+        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithEX,
         std::shared_ptr<ClockSyncPackage> clockSyncVars,
         std::shared_ptr<register_16b> flags);
 

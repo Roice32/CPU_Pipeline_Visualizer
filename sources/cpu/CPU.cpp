@@ -7,8 +7,8 @@ CPU::CPU(std::shared_ptr<Memory> memory): memoryUnit(memory)
     registers = std::make_shared<CPURegisters>();
 
     fromICtoLS = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>>();
-    fromICtoDE = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>>();
-    fromDEtoEX = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>>();
+    fromICtoDE = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>>();
+    fromDEtoEX = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>>();
     fromEXtoLS = std::make_shared<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>>();
 
     clock = std::make_shared<Clock>();

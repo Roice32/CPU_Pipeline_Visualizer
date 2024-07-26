@@ -1,11 +1,11 @@
 #include "InstructionCache.h"
 
 InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> commPipeWithDE,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithDE,
     std::shared_ptr<ClockSyncPackage> clockSyncVars,
     std::shared_ptr<register_16b> ip):
         IClockBoundModule(clockSyncVars, 3, "Instruction Cache"),
-        fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), internalIP(0xfff0) {};
+        fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), internalIP(0xfff0), cache(CACHE_WORDS_SIZE / FETCH_WINDOW_WORDS, STALE_CACHE_BIAS_CYCLES) {};
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     clock_time reqSendTime = getCurrTime();
@@ -30,18 +30,28 @@ void InstructionCache::executeModuleLogic()
 {
     if (fromMetoDE->pendingB())
     {
-        address newAddr = fromMetoDE->getB();
-        internalIP = newAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
-        logComplete(getCurrTime(), logJump(newAddr, internalIP));
+        SynchronizedDataPackage<address> signalFromDE = fromMetoDE->getB();
+        awaitNextTickToHandle(signalFromDE);
+        internalIP = signalFromDE.data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
+        logComplete(getCurrTime(), logJump(signalFromDE.data, internalIP));
     }
 
     fetch_window currBatch;
-    currBatch = getFetchWindowFromLS(internalIP);
+    if (cache.hasCached(internalIP))
+    {
+        //shortenThisCycleBy(1);
+        currBatch = cache.fetchAndUpdate(internalIP, getCurrTime());
+    }
+    else
+    {
+        currBatch = getFetchWindowFromLS(internalIP);
+        if (currBatch != 0)
+            cache.tryCache(internalIP, currBatch, getCurrTime());
+    }
     SynchronizedDataPackage<fetch_window> syncResponse(currBatch, internalIP);
     internalIP += FETCH_WINDOW_BYTES;
     
-    waitTillLastTick();
-    clock_time lastTick = getCurrTime();
+    clock_time lastTick = waitTillLastTick();
     syncResponse.sentAt = lastTick;
     if (!fromMetoDE->pendingB())
     {
@@ -49,6 +59,7 @@ void InstructionCache::executeModuleLogic()
         if (clockSyncVars->running)
             logComplete(lastTick, log(LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch)));
     }
+    assert(lastTick == getCurrTime());
 }
 
 void InstructionCache::run()

@@ -9,10 +9,13 @@
 #define WORDS_PER_Z_REGISTER 4
 #define WORD_BYTES 2
 #define FETCH_WINDOW_BYTES 8
+#define FETCH_WINDOW_WORDS 4
 #define DECODER_CACHE_FW_SIZE 2
 #define CLOCK_PERIOD_MILLIS 1
 #define DUMMY_ADDRESS address (-1)
 #define SAVE_STATE_ADDR 0x0010
+#define CACHE_WORDS_SIZE 64
+#define STALE_CACHE_BIAS_CYCLES 100
 
 using byte = uint8_t;
 using register_16b = uint16_t;

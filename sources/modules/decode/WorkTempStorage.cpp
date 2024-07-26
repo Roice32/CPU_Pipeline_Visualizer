@@ -1,8 +1,8 @@
-#include "DecoderCache.h"
+#include "WorkTempStorage.h"
 
 #include <cassert>
 
-DecoderCache::DecoderCache()
+WorkTempStorage::WorkTempStorage()
 {
     for(byte ind = 0; ind < DECODER_CACHE_FW_SIZE; ++ind)
         storedFWs[ind] = 0;
@@ -10,7 +10,7 @@ DecoderCache::DecoderCache()
     storedWordsCount = 0;
 }
 
-DecoderCache& DecoderCache::operator<<(const byte wordsCount)
+WorkTempStorage& WorkTempStorage::operator<<(const byte wordsCount)
 {
     for (byte step = 0; step < wordsCount; ++step)
     {
@@ -26,7 +26,7 @@ DecoderCache& DecoderCache::operator<<(const byte wordsCount)
     return *this;
 }
 
-void DecoderCache::concatNewFW(fetch_window newFW)
+void WorkTempStorage::concatNewFW(fetch_window newFW)
 {
     assert(storedWordsCount < FETCH_WINDOW_BYTES / WORD_BYTES && "Attempt to overwrite non-empty cache end");
     byte emptyWordsInFirstFW = FETCH_WINDOW_BYTES / WORD_BYTES - storedWordsCount;
@@ -37,7 +37,7 @@ void DecoderCache::concatNewFW(fetch_window newFW)
     *this << emptyWordsInFirstFW;
 }
 
-void DecoderCache::overwriteCache(fetch_window newFW, address associatedIP)
+void WorkTempStorage::overwriteCache(fetch_window newFW, address associatedIP)
 {
     storedFWs[0] = storedFWs[1] = 0;
     storedFWs[0] = newFW;
@@ -45,7 +45,7 @@ void DecoderCache::overwriteCache(fetch_window newFW, address associatedIP)
     storedWordsCount = 4;
 }
 
-bool DecoderCache::canProvideFullInstruction()
+bool WorkTempStorage::canProvideFullInstruction()
 {
     byte neededWordsCount = 1;
     byte src1 = (storedFWs[0] >> (FETCH_WINDOW_BYTES * 8 - 11)) & 0b11111;
@@ -57,27 +57,27 @@ bool DecoderCache::canProvideFullInstruction()
     return storedWordsCount >= neededWordsCount;
 }
 
-fetch_window DecoderCache::getFullInstrFetchWindow()
+fetch_window WorkTempStorage::getFullInstrFetchWindow()
 {
     return storedFWs[0];
 }
 
-address DecoderCache::getAssociatedInstrAddr()
+address WorkTempStorage::getAssociatedInstrAddr()
 {
     return cacheStartAddr;
 }
 
-byte DecoderCache::getStoredWordsCount()
+byte WorkTempStorage::getStoredWordsCount()
 {
     return storedWordsCount;
 }
 
-void DecoderCache::shiftUsedWords(byte usedWordsCount)
+void WorkTempStorage::shiftUsedWords(byte usedWordsCount)
 {
     *this << usedWordsCount;
 }
 
-void DecoderCache::discardCurrent()
+void WorkTempStorage::discardCurrent()
 {
     storedFWs[0] = storedFWs[1] = 0;
     storedWordsCount = 0;

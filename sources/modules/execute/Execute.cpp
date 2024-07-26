@@ -14,7 +14,7 @@
 #include "ExecScatter.h"
 
 Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithDE,
     std::shared_ptr<CPURegisters> registers,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
         IClockBoundModule(clockSyncVars, 5, "Execute"), EXLogger(),

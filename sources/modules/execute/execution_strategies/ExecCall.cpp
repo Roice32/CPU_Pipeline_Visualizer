@@ -1,7 +1,7 @@
 #include "ExecCall.h"
 
 ExecCall::ExecCall(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
         IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
@@ -34,6 +34,7 @@ void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
     savedState.push_back(*regs->IP + 2 * WORD_BYTES);
     *regs->stackPointer -= (REGISTER_COUNT + 2) * WORD_BYTES;
     SynchronizedDataPackage<std::vector<word>> storeResultPckg = storeDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2, savedState);
+    SynchronizedDataPackage<address> mssgToDE(methodAddressPckg.data[0]);
     clock_time lastTick = refToEX->waitTillLastTick();
     if (storeResultPckg.exceptionTriggered)
     {
@@ -44,7 +45,8 @@ void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
     }
     logComplete(lastTick, log(LoggablePackage(instr, methodAddressPckg.data[0])));
     *regs->IP = methodAddressPckg.data[0];
-    fromDEtoMe->sendB(methodAddressPckg.data[0]);
+    mssgToDE.sentAt = lastTick;
+    fromDEtoMe->sendB(mssgToDE);
 }
 
 std::string ExecCall::log(LoggablePackage toLog)

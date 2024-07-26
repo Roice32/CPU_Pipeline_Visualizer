@@ -2,17 +2,17 @@
 
 #include "Config.h"
 
-class DecoderCache
+class WorkTempStorage
 {
 private:
     fetch_window storedFWs[DECODER_CACHE_FW_SIZE];
     address cacheStartAddr;
     byte storedWordsCount;
 
-    DecoderCache& operator<<(const byte wordsCount);
+    WorkTempStorage& operator<<(const byte wordsCount);
 
 public:
-    DecoderCache();
+    WorkTempStorage();
     void concatNewFW(fetch_window newFW);
     void overwriteCache(fetch_window newFW, address associatedIP);
     bool canProvideFullInstruction();

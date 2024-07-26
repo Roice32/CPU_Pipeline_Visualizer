@@ -1,7 +1,7 @@
 #include "ExecRet.h"
 
 ExecRet::ExecRet(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
         IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
@@ -33,8 +33,11 @@ void ExecRet::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
     *regs->flags = restoredStatePckg.data[REGISTER_COUNT];
     *regs->IP = restoredStatePckg.data[REGISTER_COUNT + 1];
     *regs->stackPointer += (REGISTER_COUNT + 2) * WORD_BYTES;
-    fromDEtoMe->sendB(restoredStatePckg.data[REGISTER_COUNT + 1]);
+
+    SynchronizedDataPackage<address> mssgToDE(restoredStatePckg.data[REGISTER_COUNT + 1]);
     clock_time lastTick = refToEX->waitTillLastTick();
+    mssgToDE.sentAt = lastTick;
+    fromDEtoMe->sendB(mssgToDE);
     logComplete(lastTick, log(LoggablePackage(instr)));
 }
 

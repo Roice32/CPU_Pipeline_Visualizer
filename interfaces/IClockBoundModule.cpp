@@ -39,6 +39,11 @@ public:
         }
     }
 
+    void inline shortenThisCycleBy(byte howManyTicks)
+    {
+        elapsedTimeOfCurrOp += howManyTicks;
+    }
+
     void startCurrOpTimer()
     {
         awaitClockSignal();

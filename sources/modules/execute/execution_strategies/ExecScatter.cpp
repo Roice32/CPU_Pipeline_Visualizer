@@ -1,7 +1,7 @@
 #include "ExecScatter.h"
 
 ExecScatter::ExecScatter(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithDE,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithDE,
     IClockBoundModule* refToEX,
     std::shared_ptr<CPURegisters> registers):
         IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};

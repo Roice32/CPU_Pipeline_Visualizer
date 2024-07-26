@@ -1,8 +1,8 @@
 #include "Decode.h"
 #include <cassert>
 
-Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, address>> commPipeWithIC,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, address>> commPipeWithEX,
+Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithIC,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithEX,
     std::shared_ptr<ClockSyncPackage> clockSyncVars,
     std::shared_ptr<register_16b> flags):
         IClockBoundModule(clockSyncVars, 2, "Decode"),
@@ -88,7 +88,7 @@ Instruction Decode::decodeInstructionHeader(word instruction)
 bool Decode::processFetchWindow(fetch_window newBatch)
 {
     Instruction instr = decodeInstructionHeader(word (newBatch >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8)));
-    SynchronizedDataPackage<Instruction> syncResponse(instr, cache.getAssociatedInstrAddr());
+    SynchronizedDataPackage<Instruction> syncResponse(instr, fwTempStorage.getAssociatedInstrAddr());
     
     if (instr.opCode == UNDEFINED)
     {
@@ -126,7 +126,7 @@ bool Decode::processFetchWindow(fetch_window newBatch)
             ++paramsCount;
         }
     }
-    cache.shiftUsedWords(paramsCount + 1);
+    fwTempStorage.shiftUsedWords(paramsCount + 1);
     waitTillLastTick();
     syncResponse.sentAt = clockSyncVars->cycleCount;
     fromMetoEX->sendA(syncResponse);
@@ -139,7 +139,10 @@ void Decode::executeModuleLogic()
 {
     if (fromMetoEX->pendingB())
     {
-        discardUntilAddr = fromMetoEX->getB();
+        SynchronizedDataPackage<address> ipChangePckg = fromMetoEX->getB();
+        awaitNextTickToHandle(ipChangePckg);
+        clock_time currTick = getCurrTime();
+        discardUntilAddr = ipChangePckg.data;
         if (discardUntilAddr % 2 == 1)
         {
             fromMetoEX->sendA(SynchronizedDataPackage<Instruction> (discardUntilAddr,
@@ -148,11 +151,14 @@ void Decode::executeModuleLogic()
             discardUntilAddr = DUMMY_ADDRESS;
             return;
         }
-        cache.discardCurrent();
+        SynchronizedDataPackage<address> mssgToIC(discardUntilAddr);
+        mssgToIC.sentAt = currTick;
+        fromICtoMe->sendB(mssgToIC);
+        
+        fwTempStorage.discardCurrent();
         logComplete(getCurrTime(), logJump(discardUntilAddr));
         while (fromICtoMe->pendingA() && clockSyncVars->running)
             logComplete(getCurrTime(), logDiscard(fromICtoMe->getA().associatedIP, discardUntilAddr));
-        fromICtoMe->sendB(discardUntilAddr);
     }
 
     while (fromICtoMe->pendingA() && discardUntilAddr != DUMMY_ADDRESS && clockSyncVars->running)
@@ -161,8 +167,8 @@ void Decode::executeModuleLogic()
         awaitNextTickToHandle(nextBatch);
         if (nextBatch.associatedIP == discardUntilAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES)
         {
-            cache.overwriteCache(nextBatch.data, nextBatch.associatedIP);
-            cache.shiftUsedWords((discardUntilAddr - nextBatch.associatedIP) / WORD_BYTES);
+            fwTempStorage.overwriteCache(nextBatch.data, nextBatch.associatedIP);
+            fwTempStorage.shiftUsedWords((discardUntilAddr - nextBatch.associatedIP) / WORD_BYTES);
             discardUntilAddr = DUMMY_ADDRESS;
         }
         else
@@ -172,9 +178,9 @@ void Decode::executeModuleLogic()
     if (discardUntilAddr != DUMMY_ADDRESS)
         return;
 
-    if (cache.canProvideFullInstruction())
+    if (fwTempStorage.canProvideFullInstruction())
     {
-        processFetchWindow(cache.getFullInstrFetchWindow());
+        processFetchWindow(fwTempStorage.getFullInstrFetchWindow());
         return;
     }
 
@@ -182,10 +188,10 @@ void Decode::executeModuleLogic()
     {
         SynchronizedDataPackage<fetch_window> receivedFW = fromICtoMe->getA();
         awaitNextTickToHandle(receivedFW);
-        if (cache.getStoredWordsCount() == 0)
-            cache.overwriteCache(receivedFW.data, receivedFW.associatedIP);
+        if (fwTempStorage.getStoredWordsCount() == 0)
+            fwTempStorage.overwriteCache(receivedFW.data, receivedFW.associatedIP);
         else
-            cache.concatNewFW(receivedFW.data);
-        processFetchWindow(cache.getFullInstrFetchWindow());
+            fwTempStorage.concatNewFW(receivedFW.data);
+        processFetchWindow(fwTempStorage.getFullInstrFetchWindow());
     }
 }
