@@ -5,7 +5,7 @@ InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<Synchroni
     std::shared_ptr<ClockSyncPackage> clockSyncVars,
     std::shared_ptr<register_16b> ip):
         IClockBoundModule(clockSyncVars, 3, "Instruction Cache"),
-        fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), internalIP(0xfff0), cache(CACHE_WORDS_SIZE / FETCH_WINDOW_WORDS, STALE_CACHE_BIAS_CYCLES) {};
+        fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), internalIP(0xfff0), cache() {};
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     clock_time reqSendTime = getCurrTime();
@@ -37,16 +37,15 @@ void InstructionCache::executeModuleLogic()
     }
 
     fetch_window currBatch;
-    if (cache.hasCached(internalIP))
+    if (cache.isAHit(internalIP))
     {
         //shortenThisCycleBy(1);
-        currBatch = cache.fetchAndUpdate(internalIP, getCurrTime());
+        currBatch = cache.get(internalIP);
     }
     else
     {
         currBatch = getFetchWindowFromLS(internalIP);
-        if (currBatch != 0)
-            cache.tryCache(internalIP, currBatch, getCurrTime());
+        cache.store(currBatch, internalIP);
     }
     SynchronizedDataPackage<fetch_window> syncResponse(currBatch, internalIP);
     internalIP += FETCH_WINDOW_BYTES;

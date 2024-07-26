@@ -21,6 +21,7 @@ target_include_directories(cpp_processor_model
         "../headers"
         "../headers/cpu"
         "../headers/logging"
+        "../headers/cache"
         "../headers/synchronization"
         "../headers/modules/load_store"
         "../headers/modules/instruction_cache"

@@ -11,7 +11,7 @@ private:
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> fromMetoLS;
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> fromMetoDE;
     register_16b internalIP;
-    Cache<address, fetch_window> cache;
+    Cache<fetch_window> cache;
 
     fetch_window getFetchWindowFromLS(address addr);
     void passForDecode(fetch_window currBatch);
