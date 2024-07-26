@@ -117,7 +117,13 @@ protected:
                 result += "[" + convDecToHex(param) + "]";
         }
         else
-            result += typeNames.at((TypeCode) src);
+        {
+            auto argNameFound = typeNames.find((TypeCode) src);
+            if (argNameFound == typeNames.end())
+                result += "???";
+            else
+                result += typeNames.at((TypeCode) src);
+        }
         return result;
     }
 
