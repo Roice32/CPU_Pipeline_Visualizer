@@ -1,11 +1,12 @@
 #pragma once
 
+#include "DiscardedCacheElement.h"
 #include "KWayCacheSet.h"
 
 #include <cassert>
 
 template <typename DataType>
-class TwoWayAssociativeCache
+class KWayAssociativeCache
 {
 private:
     std::vector<KWayCacheSet<DataType>> storage;
@@ -19,7 +20,7 @@ private:
     byte foundIndex;
 
 public:
-    TwoWayAssociativeCache<DataType>()
+    KWayAssociativeCache<DataType>()
     {
         byte setSize = CACHE_SET_SIZE;
         while (setSize > 1)
@@ -80,17 +81,17 @@ public:
         return target.data;
     }
 
-    void store(DataType newData, clock_time hitTime)
+    DiscardedCacheElement<DataType> store(DataType newData, clock_time hitTime)
     {
         if (foundIndex != CACHE_SET_SIZE)
         {
-            CacheLine<DataType>& target = storage[currReqIndex].storedLines[foundIndex].data;
+            CacheLine<DataType>& target = storage[currReqIndex].storedLines[foundIndex];
             if (target.data != newData)
                 target.modified = true;
             target.data = newData;
             target.lastHitTime = hitTime;
             target.valid = true;
-            return;
+            return DiscardedCacheElement<DataType>();
         }
 
         byte elimCandidate = 0;
@@ -105,11 +106,17 @@ public:
             if (targetSet[ind].lastHitTime < targetSet[elimCandidate].lastHitTime)
                 elimCandidate = ind;
         }
+
+        DiscardedCacheElement<DataType> eliminatedElement(targetSet[elimCandidate].data,
+            ((targetSet[elimCandidate].tag << indexSize) | currReqIndex) << offsetSize);
+
         targetSet[elimCandidate].data = newData;
         targetSet[elimCandidate].tag = currReqTag;
         targetSet[elimCandidate].lastHitTime = hitTime;
         targetSet[elimCandidate].modified = false;
         targetSet[elimCandidate].valid = true;
+
+        return eliminatedElement;
     }
 
     void invalidate()

@@ -3,6 +3,7 @@
 #include "LSLogger.h"
 #include "MemoryAccessRequest.h"
 #include "InterThreadCommPipe.h"
+#include "KWayAssociativeCache.h"
 #include "IMemoryHandler.cpp"
 #include "IClockBoundModule.cpp"
 
@@ -11,6 +12,8 @@ class LoadStore : public IMemoryHandler, public IClockBoundModule, public LSLogg
 private:
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> fromICtoMe;
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> fromEXtoMe;
+    KWayAssociativeCache<word> cache;
+    bool physicalMemoryAccessHappened;
 
     byte loadFrom(address addr) override;
     fetch_window bufferedLoadFrom(address addr) override;
