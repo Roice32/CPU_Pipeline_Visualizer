@@ -13,7 +13,7 @@ protected:
     byte elapsedTimeOfCurrOp;
 
 public:
-    IClockBoundModule(std::shared_ptr<ClockSyncPackage> clockSyncVars, byte clockTicksPerOperation, const char* moduleName):
+    IClockBoundModule(std::shared_ptr<ClockSyncPackage> clockSyncVars, byte clockTicksPerOperation):
         clockSyncVars(clockSyncVars), clockTicksPerOperation(clockTicksPerOperation) {};
 
     clock_time inline getCurrTime()

@@ -17,7 +17,7 @@ Execute::Execute(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Mem
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithDE,
     std::shared_ptr<CPURegisters> registers,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
-        IClockBoundModule(clockSyncVars, 5, "Execute"), EXLogger(),
+        IClockBoundModule(clockSyncVars, 5), EXLogger(),
         fromMeToLS(commPipeWithLS), fromDEtoMe(commPipeWithDE), registers(registers), exceptionHandler(GeneralExceptionHandler(commPipeWithLS, commPipeWithDE, this, registers))
 {
     std::shared_ptr<ExecSimpleMathOp> addOrSub = std::make_shared<ExecSimpleMathOp>(commPipeWithLS, commPipeWithDE, this, registers);

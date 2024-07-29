@@ -5,7 +5,7 @@ Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithEX,
     std::shared_ptr<ClockSyncPackage> clockSyncVars,
     std::shared_ptr<register_16b> flags):
-        IClockBoundModule(clockSyncVars, 2, "Decode"),
+        IClockBoundModule(clockSyncVars, 2),
         fromICtoMe(commPipeWithIC), fromMetoEX(commPipeWithEX), flags(flags), discardUntilAddr(DUMMY_ADDRESS) {};
 
 byte Decode::getExpectedParamCount(byte opCode)

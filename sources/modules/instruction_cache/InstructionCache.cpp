@@ -4,7 +4,7 @@ InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<Synchroni
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithDE,
     std::shared_ptr<ClockSyncPackage> clockSyncVars,
     std::shared_ptr<register_16b> ip):
-        IClockBoundModule(clockSyncVars, 3, "Instruction Cache"),
+        IClockBoundModule(clockSyncVars, 3),
         fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), internalIP(0xfff0), cache() {};
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {

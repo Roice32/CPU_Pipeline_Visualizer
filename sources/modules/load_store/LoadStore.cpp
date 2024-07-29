@@ -5,7 +5,7 @@ LoadStore::LoadStore(std::shared_ptr<Memory> simulatedMemory,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithIC,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithEX,
     std::shared_ptr<ClockSyncPackage> clockSyncVars):
-        IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, 15, "Load/Store"), LSLogger(),
+        IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, 15), LSLogger(),
         fromICtoMe(commPipeWithIC), fromEXtoMe(commPipeWithEX) {};
 
 byte LoadStore::loadFrom(address addr)
