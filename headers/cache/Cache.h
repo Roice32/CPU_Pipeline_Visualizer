@@ -12,12 +12,15 @@ private:
     byte indexSize;
     byte tagSize;
 
+    byte currReqIndex;
+    byte currReqTag;
+
 public:
     Cache<DataType>()
     {
         byte cacheSize = CACHE_WORDS_SIZE * WORD_BYTES / sizeof(DataType);
         
-        offsetSize = 1;
+        offsetSize = 0;
         byte bytesReachable = 1;
         while (bytesReachable < sizeof(DataType))
         {
@@ -25,11 +28,11 @@ public:
             ++offsetSize;
         }
 
-        indexSize = 1;
-        byte maxIndex = 2;
-        while (maxIndex < cacheSize)
+        indexSize = 0;
+        byte indexReachable = 2;
+        while (indexReachable < cacheSize)
         {
-            maxIndex *= 2;
+            indexReachable *= 2;
             ++indexSize;
         }
 
@@ -39,32 +42,30 @@ public:
             storage.push_back(CacheLine<DataType>());
     }
 
-    bool isAHit(address request)
+    void prepareForOps(address currReq)
     {
-        byte index = (request << tagSize) >> (tagSize + offsetSize);
-        address tag = request >> (indexSize + offsetSize);
-        return storage[index].tag == tag && storage[index].validBit;
+        currReqIndex = (currReq << tagSize) >> (tagSize + offsetSize);
+        currReqTag = currReq >> (indexSize + offsetSize);
     }
 
-    DataType get(address request)
+    bool isAHit()
     {
-        byte index = (request << tagSize) >> (tagSize + offsetSize);
-        address tag = request >> (indexSize + offsetSize);
-        return storage[index].data;
+        return storage[currReqIndex].tag == currReqTag && storage[currReqIndex].validBit;
     }
 
-    void store(DataType data, address addr)
+    DataType get()
     {
-        byte index = (addr << tagSize) >> (tagSize + offsetSize);
-        address tag = addr >> (indexSize + offsetSize);
-        storage[index] = CacheLine<DataType>(tag, data);
+        return storage[currReqIndex].data;
     }
 
-    void invalidate(address addr)
+    void store(DataType data)
     {
-        byte index = (addr << tagSize) >> (tagSize + offsetSize);
-        address tag = addr >> (indexSize + offsetSize);
-        if (storage[index].tag == tag)
-            storage[index].validBit = false;
+        storage[currReqIndex] = CacheLine<DataType>(currReqTag, data);
+    }
+
+    void invalidate()
+    {
+        if (storage[currReqIndex].tag == currReqTag)
+            storage[currReqIndex].validBit = false;
     }
 };

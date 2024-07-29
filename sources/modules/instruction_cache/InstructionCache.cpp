@@ -37,15 +37,16 @@ void InstructionCache::executeModuleLogic()
     }
 
     fetch_window currBatch;
-    if (cache.isAHit(internalIP))
+    cache.prepareForOps(internalIP);
+    if (cache.isAHit())
     {
         //shortenThisCycleBy(1);
-        currBatch = cache.get(internalIP);
+        currBatch = cache.get();
     }
     else
     {
         currBatch = getFetchWindowFromLS(internalIP);
-        cache.store(currBatch, internalIP);
+        cache.store(currBatch);
     }
     SynchronizedDataPackage<fetch_window> syncResponse(currBatch, internalIP);
     internalIP += FETCH_WINDOW_BYTES;
@@ -58,7 +59,6 @@ void InstructionCache::executeModuleLogic()
         if (clockSyncVars->running)
             logComplete(lastTick, log(LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch)));
     }
-    assert(lastTick == getCurrTime());
 }
 
 void InstructionCache::run()

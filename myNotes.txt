@@ -1,11 +1,9 @@
 Have consistent `const`s.
 Have relevant access modifiers.
 
-Can IC cache ever become invalid?
-    - most likely.
-    - how to fix this?
-
 Întrebări:
     - regiștrii Z când ar trebui să seteze Flags.Z = 1?
     - store & load pt. regiștrii Z nu trebuie să fie atomice, nu?
     - de ce câteodată merge autocomplete-ul în terminal și câteodată nu?
+    - ar trebui să tratez invalidarea fetch window-urilor din cache-ul IC-ului?
+    - artefactul ăla vizual

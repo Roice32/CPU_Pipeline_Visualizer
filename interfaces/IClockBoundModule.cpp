@@ -16,12 +16,12 @@ public:
     IClockBoundModule(std::shared_ptr<ClockSyncPackage> clockSyncVars, byte clockTicksPerOperation, const char* moduleName):
         clockSyncVars(clockSyncVars), clockTicksPerOperation(clockTicksPerOperation) {};
 
-    clock_time getCurrTime()
+    clock_time inline getCurrTime()
     {
         return clockSyncVars->cycleCount;
     }
 
-    void awaitClockSignal()
+    void inline awaitClockSignal()
     {
         if (!clockSyncVars->running)
             return;
@@ -30,7 +30,7 @@ public:
     }
 
     template <typename DataType>
-    void awaitNextTickToHandle(SynchronizedDataPackage<DataType> receivedPackage)
+    void inline awaitNextTickToHandle(SynchronizedDataPackage<DataType> receivedPackage)
     {
         if (receivedPackage.sentAt == clockSyncVars->cycleCount)
         {
@@ -44,20 +44,20 @@ public:
         elapsedTimeOfCurrOp += howManyTicks;
     }
 
-    void startCurrOpTimer()
+    void inline startCurrOpTimer()
     {
         awaitClockSignal();
         startTimeOfCurrOp = clockSyncVars->cycleCount;
         elapsedTimeOfCurrOp = 0;
     }
 
-    void enterIdlingState()
+    void inline enterIdlingState()
     {
         awaitClockSignal();
         elapsedTimeOfCurrOp += clockSyncVars->cycleCount - startTimeOfCurrOp;
     }
 
-    void returnFromIdlingState()
+    void inline returnFromIdlingState()
     {
         awaitClockSignal();
         startTimeOfCurrOp = clockSyncVars->cycleCount;
@@ -77,7 +77,7 @@ public:
         return clockSyncVars->cycleCount;
     }
 
-    void endSimulation()
+    void inline endSimulation()
     {
         clockSyncVars->running = false;
     }
