@@ -5,7 +5,7 @@
 #include <vector>
 
 template <typename DataType>
-class Cache
+class DMCache
 {
 private:
     std::vector<CacheLine<DataType>> storage;
@@ -18,7 +18,7 @@ private:
     byte currReqTag;
 
 public:
-    Cache<DataType>()
+    DMCache<DataType>()
     {
         cacheSize = CACHE_WORDS_SIZE * WORD_BYTES / sizeof(DataType);
         

@@ -9,7 +9,7 @@ public:
     bool validBit;
     address tag;
     DataType data;
+    clock_time lastHitTime;
 
-    CacheLine<DataType>(): validBit(false) {};
-    CacheLine<DataType>(address tag, DataType data): validBit(true), tag(tag), data(data) {}
+    CacheLine<DataType>(): validBit(false), lastHitTime(0) {};
 };
