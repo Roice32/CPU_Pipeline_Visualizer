@@ -41,7 +41,7 @@ void InstructionCache::executeModuleLogic()
     bool fwAlreadyInCache = cache.isAHit();
     if (fwAlreadyInCache)
     {
-        shortenThisCycleBy(1);
+        // shortenThisCycleBy(1);
         currBatch = cache.get();
     }
     else

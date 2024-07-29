@@ -142,6 +142,9 @@ void Decode::executeModuleLogic()
         SynchronizedDataPackage<address> ipChangePckg = fromMetoEX->getB();
         awaitNextTickToHandle(ipChangePckg);
         clock_time currTick = getCurrTime();
+        SynchronizedDataPackage<address> mssgToIC(ipChangePckg.data);
+        mssgToIC.sentAt = currTick;
+        fromICtoMe->sendB(mssgToIC);
         discardUntilAddr = ipChangePckg.data;
         if (discardUntilAddr % 2 == 1)
         {
@@ -151,9 +154,6 @@ void Decode::executeModuleLogic()
             discardUntilAddr = DUMMY_ADDRESS;
             return;
         }
-        SynchronizedDataPackage<address> mssgToIC(discardUntilAddr);
-        mssgToIC.sentAt = currTick;
-        fromICtoMe->sendB(mssgToIC);
         
         fwTempStorage.discardCurrent();
         logComplete(getCurrTime(), logJump(discardUntilAddr));

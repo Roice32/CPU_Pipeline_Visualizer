@@ -1,6 +1,8 @@
 Have consistent `const`s.
 Have relevant access modifiers.
 
+Actually shorten IC's time.
+
 Întrebări:
     - de ce câteodată merge autocomplete-ul în terminal și câteodată nu?
     - ar trebui să tratez invalidarea fetch window-urilor din cache-ul IC-ului?

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "CacheLine.h"
+#include "Config.h"
 #include <cassert>
 #include <vector>
 
-template <typename DataType>
-class DMCache
+template <template <typename DataType> typename Container, typename DataType>
+class ICache
 {
-private:
-    std::vector<CacheLine<DataType>> storage;
+protected:
+    std::vector<Container<DataType>> storage;
     byte cacheSize;
     byte offsetSize;
     byte indexSize;
@@ -16,12 +16,13 @@ private:
 
     byte currReqIndex;
     byte currReqTag;
+    bool currHit;
 
 public:
-    DMCache<DataType>()
+    ICache<Container, DataType>()
     {
         cacheSize = CACHE_WORDS_SIZE * WORD_BYTES / sizeof(DataType);
-        
+
         offsetSize = 0;
         byte bytesReachable = 1;
         while (bytesReachable < sizeof(DataType))
@@ -41,7 +42,7 @@ public:
         tagSize = sizeof(address) * 8 - indexSize - offsetSize;
 
         for (byte ind = 0; ind < cacheSize; ++ind)
-            storage.push_back(CacheLine<DataType>());
+            storage.push_back(Container<DataType>());
     }
 
     void prepareForOps(address currReq)
@@ -51,26 +52,11 @@ public:
         assert(currReqIndex >= 0 && currReqIndex < cacheSize);
     }
 
-    bool isAHit()
-    {
-        return storage[currReqIndex].tag == currReqTag && storage[currReqIndex].valid;
-    }
+    virtual bool isAHit() = 0;
 
-    DataType get()
-    {
-        return storage[currReqIndex].data;
-    }
+    virtual DataType get(clock_time newHitTime = 0) = 0;
 
-    void store(DataType data)
-    {
-        storage[currReqIndex].data = data;
-        storage[currReqIndex].tag = currReqTag;
-        storage[currReqIndex].valid = true;
-    }
+    virtual void store(DataType data, clock_time newHitTime = 0) = 0;
 
-    void invalidate()
-    {
-        if (storage[currReqIndex].tag == currReqTag)
-            storage[currReqIndex].valid = false;
-    }
+    virtual void invalidate() = 0;
 };

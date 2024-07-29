@@ -41,7 +41,7 @@ public:
 
     void inline shortenThisCycleBy(byte howManyTicks)
     {
-        elapsedTimeOfCurrOp += howManyTicks;
+        startTimeOfCurrOp -= howManyTicks;
     }
 
     void inline startCurrOpTimer()

@@ -6,10 +6,11 @@ template <typename DataType>
 class CacheLine
 {
 public:
-    bool validBit;
-    address tag;
     DataType data;
+    address tag;
     clock_time lastHitTime;
+    bool valid;
+    bool modified;
 
-    CacheLine<DataType>(): validBit(false), lastHitTime(0) {};
+    CacheLine<DataType>(): valid(false), modified(false), lastHitTime(0) {};
 };

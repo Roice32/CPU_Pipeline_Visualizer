@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -16,6 +17,7 @@ protected:
     static inline std::unordered_map<OpCode, const char*> opNames;
     static inline std::unordered_map<TypeCode, const char*> typeNames;
     static inline std::shared_ptr<std::ofstream> outputFile;
+    static inline std::mutex outputLock;
 
     ILogger(const char* moduleName): moduleName(moduleName)
     {
@@ -151,6 +153,7 @@ public:
     void logComplete(clock_time timestamp, std::string messageBody)
     {
         std::string message = buildMessageHeader(timestamp) + messageBody;
+        std::lock_guard<std::mutex> lock(outputLock);
         if (outputFile->is_open())
             (*outputFile) << message;
         else
@@ -159,6 +162,7 @@ public:
 
     void logAdditional(std::string message)
     {
+        std::lock_guard<std::mutex> lock(outputLock);
         if (outputFile->is_open())
             (*outputFile) << message;
         else
