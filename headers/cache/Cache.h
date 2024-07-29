@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CacheLine.h"
+#include <cassert>
 #include <vector>
 
 template <typename DataType>
@@ -8,6 +9,7 @@ class Cache
 {
 private:
     std::vector<CacheLine<DataType>> storage;
+    byte cacheSize;
     byte offsetSize;
     byte indexSize;
     byte tagSize;
@@ -18,7 +20,7 @@ private:
 public:
     Cache<DataType>()
     {
-        byte cacheSize = CACHE_WORDS_SIZE * WORD_BYTES / sizeof(DataType);
+        cacheSize = CACHE_WORDS_SIZE * WORD_BYTES / sizeof(DataType);
         
         offsetSize = 0;
         byte bytesReachable = 1;
@@ -29,7 +31,7 @@ public:
         }
 
         indexSize = 0;
-        byte indexReachable = 2;
+        byte indexReachable = 1;
         while (indexReachable < cacheSize)
         {
             indexReachable *= 2;
@@ -44,8 +46,9 @@ public:
 
     void prepareForOps(address currReq)
     {
-        currReqIndex = (currReq << tagSize) >> (tagSize + offsetSize);
+        currReqIndex = (address (currReq << tagSize)) >> (tagSize + offsetSize);
         currReqTag = currReq >> (indexSize + offsetSize);
+        assert(currReqIndex >= 0 && currReqIndex < cacheSize);
     }
 
     bool isAHit()
@@ -60,7 +63,9 @@ public:
 
     void store(DataType data)
     {
-        storage[currReqIndex] = CacheLine<DataType>(currReqTag, data);
+        storage[currReqIndex].data = data;
+        storage[currReqIndex].tag = currReqTag;
+        storage[currReqIndex].validBit = true;
     }
 
     void invalidate()

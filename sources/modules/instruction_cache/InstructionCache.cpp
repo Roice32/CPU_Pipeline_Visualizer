@@ -38,7 +38,8 @@ void InstructionCache::executeModuleLogic()
 
     fetch_window currBatch;
     cache.prepareForOps(internalIP);
-    if (cache.isAHit())
+    bool fwAlreadyInCache = cache.isAHit();
+    if (fwAlreadyInCache)
     {
         //shortenThisCycleBy(1);
         currBatch = cache.get();
@@ -57,7 +58,11 @@ void InstructionCache::executeModuleLogic()
     {
         fromMetoDE->sendA(syncResponse);
         if (clockSyncVars->running)
+        {
             logComplete(lastTick, log(LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch)));
+            if (fwAlreadyInCache)
+                logAdditional("\t(From IC's cache)\n");
+        }
     }
 }
 
