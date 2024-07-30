@@ -12,16 +12,29 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     SynchronizedDataPackage<address> syncReq(addr, clockSyncVars->cycleCount);
     syncReq.sentAt = reqSendTime;
     fromMetoLS->sendA(syncReq);
+
     if (clockSyncVars->running)
         logComplete(reqSendTime, logRequest(internalIP));
+    
     enterIdlingState();
-    while (!fromMetoLS->pendingB() && clockSyncVars->running)
-        returnFromIdlingState();
-
-    if (!clockSyncVars->running)
-        return 0;
-
-    SynchronizedDataPackage<fetch_window> receivedPckg = fromMetoLS->getB();
+    SynchronizedDataPackage<fetch_window> receivedPckg;
+    while (clockSyncVars->running)
+    {
+        while (!fromMetoLS->pendingB() && clockSyncVars->running)
+            returnFromIdlingState();
+        
+        if (!clockSyncVars->running)
+            return 0;
+        receivedPckg = fromMetoLS->getB();
+        
+        if (!receivedPckg.exceptionTriggered)
+            break;
+        
+        address invalidatedFW = receivedPckg.data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
+        cache.prepareForOps(invalidatedFW);
+        cache.invalidate();
+    }
+    
     awaitNextTickToHandle(receivedPckg);
     return receivedPckg.data;
 }
@@ -31,9 +44,16 @@ void InstructionCache::executeModuleLogic()
     if (fromMetoDE->pendingB())
     {
         SynchronizedDataPackage<address> signalFromDE = fromMetoDE->getB();
-        awaitNextTickToHandle(signalFromDE);
+        clock_time timeReceived = getCurrTime();
         internalIP = signalFromDE.data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
-        logComplete(getCurrTime(), logJump(signalFromDE.data, internalIP));
+        logComplete(timeReceived, logJump(signalFromDE.data, internalIP));
+    }
+
+    if (fromMetoLS->pendingB())
+    {
+        address invalidatedFW = fromMetoLS->getB().data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
+        cache.prepareForOps(invalidatedFW);
+        cache.invalidate();
     }
 
     fetch_window currBatch;

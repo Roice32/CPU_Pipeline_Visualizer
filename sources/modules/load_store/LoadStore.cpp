@@ -35,9 +35,11 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
     physicalMemoryAccessHappened = false;
     if (req.isStoreOperation)
     {
+        address currAddr;
         for (byte ind = 0; ind < req.wordsSizeOfReq; ++ind)
         {
-            cache.prepareForOps(req.reqAddr + WORD_BYTES * ind);
+            currAddr = req.reqAddr + WORD_BYTES * ind;
+            cache.prepareForOps(currAddr);
             DiscardedCacheElement<word> removedElem = cache.store(req.reqData[ind], getCurrTime());
             if (removedElem.discardHappened)
             {
@@ -50,6 +52,11 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
                     " from physical memory.\n");
                 physicalMemoryAccessHappened = true;
             }
+            
+            SynchronizedDataPackage<fetch_window> fwInvalidationPckg;
+            fwInvalidationPckg.data = currAddr;
+            fwInvalidationPckg.exceptionTriggered = true;
+            fromICtoMe->sendB(fwInvalidationPckg);
         }
         return std::vector<word> {};
     }
@@ -121,7 +128,7 @@ void LoadStore::executeModuleLogic()
         }
 
         if (!physicalMemoryAccessHappened)
-            startTimeOfCurrOp -= 8;
+            shortenThisCycleBy(8);
         
         clock_time lastTick = waitTillLastTick();
         syncResponse.sentAt = lastTick;
@@ -139,8 +146,19 @@ void LoadStore::executeModuleLogic()
     awaitNextTickToHandle(lsReq);
     if (clockSyncVars->running)
         logComplete(getCurrTime(), logAccept(lsReq.data, false));
+
     fetch_window responseForIC = bufferedLoadFrom(lsReq.data);
-    SynchronizedDataPackage<fetch_window> syncResponse(responseForIC, lsReq.data);
+    fetch_window updatedResponseForIC = 0;
+    for (byte wordInd = 0; wordInd < FETCH_WINDOW_WORDS; ++wordInd)
+    {
+        updatedResponseForIC <<= WORD_BYTES * 8;
+        cache.prepareForOps(lsReq.data + wordInd * WORD_BYTES);
+        if (cache.isAHit())
+            updatedResponseForIC |= cache.get(getCurrTime());
+        else
+            updatedResponseForIC |= responseForIC >> ((FETCH_WINDOW_WORDS - 1 - wordInd) * WORD_BYTES * 8);
+    }
+    SynchronizedDataPackage<fetch_window> syncResponse(updatedResponseForIC, lsReq.data);
     
     clock_time lastTick = waitTillLastTick();
     syncResponse.sentAt = lastTick;
