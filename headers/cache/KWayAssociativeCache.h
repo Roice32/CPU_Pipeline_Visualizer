@@ -4,6 +4,7 @@
 #include "KWayCacheSet.h"
 
 #include <cassert>
+#include <unordered_map>
 
 template <typename DataType>
 class KWayAssociativeCache
@@ -129,5 +130,23 @@ public:
         if (foundIndex == CACHE_SET_SIZE)
             return;
         storage[currReqIndex].storedLines[foundIndex].valid = false;
+    }
+
+    std::unordered_map<address, DataType> getDataToBeStoredInMemory()
+    {
+        std::unordered_map<address, DataType> modifiedMem;
+        CacheLine<DataType> currElem;
+        address currAddr;
+        for (byte setInd = 0; setInd < cacheSize; ++setInd)
+            for (byte entryInd = 0; entryInd < CACHE_SET_SIZE; ++entryInd)
+            {
+                currElem = storage[setInd].storedLines[entryInd];
+                if (currElem.valid && currElem.modified)
+                {
+                    currAddr = (currElem.tag << (indexSize + offsetSize)) | (setInd << offsetSize);
+                    modifiedMem.insert({currAddr, currElem.data});
+                }
+            }
+        return modifiedMem;
     }
 };

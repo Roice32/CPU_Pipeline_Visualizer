@@ -144,3 +144,19 @@ void LoadStore::executeModuleLogic()
         logComplete(lastTick, log(LoggablePackage(responseForIC, lsReq.data)));
     return;
 }
+
+void LoadStore::emptyCacheIntoMemory()
+{
+    std::unordered_map<address, word> updatedWords = cache.getDataToBeStoredInMemory();
+    for (auto entry: updatedWords)
+    {
+        storeAt(entry.first, entry.second >> 8);
+        storeAt(entry.first + 1, entry.second);
+    }
+}
+
+void LoadStore::run()
+{
+    IClockBoundModule::run();
+    emptyCacheIntoMemory();
+}
