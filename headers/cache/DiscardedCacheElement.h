@@ -10,5 +10,5 @@ public:
     bool discardHappened;
 
     DiscardedCacheElement<DataType>(): discardHappened(false) {};
-    DiscardedCacheElement<DataType>(DataType data, address addr): data(data), addr(addr) {};
+    DiscardedCacheElement<DataType>(DataType data, address addr): discardHappened(true), data(data), addr(addr) {};
 };

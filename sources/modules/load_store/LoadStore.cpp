@@ -43,6 +43,11 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
             {
                 storeAt(removedElem.addr, removedElem.data >> 8);
                 storeAt(removedElem.addr + 1, removedElem.data);
+                logAdditional("\tSwapping word at #" +
+                    convDecToHex(removedElem.addr) + 
+                    " from cache with word at #" +
+                    convDecToHex(req.reqAddr) +
+                    " from physical memory.\n");
                 physicalMemoryAccessHappened = true;
             }
         }
@@ -67,12 +72,12 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
         currWord |= loadFrom(req.reqAddr + WORD_BYTES * ind + 1);
         response.push_back(currWord);
         
-        DiscardedCacheElement<word> removedElem = cache.store(currWord, getCurrTime());
+        DiscardedCacheElement<word> removedElem = cache.store(currWord, getCurrTime(), true);
         if (removedElem.discardHappened)
         {
             storeAt(removedElem.addr, removedElem.data >> 8);
             storeAt(removedElem.addr + 1, removedElem.data);
-            logComplete(getCurrTime(), "Swapped word at #" +
+            logAdditional("\tSwapping word at #" +
                 convDecToHex(removedElem.addr) + 
                 " from cache with word at #" +
                 convDecToHex(req.reqAddr) +

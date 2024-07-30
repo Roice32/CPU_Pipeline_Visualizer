@@ -7,8 +7,7 @@ main:
 loop:
     cmp r0, 1256
     je end
-    mov r1, r0
-    sub [r1], 2
+    mov [r0], r0
     add r0, 2
     jmp loop
 

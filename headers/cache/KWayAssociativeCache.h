@@ -81,7 +81,7 @@ public:
         return target.data;
     }
 
-    DiscardedCacheElement<DataType> store(DataType newData, clock_time hitTime)
+    DiscardedCacheElement<DataType> store(DataType newData, clock_time hitTime, bool isPlainRead = false)
     {
         if (isAHit() || foundIndex != CACHE_SET_SIZE)
         {
@@ -119,7 +119,7 @@ public:
         targetSet[elimCandidate].data = newData;
         targetSet[elimCandidate].tag = currReqTag;
         targetSet[elimCandidate].lastHitTime = hitTime;
-        targetSet[elimCandidate].modified = false;
+        targetSet[elimCandidate].modified = !isPlainRead;
         targetSet[elimCandidate].valid = true;
 
         return eliminatedElement;
