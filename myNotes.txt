@@ -5,6 +5,8 @@ Actually shorten IC's time.
 
 When a word is eliminated from LS's cache, flush it into memory.
 
+Make LS dump its cache's contents at the end of simulation.
+
 Signal IC to invalidate its FWs that have been modified.
 
 Întrebări:

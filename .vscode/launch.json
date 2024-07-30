@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/cpp_processor_model",
-            "args": ["${workspaceFolder}/tests/inputs/cache/ls_cache_swapping.hex", "${workspaceFolder}/tests/outputs/cache/ls_cache_swapping.txt"],
+            "args": ["${workspaceFolder}/tests/inputs/cache/proper_hits.hex"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

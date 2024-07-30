@@ -100,8 +100,8 @@ void LoadStore::executeModuleLogic()
     {
         SynchronizedDataPackage<MemoryAccessRequest> exReq = fromEXtoMe->getA();
         awaitNextTickToHandle(exReq);
+        std::vector<word> responseForEX;
         SynchronizedDataPackage<std::vector<word>> syncResponse{};
-        std::vector<word> responseForEX = handleRequestFromEX(exReq.data);
         if (exReq.data.reqAddr % 2 == 1)
         {
             syncResponse.exceptionTriggered = true;

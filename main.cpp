@@ -10,5 +10,7 @@ int main(int argc, char** argv)
         ILogger::markOutputForTerminal();
     CPU cpu(mem);
     cpu.runSimulation();
+    if (argc >= 3)
+        mem->dumpMemoryContents("../tests/outputs/cache/proper_hits_mem_dump.txt");
     return 0;
 }

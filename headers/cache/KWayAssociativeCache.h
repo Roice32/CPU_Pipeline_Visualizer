@@ -41,13 +41,11 @@ public:
 
         indexSize = 0;
         byte indexReachable = 1;
-        while (indexReachable < cacheSize)
+        while (indexReachable < cacheSize / CACHE_SET_SIZE)
         {
             indexReachable *= 2;
             ++indexSize;
         }
-
-        --indexSize;
 
         tagSize = sizeof(address) * 8 - indexSize - offsetSize;
 
@@ -76,6 +74,7 @@ public:
 
     DataType get(clock_time hitTime)
     {
+        assert(foundIndex != CACHE_SET_SIZE && "Attempt to get from cache when no hit recorded");
         CacheLine<DataType>& target = storage[currReqIndex].storedLines[foundIndex];
         target.lastHitTime = hitTime;
         return target.data;
@@ -83,12 +82,14 @@ public:
 
     DiscardedCacheElement<DataType> store(DataType newData, clock_time hitTime)
     {
-        if (foundIndex != CACHE_SET_SIZE)
+        if (isAHit() || foundIndex != CACHE_SET_SIZE)
         {
             CacheLine<DataType>& target = storage[currReqIndex].storedLines[foundIndex];
             if (target.data != newData)
+            {
                 target.modified = true;
-            target.data = newData;
+                target.data = newData;
+            }
             target.lastHitTime = hitTime;
             target.valid = true;
             return DiscardedCacheElement<DataType>();
@@ -107,8 +108,12 @@ public:
                 elimCandidate = ind;
         }
 
-        DiscardedCacheElement<DataType> eliminatedElement(targetSet[elimCandidate].data,
-            ((targetSet[elimCandidate].tag << indexSize) | currReqIndex) << offsetSize);
+        DiscardedCacheElement<DataType> eliminatedElement;
+        if (targetSet[elimCandidate].valid && targetSet[elimCandidate].modified)
+            eliminatedElement = DiscardedCacheElement<DataType>(targetSet[elimCandidate].data,
+                ((targetSet[elimCandidate].tag << indexSize) | currReqIndex) << offsetSize);
+        else
+            eliminatedElement = DiscardedCacheElement<DataType>();
 
         targetSet[elimCandidate].data = newData;
         targetSet[elimCandidate].tag = currReqTag;
