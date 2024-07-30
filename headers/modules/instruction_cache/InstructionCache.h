@@ -15,6 +15,7 @@ private:
 
     fetch_window getFetchWindowFromLS(address addr);
     void passForDecode(fetch_window currBatch);
+    bool checkIPChangeSignal();
     
 public:
     InstructionCache(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithLS,
