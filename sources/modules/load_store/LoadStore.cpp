@@ -156,7 +156,7 @@ void LoadStore::executeModuleLogic()
         if (cache.isAHit())
             updatedResponseForIC |= cache.get(getCurrTime());
         else
-            updatedResponseForIC |= responseForIC >> ((FETCH_WINDOW_WORDS - 1 - wordInd) * WORD_BYTES * 8);
+            updatedResponseForIC |= (responseForIC >> ((FETCH_WINDOW_WORDS - 1 - wordInd) * WORD_BYTES * 8)) & 0xffff;
     }
     SynchronizedDataPackage<fetch_window> syncResponse(updatedResponseForIC, lsReq.data);
     

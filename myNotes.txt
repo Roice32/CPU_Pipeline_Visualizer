@@ -12,3 +12,6 @@ Sometimes IC waits 1 tick too much to notice the IP-change signal from DE.
     - ar trebui să tratez invalidarea fetch window-urilor din cache-ul IC-ului?
         - da, cu semnal de la LS
     - artefactul ăla vizual
+
+The damn IC sync issue:
+    - 
