@@ -3,7 +3,6 @@
 #include "ClockSyncPackage.h"
 #include "SynchronizedDataPackage.h"
 
-// TO DO: access modifiers clean-up
 class IClockBoundModule
 {
 protected:

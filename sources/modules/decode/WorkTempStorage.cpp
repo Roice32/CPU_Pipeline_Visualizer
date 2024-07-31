@@ -4,7 +4,7 @@
 
 WorkTempStorage::WorkTempStorage()
 {
-    for(byte ind = 0; ind < DECODER_CACHE_FW_SIZE; ++ind)
+    for(byte ind = 0; ind < DE_WORK_MEMORY_FW_SIZE; ++ind)
         storedFWs[ind] = 0;
     cacheStartAddr = 0;
     storedWordsCount = 0;
@@ -14,12 +14,12 @@ WorkTempStorage& WorkTempStorage::operator<<(const byte wordsCount)
 {
     for (byte step = 0; step < wordsCount; ++step)
     {
-        for (byte fwIndex = 1; fwIndex < DECODER_CACHE_FW_SIZE; ++fwIndex)
+        for (byte fwIndex = 1; fwIndex < DE_WORK_MEMORY_FW_SIZE; ++fwIndex)
         {
             storedFWs[fwIndex - 1] <<= WORD_BYTES * 8;
             storedFWs[fwIndex - 1] |= storedFWs[fwIndex] >> ((FETCH_WINDOW_BYTES - WORD_BYTES) * 8);
         }
-        storedFWs[DECODER_CACHE_FW_SIZE - 1] <<= WORD_BYTES * 8;
+        storedFWs[DE_WORK_MEMORY_FW_SIZE - 1] <<= WORD_BYTES * 8;
         cacheStartAddr += WORD_BYTES;
     }
     storedWordsCount = (storedWordsCount - wordsCount > 0) ? (storedWordsCount - wordsCount) : 0;

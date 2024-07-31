@@ -20,7 +20,7 @@ private:
 public:
     DMCache<DataType>()
     {
-        cacheSize = CACHE_WORDS_SIZE * WORD_BYTES / sizeof(DataType);
+        cacheSize = IC_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(DataType);
         
         offsetSize = 0;
         byte bytesReachable = 1;

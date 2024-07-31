@@ -5,7 +5,7 @@
 class WorkTempStorage
 {
 private:
-    fetch_window storedFWs[DECODER_CACHE_FW_SIZE];
+    fetch_window storedFWs[DE_WORK_MEMORY_FW_SIZE];
     address cacheStartAddr;
     byte storedWordsCount;
 

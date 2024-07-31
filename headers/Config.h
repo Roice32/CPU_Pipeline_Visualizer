@@ -2,20 +2,25 @@
 
 #include <cstdint>
 
+#define CLOCK_PERIOD_MILLIS 1
+
 #define ADDRESS_WIDTH 16
-#define MEMORY_SIZE 0xffff
+#define SAVE_STATE_ADDR 0x0010
+#define DUMMY_ADDRESS address (-1)
+
 #define REGISTER_COUNT 8
 #define Z_REGISTER_COUNT 4
 #define WORDS_PER_Z_REGISTER 4
+
 #define WORD_BYTES 2
 #define FETCH_WINDOW_BYTES 8
 #define FETCH_WINDOW_WORDS 4
-#define DECODER_CACHE_FW_SIZE 2
-#define CLOCK_PERIOD_MILLIS 1
-#define DUMMY_ADDRESS address (-1)
-#define SAVE_STATE_ADDR 0x0010
-#define CACHE_WORDS_SIZE 64
-#define CACHE_SET_SIZE 2
+#define DE_WORK_MEMORY_FW_SIZE 2
+
+#define IC_CACHE_WORDS_SIZE 64
+#define LS_CACHE_WORDS_SIZE 64
+#define LS_CACHE_SET_SIZE 2
+#define BP_CACHE_ENTRIES_SIZE 16
 
 using byte = uint8_t;
 using register_16b = uint16_t;
