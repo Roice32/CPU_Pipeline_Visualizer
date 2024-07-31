@@ -61,16 +61,26 @@ public:
         return storage[currReqIndex].data;
     }
 
-    void store(DataType data)
+    address store(DataType data)
     {
+        address discardedAddr = DUMMY_ADDRESS;
+        if (isAHit())
+            discardedAddr = (storage[currReqIndex].tag << (indexSize + offsetSize)) | (currReqIndex << offsetSize);
+
         storage[currReqIndex].data = data;
         storage[currReqIndex].tag = currReqTag;
         storage[currReqIndex].valid = true;
+
+        return discardedAddr;
     }
 
-    void invalidate()
+    bool invalidate()
     {
         if (storage[currReqIndex].tag == currReqTag)
+        {
             storage[currReqIndex].valid = false;
+            return true;
+        }
+        return false;
     }
 };

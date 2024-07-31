@@ -125,13 +125,6 @@ public:
         return eliminatedElement;
     }
 
-    void invalidate()
-    {
-        if (foundIndex == CACHE_SET_SIZE)
-            return;
-        storage[currReqIndex].storedLines[foundIndex].valid = false;
-    }
-
     std::unordered_map<address, DataType> getDataToBeStoredInMemory()
     {
         std::unordered_map<address, DataType> modifiedMem;

@@ -88,7 +88,7 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
                 convDecToHex(removedElem.addr) + 
                 " from cache with word at #" +
                 convDecToHex(req.reqAddr) +
-                " from physical memory.\n");
+                " from physical memory\n");
         }
 
         physicalMemoryAccessHappened = true;

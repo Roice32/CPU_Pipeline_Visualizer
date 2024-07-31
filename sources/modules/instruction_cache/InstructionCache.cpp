@@ -56,7 +56,8 @@ void InstructionCache::executeModuleLogic()
     {
         address invalidatedFW = fromMetoLS->getB().data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
         cache.prepareForOps(invalidatedFW);
-        cache.invalidate();
+        if(cache.invalidate())
+            logComplete(getCurrTime(), "Invalidated cached fetch window from #" + convDecToHex(invalidatedFW) + " as per LS's signal\n");
     }
 
     fetch_window currBatch;
@@ -70,7 +71,13 @@ void InstructionCache::executeModuleLogic()
     else
     {
         currBatch = getFetchWindowFromLS(internalIP);
-        cache.store(currBatch);
+        address removedElement = cache.store(currBatch);
+        if (removedElement != DUMMY_ADDRESS)
+            logAdditional("\tSwapping fetch window at #" +
+                convDecToHex(removedElement) + 
+                " from cache with fetch window at #" +
+                convDecToHex(internalIP) +
+                " from LS\n");
     }
     SynchronizedDataPackage<fetch_window> syncResponse(currBatch, internalIP);
     internalIP += FETCH_WINDOW_BYTES;
