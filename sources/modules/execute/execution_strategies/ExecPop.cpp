@@ -56,5 +56,5 @@ void ExecPop::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
     *regs->stackPointer += WORD_BYTES;
     moveIP(instr);
     clock_time lastTick = refToEX->waitTillLastTick();
-    logComplete(lastTick, log(LoggablePackage(instr, valueOnTopPckg.data[0])));
+    logComplete(lastTick, log(LoggablePackage(instr, valueOnTopPckg.data.size() > 0 ? valueOnTopPckg.data[0] : 0)));
 }

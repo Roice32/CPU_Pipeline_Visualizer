@@ -13,7 +13,6 @@ third:
     call [0x0000] ; line 17: 3400 -> src1 becomes NULL_VAL
 fourth:
     end_sim ; line 20: 3c01 -> src2 becomes IMM
-    ;end_sim ; line 21: 2020 -> value for src2?
 final:
     end_sim
     end_sim

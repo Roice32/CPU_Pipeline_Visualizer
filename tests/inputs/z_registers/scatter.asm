@@ -17,7 +17,7 @@ main:
 
     scatter z0, z1
 
-    scatter z0, z0;
+    scatter z0, z0 ; modified hex code to be scatter z0, r0
     end_sim
 
 invalid_decode_handl:

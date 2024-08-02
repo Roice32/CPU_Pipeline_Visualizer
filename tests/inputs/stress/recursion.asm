@@ -34,7 +34,7 @@ base_case_2:
 
 .data:
 param_n:
-dw 0x000a
+dw 0x0006
 glob_var_a:
 dw 0x0000
 glob_var_b:
