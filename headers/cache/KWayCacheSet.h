@@ -12,7 +12,7 @@ public:
 
     KWayCacheSet<DataType>()
     {
-        for(byte ind = 0; ind < CACHE_SET_SIZE; ++ind)
+        for(byte ind = 0; ind < LS_CACHE_SET_SIZE; ++ind)
             storedLines.push_back(CacheLine<DataType>());
     }
 };
