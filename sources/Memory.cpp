@@ -10,7 +10,7 @@ byte Memory::hexCharToDec(const char digit)
     return digit - (digit >= 'a' ? 'a' - 10 : '0');
 }
 
-void Memory::jumpToNewAddr(address& currAddr, const byte* newAddr)
+void Memory::jumpToNewAddr(address& currAddr, const char* newAddr)
 {
     currAddr = (address) 0;
     for (int i = 0; i < ADDRESS_WIDTH / 4; ++i)
@@ -20,7 +20,7 @@ void Memory::jumpToNewAddr(address& currAddr, const byte* newAddr)
     }
 }
 
-void Memory::storeData(address& currAddr, const byte* instr)
+void Memory::storeData(address& currAddr, const char* instr)
 {
     for (int byteNo = 0; byteNo < WORD_BYTES; ++byteNo)
     {
@@ -29,21 +29,45 @@ void Memory::storeData(address& currAddr, const byte* instr)
     }
 }
 
+bool Memory::isValidInputLine(std::string inLine)
+{
+    if (inLine.size() > 5)
+        return false;
+    byte ind = 0;
+    if (inLine.size() == 5)
+    {
+        if (inLine[0] != '#')
+            return false;
+        ind = 1;
+    }
+    while (ind < inLine.size())
+    {
+        if (!(inLine[ind] >= '0' && inLine[ind] <= '9' || inLine[ind] >= 'a' && inLine[ind] <= 'f'))
+            return false;
+        ++ind;
+    }
+
+    return true;
+}
+
 Memory::Memory(const char* hexSourceFilePath)
 {
     address currAddr = 0;
-    byte instrLine[6];
+    std::string instrString = "";
     
     std::ifstream sourceCodeFile(hexSourceFilePath);
 
     assert(sourceCodeFile.is_open() && "Unable to open specified input file");
 
-    while(sourceCodeFile >> instrLine)
+    while(sourceCodeFile >> instrString)
     {
-        if (char (instrLine[0]) == '#')
-            jumpToNewAddr(currAddr, instrLine + 1);
+        if (!isValidInputLine(instrString))
+            throw "INVALID_INPUT_FILE";
+
+        if (char (instrString.c_str()[0]) == '#')
+            jumpToNewAddr(currAddr, instrString.c_str() + 1);
         else
-            storeData(currAddr, instrLine);
+            storeData(currAddr, instrString.c_str());
     }
 
     sourceCodeFile.close();

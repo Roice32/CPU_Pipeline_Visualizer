@@ -3,7 +3,15 @@
 
 int main(int argc, char** argv)
 {
-    std::shared_ptr<Memory> mem = std::make_shared<Memory>(argv[1]);
+    std::shared_ptr<Memory> mem;
+    try
+    {
+        mem = std::make_shared<Memory>(argv[1]);
+    } catch (const char* ex)
+    {
+        std::cout << "Failure: Invalid input file\n";
+        return 1;
+    }
 
     if (argc >= 3 && argv[2][0] != '\0')
         ILogger::openDumpFile(argv[2]);

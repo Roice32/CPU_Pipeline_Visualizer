@@ -2,6 +2,7 @@
 
 #include "Config.h"
 
+#include <string>
 #include <unordered_map>
 
 class Memory
@@ -9,9 +10,10 @@ class Memory
 private:
     std::unordered_map<address, byte> data;
 
+    bool isValidInputLine(std::string inLine);
     static byte hexCharToDec(const char digit);
-    static void jumpToNewAddr(address& currAddr, const byte* newAddr);
-    void storeData(address& currAddr, const byte* instr);
+    static void jumpToNewAddr(address& currAddr, const char* newAddr);
+    void storeData(address& currAddr, const char* instr);
 
 public:
     Memory(const char* hexSourceFilePath);
