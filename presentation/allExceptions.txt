@@ -1,0 +1,625 @@
+	!IC signals beginning of simulation at T=0 from #fff0!
+[IC@T=1]> Requested fetch window starting at #fff0 from LS
+[LS@T=2]> Accepted request from IC regarding #fff0
+[LS@T=16]> Fetched [1c20 1000 0000 0000] from #fff0 for IC
+[IC@T=18]> Delivered [1c20 1000 0000 0000] from #fff0 to DE
+[IC@T=19]> Requested fetch window starting at #fff8 from LS
+[LS@T=20]> Accepted request from IC regarding #fff8
+[DE@T=20]> Decoded 'jmp 4096 ' from #fff0
+[EX@T=21]> Began executing 'jmp 4096 ' from #fff0
+[EX@T=25]> Finished executing: jmp #1000 (yes)
+[DE@T=26]> Received signal to jump to #1000; Sent signal furter to IC
+[EX@T=26]> Ignored malformed / residual instruction at #fff4
+[EX@T=26]> Ignored malformed / residual instruction at #fff6
+[EX@T=26]> Skipped empty instruction from #fff6 (trying to wait for #1000)
+[LS@T=34]> Fetched [0000 0000 0000 0000] from #fff8 for IC
+[IC@T=36]> Received signal to change IP to #1000 (aligned as #1000)
+[IC@T=37]> Requested fetch window starting at #1000 from LS
+[LS@T=38]> Accepted request from IC regarding #1000
+[LS@T=52]> Fetched [1501 0000 0c65 0d02] from #1000 for IC
+[IC@T=54]> Delivered [1501 0000 0c65 0d02] from #1000 to DE
+[IC@T=55]> Requested fetch window starting at #1008 from LS
+[DE@T=56]> Decoded 'div r0,  0' from #1000
+[LS@T=56]> Accepted request from IC regarding #1008
+[EX@T=57]> Began executing 'div r0,  0' from #1000
+[EX@T=57]> Encountered exception 'Division by 0' at #1000
+[LS@T=70]> Fetched [0307 3800 3420 022b] from #1008 for IC
+[LS@T=71]> Accepted request from EX regarding #0000
+[IC@T=72]> Delivered [0307 3800 3420 022b] from #1008 to DE
+[IC@T=73]> Requested fetch window starting at #1010 from LS
+[DE@T=74]> Decoded 'mov r0,  [0307]' from #1006
+[DE@T=76]> Decoded 'ret  ' from #100a
+[DE@T=78]> Decoded 'call 555 ' from #100c
+[LS@T=85]> Fetched { 1010 } from #0000 for EX
+[LS@T=86]> Accepted request from IC regarding #1010
+[LS@T=100]> Fetched [0c41 1052 0001 0441] from #1010 for IC
+[LS@T=101]> Accepted request from EX regarding #0010
+[IC@T=102]> Delivered [0c41 1052 0001 0441] from #1010 to DE
+[IC@T=103]> Requested fetch window starting at #1018 from LS
+[DE@T=104]> Decoded 'mov [1052],  1' from #1010
+[LS@T=107]> Stored { 1000 1000 0800 0000 0000 0000 0000 0000 0000 0000 0000 0000 } at #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=108]> Accepted request from IC regarding #1018
+[EX@T=110]> Calling exception handler at #1010
+[DE@T=111]> Received signal to jump to #1010; Sent signal furter to IC
+[EX@T=111]> Ignored instruction 'mov sp,  stack_size' from #1004 (expecting #1010)
+[EX@T=111]> Ignored instruction 'mov r0,  [0307]' from #1006 (expecting #1010)
+[EX@T=111]> Ignored instruction 'ret  ' from #100a (expecting #1010)
+[EX@T=111]> Ignored instruction 'call 555 ' from #100c (expecting #1010)
+[EX@T=111]> Began executing 'mov [1052],  1' from #1010
+[LS@T=122]> Fetched [0010 0004 4800 0c41] from #1018 for IC
+[LS@T=123]> Accepted request from EX regarding #1052
+[IC@T=124]> Received signal to change IP to #1010 (aligned as #1010)
+[IC@T=126]> Delivered [0c41 1052 0001 0441] from #1010 to DE
+	(From IC's cache)
+[IC@T=127]> Requested fetch window starting at #1018 from LS
+[DE@T=128]> Decoded 'mov [1052],  1' from #1010
+[LS@T=129]> Stored { 0001 } at #1052 for EX
+	(Entirely using LS's cache)
+[LS@T=130]> Accepted request from IC regarding #1018
+[EX@T=133]> Finished executing: mov [1052],  1 ([1052] = 1)
+[EX@T=134]> Ignored instruction 'mov [1052],  1' from #1010 (expecting #1016)
+[LS@T=144]> Fetched [0010 0004 4800 0c41] from #1018 for IC
+[IC@T=146]> Delivered [0010 0004 4800 0c41] from #1018 to DE
+[IC@T=147]> Requested fetch window starting at #1020 from LS
+[LS@T=148]> Accepted request from IC regarding #1020
+[DE@T=148]> Decoded 'add [0010],  4' from #1016
+[EX@T=149]> Began executing 'add [0010],  4' from #1016
+[DE@T=150]> Decoded 'excp_exit  ' from #101c
+[LS@T=162]> Fetched [1052 0002 0441 0010] from #1020 for IC
+[LS@T=163]> Accepted request from EX regarding #0010
+[IC@T=164]> Delivered [1052 0002 0441 0010] from #1020 to DE
+[IC@T=165]> Requested fetch window starting at #1028 from LS
+[DE@T=166]> Decoded 'mov [1052],  2' from #101e
+[LS@T=169]> Fetched { 1000 } from #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=170]> Accepted request from IC regarding #1028
+[LS@T=184]> Fetched [0002 4800 0c41 1052] from #1028 for IC
+[LS@T=185]> Accepted request from EX regarding #0010
+[IC@T=186]> Delivered [0002 4800 0c41 1052] from #1028 to DE
+[IC@T=187]> Requested fetch window starting at #1030 from LS
+[DE@T=188]> Decoded 'add [0010],  2' from #1024
+[DE@T=190]> Decoded 'excp_exit  ' from #102a
+[LS@T=191]> Stored { 1004 } at #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=192]> Accepted request from IC regarding #1030
+[EX@T=194]> Finished executing: add [0010],  4 ([0010] = 4100)
+[EX@T=195]> Began executing 'excp_exit  ' from #101c
+[LS@T=206]> Fetched [0003 0441 0010 0004] from #1030 for IC
+[LS@T=207]> Accepted request from EX regarding #0010
+[IC@T=208]> Delivered [0003 0441 0010 0004] from #1030 to DE
+[IC@T=209]> Requested fetch window starting at #1038 from LS
+[DE@T=210]> Decoded 'mov [1052],  3' from #102c
+[DE@T=212]> Decoded 'add [0010],  4' from #1032
+[LS@T=213]> Fetched { 1004 1000 0800 0000 0000 0000 0000 0000 0000 0000 0000 0000 } from #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=214]> Accepted request from IC regarding #1038
+[EX@T=217]> Finished executing: excp_exit  
+Returned from exception handler to state:
+	IP = #1004
+	SP = 4096
+	Flags.Z=0 Flags.E=0 Flags.G=0 
+	Registers: r0=0 r1=0 r2=0 r3=0 r4=0 r5=0 r6=0 r7=0
+	Exception flag cleared
+[DE@T=218]> Received signal to jump to #1004; Sent signal furter to IC
+[EX@T=218]> Ignored instruction 'mov [1052],  2' from #101e (expecting #1004)
+[EX@T=218]> Ignored instruction 'add [0010],  2' from #1024 (expecting #1004)
+[EX@T=218]> Ignored instruction 'excp_exit  ' from #102a (expecting #1004)
+[EX@T=218]> Ignored instruction 'mov [1052],  3' from #102c (expecting #1004)
+[EX@T=218]> Ignored instruction 'add [0010],  4' from #1032 (expecting #1004)
+[LS@T=228]> Fetched [4800 0c41 1052 0004] from #1038 for IC
+[IC@T=230]> Received signal to change IP to #1004 (aligned as #1000)
+[IC@T=232]> Delivered [1501 0000 0c65 0d02] from #1000 to DE
+	(From IC's cache)
+[IC@T=234]> Delivered [0307 3800 3420 022b] from #1008 to DE
+	(From IC's cache)
+[EX@T=235]> Encountered exception 'Incompatible parameters (mutually / for given operation)' at #1004
+[LS@T=236]> Accepted request from EX regarding #0002
+[DE@T=236]> Decoded 'mov r0,  [0307]' from #1006
+[IC@T=236]> Delivered [0c41 1052 0001 0441] from #1010 to DE
+	(From IC's cache)
+[DE@T=238]> Decoded 'ret  ' from #100a
+[IC@T=238]> Delivered [0010 0004 4800 0c41] from #1018 to DE
+	(From IC's cache)
+[DE@T=240]> Decoded 'call 555 ' from #100c
+[IC@T=240]> Delivered [1052 0002 0441 0010] from #1020 to DE
+	(From IC's cache)
+[DE@T=242]> Decoded 'mov [1052],  1' from #1010
+[IC@T=242]> Delivered [0002 4800 0c41 1052] from #1028 to DE
+	(From IC's cache)
+[DE@T=244]> Decoded 'add [0010],  4' from #1016
+[IC@T=244]> Delivered [0003 0441 0010 0004] from #1030 to DE
+	(From IC's cache)
+[DE@T=246]> Decoded 'excp_exit  ' from #101c
+[IC@T=246]> Delivered [4800 0c41 1052 0004] from #1038 to DE
+	(From IC's cache)
+[IC@T=247]> Requested fetch window starting at #1040 from LS
+[DE@T=248]> Decoded 'mov [1052],  2' from #101e
+[LS@T=250]> Fetched { 101e } from #0002 for EX
+[DE@T=250]> Decoded 'add [0010],  2' from #1024
+[LS@T=251]> Accepted request from IC regarding #1040
+[DE@T=252]> Decoded 'excp_exit  ' from #102a
+[DE@T=254]> Decoded 'mov [1052],  3' from #102c
+[DE@T=256]> Decoded 'add [0010],  4' from #1032
+[DE@T=258]> Decoded 'excp_exit  ' from #1038
+[DE@T=260]> Decoded 'mov [1052],  4' from #103a
+[LS@T=265]> Fetched [0441 0010 0002 4800] from #1040 for IC
+[LS@T=266]> Accepted request from EX regarding #0010
+[IC@T=267]> Delivered [0441 0010 0002 4800] from #1040 to DE
+[IC@T=268]> Requested fetch window starting at #1048 from LS
+[DE@T=269]> Decoded 'add [0010],  2' from #1040
+[DE@T=271]> Decoded 'excp_exit  ' from #1046
+[LS@T=272]> Stored { 1004 1000 0800 0008 0000 0000 0000 0000 0000 0000 0000 0000 } at #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=273]> Accepted request from IC regarding #1048
+[EX@T=275]> Calling exception handler at #101e
+[DE@T=275]> Received signal to jump to #101e; Sent signal furter to IC
+[EX@T=276]> Ignored instruction 'mov r0,  [0307]' from #1006 (expecting #101e)
+[EX@T=276]> Ignored instruction 'ret  ' from #100a (expecting #101e)
+[EX@T=276]> Ignored instruction 'call 555 ' from #100c (expecting #101e)
+[EX@T=276]> Ignored instruction 'mov [1052],  1' from #1010 (expecting #101e)
+[EX@T=276]> Ignored instruction 'add [0010],  4' from #1016 (expecting #101e)
+[EX@T=276]> Ignored instruction 'excp_exit  ' from #101c (expecting #101e)
+[EX@T=276]> Began executing 'mov [1052],  2' from #101e
+[LS@T=287]> Fetched [0c41 1052 0005 1581] from #1048 for IC
+[LS@T=288]> Accepted request from EX regarding #1052
+[IC@T=289]> Received signal to change IP to #101e (aligned as #1018)
+[IC@T=291]> Delivered [0010 0004 4800 0c41] from #1018 to DE
+	(From IC's cache)
+[IC@T=292]> Requested fetch window starting at #1020 from LS
+[LS@T=294]> Stored { 0002 } at #1052 for EX
+	(Entirely using LS's cache)
+[LS@T=295]> Accepted request from IC regarding #1020
+[EX@T=298]> Finished executing: mov [1052],  2 ([1052] = 2)
+[EX@T=299]> Began executing 'add [0010],  2' from #1024
+[LS@T=309]> Fetched [1052 0002 0441 0010] from #1020 for IC
+[LS@T=310]> Accepted request from EX regarding #0010
+[IC@T=311]> Delivered [1052 0002 0441 0010] from #1020 to DE
+[IC@T=313]> Delivered [0002 4800 0c41 1052] from #1028 to DE
+	(From IC's cache)
+[DE@T=313]> Decoded 'mov [1052],  2' from #101e
+[IC@T=315]> Delivered [0003 0441 0010 0004] from #1030 to DE
+	(From IC's cache)
+[DE@T=315]> Decoded 'add [0010],  2' from #1024
+[LS@T=316]> Fetched { 1004 } from #0010 for EX
+	(Entirely using LS's cache)
+[IC@T=317]> Delivered [4800 0c41 1052 0004] from #1038 to DE
+	(From IC's cache)
+[DE@T=317]> Decoded 'excp_exit  ' from #102a
+[LS@T=318]> Accepted request from EX regarding #0010
+[IC@T=319]> Delivered [0441 0010 0002 4800] from #1040 to DE
+	(From IC's cache)
+[DE@T=319]> Decoded 'mov [1052],  3' from #102c
+[IC@T=320]> Requested fetch window starting at #1048 from LS
+[DE@T=321]> Decoded 'add [0010],  4' from #1032
+[DE@T=323]> Decoded 'excp_exit  ' from #1038
+[LS@T=324]> Stored { 1006 } at #0010 for EX
+	(Entirely using LS's cache)
+[DE@T=325]> Decoded 'mov [1052],  4' from #103a
+[LS@T=325]> Accepted request from IC regarding #1048
+[EX@T=327]> Finished executing: add [0010],  2 ([0010] = 4102)
+[DE@T=327]> Decoded 'add [0010],  2' from #1040
+[EX@T=328]> Began executing 'excp_exit  ' from #102a
+[DE@T=329]> Decoded 'excp_exit  ' from #1046
+[LS@T=339]> Fetched [0c41 1052 0005 1581] from #1048 for IC
+[LS@T=340]> Accepted request from EX regarding #0010
+[IC@T=341]> Delivered [0c41 1052 0005 1581] from #1048 to DE
+[IC@T=342]> Requested fetch window starting at #1050 from LS
+[DE@T=343]> Decoded 'mov [1052],  5' from #1048
+[LS@T=346]> Fetched { 1006 1000 0800 0008 0000 0000 0000 0000 0000 0000 0000 0000 } from #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=347]> Accepted request from IC regarding #1050
+[EX@T=350]> Finished executing: excp_exit  
+Returned from exception handler to state:
+	IP = #1006
+	SP = 4096
+	Flags.Z=0 Flags.E=0 Flags.G=0 
+	Registers: r0=0 r1=0 r2=0 r3=0 r4=0 r5=0 r6=0 r7=0
+	Exception flag cleared
+[DE@T=351]> Received signal to jump to #1006; Sent signal furter to IC
+[EX@T=351]> Ignored instruction 'mov [1052],  3' from #102c (expecting #1006)
+[EX@T=351]> Ignored instruction 'add [0010],  4' from #1032 (expecting #1006)
+[EX@T=351]> Ignored instruction 'excp_exit  ' from #1038 (expecting #1006)
+[EX@T=351]> Ignored instruction 'mov [1052],  4' from #103a (expecting #1006)
+[EX@T=351]> Ignored instruction 'add [0010],  2' from #1040 (expecting #1006)
+[EX@T=351]> Ignored instruction 'excp_exit  ' from #1046 (expecting #1006)
+[EX@T=351]> Ignored instruction 'mov [1052],  2' from #101e (expecting #1006)
+[EX@T=351]> Ignored instruction 'add [0010],  2' from #1024 (expecting #1006)
+[EX@T=351]> Ignored instruction 'excp_exit  ' from #102a (expecting #1006)
+[EX@T=351]> Ignored instruction 'mov [1052],  3' from #102c (expecting #1006)
+[EX@T=351]> Ignored instruction 'add [0010],  4' from #1032 (expecting #1006)
+[EX@T=351]> Ignored instruction 'excp_exit  ' from #1038 (expecting #1006)
+[EX@T=351]> Ignored instruction 'mov [1052],  4' from #103a (expecting #1006)
+[EX@T=351]> Ignored instruction 'add [0010],  2' from #1040 (expecting #1006)
+[EX@T=351]> Ignored instruction 'excp_exit  ' from #1046 (expecting #1006)
+[EX@T=351]> Ignored instruction 'mov [1052],  5' from #1048 (expecting #1006)
+[LS@T=361]> Fetched [0000 0000 0000 0000] from #1050 for IC
+[IC@T=363]> Received signal to change IP to #1006 (aligned as #1000)
+[IC@T=365]> Delivered [1501 0000 0c65 0d02] from #1000 to DE
+	(From IC's cache)
+[IC@T=367]> Delivered [0307 3800 3420 022b] from #1008 to DE
+	(From IC's cache)
+[IC@T=369]> Delivered [0c41 1052 0001 0441] from #1010 to DE
+	(From IC's cache)
+[DE@T=369]> Decoded 'mov r0,  [0307]' from #1006
+[EX@T=370]> Began executing 'mov r0,  [0307]' from #1006
+[IC@T=371]> Delivered [0010 0004 4800 0c41] from #1018 to DE
+	(From IC's cache)
+[DE@T=371]> Decoded 'ret  ' from #100a
+[IC@T=373]> Delivered [1052 0002 0441 0010] from #1020 to DE
+	(From IC's cache)
+[DE@T=373]> Decoded 'call 555 ' from #100c
+[IC@T=375]> Delivered [0002 4800 0c41 1052] from #1028 to DE
+	(From IC's cache)
+[DE@T=375]> Decoded 'mov [1052],  1' from #1010
+[IC@T=377]> Delivered [0003 0441 0010 0004] from #1030 to DE
+	(From IC's cache)
+[DE@T=377]> Decoded 'add [0010],  4' from #1016
+[LS@T=377]> Fetched { } from #0307 for EX
+	(Entirely using LS's cache)
+[EX@T=378]> Encountered exception 'Request to memory address not aligned to 16b' at #1006
+[IC@T=379]> Delivered [4800 0c41 1052 0004] from #1038 to DE
+	(From IC's cache)
+[DE@T=379]> Decoded 'excp_exit  ' from #101c
+[LS@T=379]> Accepted request from EX regarding #0004
+[IC@T=381]> Delivered [0441 0010 0002 4800] from #1040 to DE
+	(From IC's cache)
+[DE@T=381]> Decoded 'mov [1052],  2' from #101e
+[IC@T=383]> Delivered [0c41 1052 0005 1581] from #1048 to DE
+	(From IC's cache)
+[DE@T=383]> Decoded 'add [0010],  2' from #1024
+[IC@T=385]> Delivered [0000 0002 0000 0000] from #1050 to DE
+	(From IC's cache)
+[DE@T=385]> Decoded 'excp_exit  ' from #102a
+[IC@T=386]> Requested fetch window starting at #1058 from LS
+[DE@T=387]> Decoded 'mov [1052],  3' from #102c
+[DE@T=389]> Decoded 'add [0010],  4' from #1032
+[DE@T=391]> Decoded 'excp_exit  ' from #1038
+[LS@T=393]> Fetched { 102c } from #0004 for EX
+[DE@T=393]> Decoded 'mov [1052],  4' from #103a
+[LS@T=394]> Accepted request from IC regarding #1058
+[DE@T=395]> Decoded 'add [0010],  2' from #1040
+[DE@T=397]> Decoded 'excp_exit  ' from #1046
+[DE@T=399]> Decoded 'mov [1052],  5' from #1048
+[DE@T=401]> Decoded 'div r4,  0' from #104e
+[LS@T=408]> Fetched [0000 0000 0000 0000] from #1058 for IC
+[LS@T=409]> Accepted request from EX regarding #0010
+[IC@T=410]> Delivered [0000 0000 0000 0000] from #1058 to DE
+[IC@T=411]> Requested fetch window starting at #1060 from LS
+[LS@T=415]> Stored { 1006 1000 0800 0307 0000 0000 0000 0000 0000 0000 0000 0000 } at #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=416]> Accepted request from IC regarding #1060
+[EX@T=417]> Calling exception handler at #102c
+[DE@T=417]> Received signal to jump to #102c; Sent signal furter to IC
+[EX@T=418]> Ignored instruction 'ret  ' from #100a (expecting #102c)
+[EX@T=418]> Ignored instruction 'call 555 ' from #100c (expecting #102c)
+[EX@T=418]> Ignored instruction 'mov [1052],  1' from #1010 (expecting #102c)
+[EX@T=418]> Ignored instruction 'add [0010],  4' from #1016 (expecting #102c)
+[EX@T=418]> Ignored instruction 'excp_exit  ' from #101c (expecting #102c)
+[EX@T=418]> Ignored instruction 'mov [1052],  2' from #101e (expecting #102c)
+[EX@T=418]> Ignored instruction 'add [0010],  2' from #1024 (expecting #102c)
+[EX@T=418]> Ignored instruction 'excp_exit  ' from #102a (expecting #102c)
+[EX@T=418]> Began executing 'mov [1052],  3' from #102c
+[LS@T=430]> Fetched [0000 0000 0000 0000] from #1060 for IC
+[LS@T=431]> Accepted request from EX regarding #1052
+[IC@T=432]> Received signal to change IP to #102c (aligned as #1028)
+[IC@T=433]> Invalidated cached fetch window from #1050 as per LS's signal
+[IC@T=434]> Delivered [0002 4800 0c41 1052] from #1028 to DE
+	(From IC's cache)
+[IC@T=436]> Delivered [0003 0441 0010 0004] from #1030 to DE
+	(From IC's cache)
+[LS@T=437]> Stored { 0003 } at #1052 for EX
+	(Entirely using LS's cache)
+[DE@T=438]> Decoded 'mov [1052],  3' from #102c
+[IC@T=438]> Delivered [4800 0c41 1052 0004] from #1038 to DE
+	(From IC's cache)
+[DE@T=440]> Decoded 'add [0010],  4' from #1032
+[IC@T=440]> Delivered [0441 0010 0002 4800] from #1040 to DE
+	(From IC's cache)
+[EX@T=441]> Finished executing: mov [1052],  3 ([1052] = 3)
+[EX@T=442]> Began executing 'add [0010],  4' from #1032
+[DE@T=442]> Decoded 'excp_exit  ' from #1038
+[IC@T=442]> Delivered [0c41 1052 0005 1581] from #1048 to DE
+	(From IC's cache)
+[LS@T=443]> Accepted request from EX regarding #0010
+[IC@T=443]> Requested fetch window starting at #1050 from LS
+[DE@T=444]> Decoded 'mov [1052],  4' from #103a
+[DE@T=446]> Decoded 'add [0010],  2' from #1040
+[DE@T=448]> Decoded 'excp_exit  ' from #1046
+[LS@T=449]> Fetched { 1006 } from #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=450]> Accepted request from IC regarding #1050
+[DE@T=450]> Decoded 'mov [1052],  5' from #1048
+[LS@T=464]> Fetched [0000 0000 0000 0000] from #1050 for IC
+[LS@T=465]> Accepted request from EX regarding #0010
+[IC@T=466]> Delivered [0000 0003 0000 0000] from #1050 to DE
+[IC@T=468]> Delivered [0000 0000 0000 0000] from #1058 to DE
+	(From IC's cache)
+[DE@T=468]> Decoded 'div r4,  0' from #104e
+[IC@T=469]> Requested fetch window starting at #1060 from LS
+[LS@T=471]> Stored { 100a } at #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=472]> Accepted request from IC regarding #1060
+[EX@T=474]> Finished executing: add [0010],  4 ([0010] = 4106)
+[EX@T=475]> Began executing 'excp_exit  ' from #1038
+[LS@T=486]> Fetched [0000 0000 0000 0000] from #1060 for IC
+[LS@T=487]> Accepted request from EX regarding #0010
+[IC@T=488]> Delivered [0000 0000 0000 0000] from #1060 to DE
+[IC@T=489]> Requested fetch window starting at #1068 from LS
+[LS@T=493]> Fetched { 100a 1000 0800 0307 0000 0000 0000 0000 0000 0000 0000 0000 } from #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=494]> Accepted request from IC regarding #1068
+[EX@T=497]> Finished executing: excp_exit  
+Returned from exception handler to state:
+	IP = #100a
+	SP = 4096
+	Flags.Z=0 Flags.E=0 Flags.G=0 
+	Registers: r0=0 r1=0 r2=0 r3=0 r4=0 r5=0 r6=0 r7=0
+	Exception flag cleared
+[EX@T=498]> Ignored instruction 'mov [1052],  4' from #103a (expecting #100a)
+[EX@T=498]> Ignored instruction 'add [0010],  2' from #1040 (expecting #100a)
+[EX@T=498]> Ignored instruction 'excp_exit  ' from #1046 (expecting #100a)
+[EX@T=498]> Ignored instruction 'mov [1052],  5' from #1048 (expecting #100a)
+[EX@T=498]> Ignored instruction 'div r4,  0' from #104e (expecting #100a)
+[EX@T=498]> Ignored malformed / residual instruction at #1052
+[EX@T=498]> Ignored malformed / residual instruction at #1054
+[EX@T=498]> Ignored malformed / residual instruction at #1056
+[EX@T=498]> Ignored malformed / residual instruction at #1058
+[EX@T=498]> Ignored malformed / residual instruction at #105a
+[EX@T=498]> Ignored malformed / residual instruction at #105c
+[EX@T=498]> Ignored instruction 'mov [1052],  3' from #102c (expecting #100a)
+[EX@T=498]> Ignored instruction 'add [0010],  4' from #1032 (expecting #100a)
+[EX@T=498]> Ignored instruction 'excp_exit  ' from #1038 (expecting #100a)
+[DE@T=498]> Received signal to jump to #100a; Sent signal furter to IC
+[EX@T=498]> Ignored instruction 'mov [1052],  4' from #103a (expecting #100a)
+[EX@T=498]> Ignored instruction 'add [0010],  2' from #1040 (expecting #100a)
+[EX@T=498]> Ignored instruction 'excp_exit  ' from #1046 (expecting #100a)
+[EX@T=498]> Ignored instruction 'mov [1052],  5' from #1048 (expecting #100a)
+[EX@T=498]> Ignored instruction 'div r4,  0' from #104e (expecting #100a)
+[EX@T=498]> Ignored malformed / residual instruction at #1052
+[EX@T=498]> Ignored malformed / residual instruction at #1054
+[EX@T=498]> Ignored malformed / residual instruction at #1056
+[EX@T=498]> Ignored malformed / residual instruction at #1058
+[EX@T=498]> Ignored malformed / residual instruction at #105a
+[EX@T=498]> Ignored malformed / residual instruction at #105c
+[EX@T=498]> Ignored malformed / residual instruction at #105e
+[EX@T=498]> Ignored malformed / residual instruction at #1060
+[EX@T=498]> Ignored malformed / residual instruction at #1062
+[EX@T=498]> Ignored malformed / residual instruction at #1064
+[EX@T=498]> Ignored malformed / residual instruction at #1066
+[EX@T=498]> Skipped empty instruction from #1066 (trying to wait for #100a)
+[LS@T=508]> Fetched [0000 0000 0000 0000] from #1068 for IC
+[IC@T=510]> Received signal to change IP to #100a (aligned as #1008)
+[IC@T=512]> Delivered [0307 3800 3420 022b] from #1008 to DE
+	(From IC's cache)
+[DE@T=514]> Decoded 'ret  ' from #100a
+[IC@T=514]> Delivered [0c41 1052 0001 0441] from #1010 to DE
+	(From IC's cache)
+[EX@T=515]> Began executing 'ret  ' from #100a
+[EX@T=515]> Encountered exception 'Over-popped stack exceeded lower limit' at #100a
+[DE@T=516]> Decoded 'call 555 ' from #100c
+[LS@T=516]> Accepted request from EX regarding #0006
+[IC@T=516]> Delivered [0010 0004 4800 0c41] from #1018 to DE
+	(From IC's cache)
+[IC@T=517]> Requested fetch window starting at #1020 from LS
+[DE@T=518]> Decoded 'mov [1052],  1' from #1010
+[DE@T=520]> Decoded 'add [0010],  4' from #1016
+[DE@T=522]> Decoded 'excp_exit  ' from #101c
+[LS@T=530]> Fetched { 103a } from #0006 for EX
+[LS@T=531]> Accepted request from IC regarding #1020
+[LS@T=545]> Fetched [1052 0002 0441 0010] from #1020 for IC
+[LS@T=546]> Accepted request from EX regarding #0010
+[IC@T=547]> Delivered [1052 0002 0441 0010] from #1020 to DE
+[DE@T=549]> Decoded 'mov [1052],  2' from #101e
+[IC@T=549]> Delivered [0002 4800 0c41 1052] from #1028 to DE
+	(From IC's cache)
+[DE@T=551]> Decoded 'add [0010],  2' from #1024
+[IC@T=551]> Delivered [0003 0441 0010 0004] from #1030 to DE
+	(From IC's cache)
+[LS@T=552]> Stored { 100a 1000 0800 ffff 0000 0000 0000 0000 0000 0000 0000 0000 } at #0010 for EX
+	(Entirely using LS's cache)
+[DE@T=553]> Decoded 'excp_exit  ' from #102a
+[IC@T=553]> Delivered [4800 0c41 1052 0004] from #1038 to DE
+	(From IC's cache)
+[DE@T=555]> Decoded 'mov [1052],  3' from #102c
+[EX@T=555]> Calling exception handler at #103a
+[IC@T=555]> Delivered [0441 0010 0002 4800] from #1040 to DE
+	(From IC's cache)
+[DE@T=556]> Received signal to jump to #103a; Sent signal furter to IC
+[DE@T=556]> Ignored fetch window with start address #1038 (awaiting one containing #103a)
+[DE@T=556]> Ignored fetch window with start address #1040 (awaiting one containing #103a)
+[EX@T=556]> Ignored instruction 'call 555 ' from #100c (expecting #103a)
+[EX@T=556]> Ignored instruction 'mov [1052],  1' from #1010 (expecting #103a)
+[EX@T=556]> Ignored instruction 'add [0010],  4' from #1016 (expecting #103a)
+[EX@T=556]> Ignored instruction 'excp_exit  ' from #101c (expecting #103a)
+[EX@T=556]> Ignored instruction 'mov [1052],  2' from #101e (expecting #103a)
+[EX@T=556]> Ignored instruction 'add [0010],  2' from #1024 (expecting #103a)
+[EX@T=556]> Ignored instruction 'excp_exit  ' from #102a (expecting #103a)
+[EX@T=556]> Ignored instruction 'mov [1052],  3' from #102c (expecting #103a)
+[IC@T=557]> Received signal to change IP to #103a (aligned as #1038)
+[IC@T=559]> Delivered [4800 0c41 1052 0004] from #1038 to DE
+	(From IC's cache)
+[DE@T=561]> Decoded 'mov [1052],  4' from #103a
+[IC@T=561]> Delivered [0441 0010 0002 4800] from #1040 to DE
+	(From IC's cache)
+[EX@T=562]> Began executing 'mov [1052],  4' from #103a
+[LS@T=563]> Accepted request from EX regarding #1052
+[DE@T=563]> Decoded 'add [0010],  2' from #1040
+[IC@T=563]> Delivered [0c41 1052 0005 1581] from #1048 to DE
+	(From IC's cache)
+[DE@T=565]> Decoded 'excp_exit  ' from #1046
+[IC@T=565]> Delivered [0000 0003 0000 0000] from #1050 to DE
+	(From IC's cache)
+[DE@T=567]> Decoded 'mov [1052],  5' from #1048
+[IC@T=567]> Delivered [0000 0000 0000 0000] from #1058 to DE
+	(From IC's cache)
+[LS@T=569]> Stored { 0004 } at #1052 for EX
+	(Entirely using LS's cache)
+[DE@T=569]> Decoded 'div r4,  0' from #104e
+[IC@T=569]> Delivered [0000 0000 0000 0000] from #1060 to DE
+	(From IC's cache)
+[IC@T=571]> Delivered [0000 0000 0000 0000] from #1068 to DE
+	(From IC's cache)
+[IC@T=572]> Invalidated cached fetch window from #1050 as per LS's signal
+[IC@T=572]> Requested fetch window starting at #1070 from LS
+[LS@T=573]> Accepted request from IC regarding #1070
+[EX@T=573]> Finished executing: mov [1052],  4 ([1052] = 4)
+[EX@T=574]> Began executing 'add [0010],  2' from #1040
+[LS@T=587]> Fetched [0000 0000 0000 0000] from #1070 for IC
+[LS@T=588]> Accepted request from EX regarding #0010
+[IC@T=589]> Delivered [0000 0000 0000 0000] from #1070 to DE
+[IC@T=590]> Requested fetch window starting at #1078 from LS
+[LS@T=594]> Fetched { 100a } from #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=595]> Accepted request from IC regarding #1078
+[LS@T=609]> Fetched [0000 0000 0000 0000] from #1078 for IC
+[LS@T=610]> Accepted request from EX regarding #0010
+[IC@T=611]> Delivered [0000 0000 0000 0000] from #1078 to DE
+[IC@T=612]> Requested fetch window starting at #1080 from LS
+[LS@T=616]> Stored { 100c } at #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=617]> Accepted request from IC regarding #1080
+[EX@T=619]> Finished executing: add [0010],  2 ([0010] = 4108)
+[EX@T=620]> Began executing 'excp_exit  ' from #1046
+[LS@T=631]> Fetched [0000 0000 0000 0000] from #1080 for IC
+[LS@T=632]> Accepted request from EX regarding #0010
+[IC@T=633]> Delivered [0000 0000 0000 0000] from #1080 to DE
+[IC@T=634]> Requested fetch window starting at #1088 from LS
+[LS@T=638]> Fetched { 100c 1000 0800 ffff 0000 0000 0000 0000 0000 0000 0000 0000 } from #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=639]> Accepted request from IC regarding #1088
+[EX@T=642]> Finished executing: excp_exit  
+Returned from exception handler to state:
+	IP = #100c
+	SP = 4096
+	Flags.Z=0 Flags.E=0 Flags.G=0 
+	Registers: r0=0 r1=0 r2=0 r3=0 r4=0 r5=0 r6=0 r7=0
+	Exception flag cleared
+[DE@T=643]> Received signal to jump to #100c; Sent signal furter to IC
+[EX@T=643]> Ignored instruction 'mov [1052],  5' from #1048 (expecting #100c)
+[EX@T=643]> Ignored instruction 'div r4,  0' from #104e (expecting #100c)
+[EX@T=643]> Ignored malformed / residual instruction at #1052
+[EX@T=643]> Ignored malformed / residual instruction at #1054
+[EX@T=643]> Ignored malformed / residual instruction at #1056
+[EX@T=643]> Ignored malformed / residual instruction at #1058
+[EX@T=643]> Ignored malformed / residual instruction at #105a
+[EX@T=643]> Ignored malformed / residual instruction at #105c
+[EX@T=643]> Ignored malformed / residual instruction at #105e
+[EX@T=643]> Ignored malformed / residual instruction at #1060
+[EX@T=643]> Ignored malformed / residual instruction at #1062
+[EX@T=643]> Ignored malformed / residual instruction at #1064
+[EX@T=643]> Ignored malformed / residual instruction at #1066
+[EX@T=643]> Ignored malformed / residual instruction at #1068
+[EX@T=643]> Ignored malformed / residual instruction at #106a
+[EX@T=643]> Ignored malformed / residual instruction at #106c
+[EX@T=643]> Ignored malformed / residual instruction at #106e
+[EX@T=643]> Ignored malformed / residual instruction at #1070
+[EX@T=643]> Ignored malformed / residual instruction at #1072
+[EX@T=643]> Ignored malformed / residual instruction at #1074
+[EX@T=643]> Ignored malformed / residual instruction at #1076
+[EX@T=643]> Ignored malformed / residual instruction at #1078
+[EX@T=643]> Ignored malformed / residual instruction at #107a
+[EX@T=643]> Ignored malformed / residual instruction at #107c
+[EX@T=643]> Ignored malformed / residual instruction at #107e
+[EX@T=643]> Ignored malformed / residual instruction at #1080
+[EX@T=643]> Ignored malformed / residual instruction at #1082
+[EX@T=643]> Ignored malformed / residual instruction at #1084
+[EX@T=643]> Ignored malformed / residual instruction at #1086
+[EX@T=643]> Skipped empty instruction from #1086 (trying to wait for #100c)
+[LS@T=653]> Fetched [0000 0000 0000 0000] from #1088 for IC
+[IC@T=655]> Received signal to change IP to #100c (aligned as #1008)
+[IC@T=656]> Requested fetch window starting at #1008 from LS
+[LS@T=657]> Accepted request from IC regarding #1008
+[LS@T=671]> Fetched [0307 3800 3420 022b] from #1008 for IC
+[IC@T=673]> Delivered [0307 3800 3420 022b] from #1008 to DE
+[DE@T=675]> Decoded 'call 555 ' from #100c
+[IC@T=675]> Delivered [0c41 1052 0001 0441] from #1010 to DE
+	(From IC's cache)
+[EX@T=676]> Began executing 'call 555 ' from #100c
+[DE@T=677]> Decoded 'mov [1052],  1' from #1010
+[LS@T=677]> Accepted request from EX regarding #ffda
+[IC@T=677]> Delivered [0010 0004 4800 0c41] from #1018 to DE
+	(From IC's cache)
+[DE@T=679]> Decoded 'add [0010],  4' from #1016
+[IC@T=679]> Delivered [1052 0002 0441 0010] from #1020 to DE
+	(From IC's cache)
+[IC@T=681]> Delivered [0002 4800 0c41 1052] from #1028 to DE
+	(From IC's cache)
+[DE@T=683]> Decoded 'mov [1052],  2' from #101e
+[IC@T=683]> Delivered [0003 0441 0010 0004] from #1030 to DE
+	(From IC's cache)
+[LS@T=683]> Stored { 0000 0000 0000 0000 0000 0000 0000 0000 0000 1010 } at #ffda for EX
+	(Entirely using LS's cache)
+[DE@T=685]> Decoded 'add [0010],  2' from #1024
+[IC@T=685]> Delivered [4800 0c41 1052 0004] from #1038 to DE
+	(From IC's cache)
+[IC@T=687]> Delivered [0441 0010 0002 4800] from #1040 to DE
+	(From IC's cache)
+[EX@T=687]> Finished executing: call 555 
+Saved state:
+	IP = #1010
+	Flags.Z=0 Flags.E=0 Flags.G=0 
+	Registers: r0=0 r1=0 r2=0 r3=0 r4=0 r5=0 r6=0 r7=0
+[EX@T=688]> Ignored instruction 'mov [1052],  1' from #1010 (expecting #022b)
+[EX@T=688]> Ignored instruction 'add [0010],  4' from #1016 (expecting #022b)
+[EX@T=688]> Ignored malformed / residual instruction at #101c
+[EX@T=688]> Ignored instruction 'mov [1052],  2' from #101e (expecting #022b)
+[EX@T=688]> Ignored instruction 'add [0010],  2' from #1024 (expecting #022b)
+[EX@T=688]> Ignored malformed / residual instruction at #102a
+[EX@T=688]> Encountered exception 'IP not aligned to 16b' at #022b
+[IC@T=689]> Received signal to change IP to #022b (aligned as #0228)
+[LS@T=689]> Accepted request from EX regarding #0008
+[DE@T=690]> Decoded 'mov [1052],  3' from #102c
+[IC@T=690]> Requested fetch window starting at #0228 from LS
+[DE@T=692]> Decoded 'add [0010],  4' from #1032
+[DE@T=694]> Decoded 'excp_exit  ' from #1038
+[DE@T=696]> Decoded 'mov [1052],  4' from #103a
+[DE@T=698]> Decoded 'add [0010],  2' from #1040
+[DE@T=700]> Decoded 'excp_exit  ' from #1046
+[LS@T=703]> Fetched { 1048 } from #0008 for EX
+[LS@T=704]> Accepted request from IC regarding #0228
+[LS@T=718]> Fetched [0000 0000 0000 0000] from #0228 for IC
+[LS@T=719]> Accepted request from EX regarding #0010
+[IC@T=720]> Delivered [0000 0000 0000 0000] from #0228 to DE
+[IC@T=721]> Requested fetch window starting at #0230 from LS
+[LS@T=725]> Stored { 022b 0fec 0800 0000 0000 0000 0000 0000 0000 0000 0000 0000 } at #0010 for EX
+	(Entirely using LS's cache)
+[LS@T=726]> Accepted request from IC regarding #0230
+[EX@T=728]> Calling exception handler at #1048
+[DE@T=729]> Received signal to jump to #1048; Sent signal furter to IC
+[EX@T=729]> Ignored instruction 'mov [1052],  3' from #102c (expecting #1048)
+[EX@T=729]> Ignored instruction 'add [0010],  4' from #1032 (expecting #1048)
+[EX@T=729]> Ignored instruction 'excp_exit  ' from #1038 (expecting #1048)
+[EX@T=729]> Ignored instruction 'mov [1052],  4' from #103a (expecting #1048)
+[EX@T=729]> Ignored instruction 'add [0010],  2' from #1040 (expecting #1048)
+[EX@T=729]> Ignored instruction 'excp_exit  ' from #1046 (expecting #1048)
+[EX@T=729]> Ignored malformed / residual instruction at #0228
+[EX@T=729]> Ignored malformed / residual instruction at #022a
+[EX@T=729]> Ignored malformed / residual instruction at #022c
+[EX@T=729]> Ignored malformed / residual instruction at #022e
+[EX@T=729]> Skipped empty instruction from #022e (trying to wait for #1048)
+[LS@T=740]> Fetched [0000 0000 0000 0000] from #0230 for IC
+[IC@T=742]> Received signal to change IP to #1048 (aligned as #1048)
+[IC@T=744]> Delivered [0c41 1052 0005 1581] from #1048 to DE
+	(From IC's cache)
+[IC@T=745]> Requested fetch window starting at #1050 from LS
+[DE@T=746]> Decoded 'mov [1052],  5' from #1048
+[LS@T=746]> Accepted request from IC regarding #1050
+[EX@T=747]> Began executing 'mov [1052],  5' from #1048
+[LS@T=760]> Fetched [0000 0000 0000 0000] from #1050 for IC
+[LS@T=761]> Accepted request from EX regarding #1052
+[IC@T=762]> Delivered [0000 0004 0000 0000] from #1050 to DE
+[IC@T=763]> Invalidated cached fetch window from #1050 as per LS's signal
+[DE@T=764]> Decoded 'div r4,  0' from #104e
+[IC@T=764]> Delivered [0000 0000 0000 0000] from #1058 to DE
+	(From IC's cache)
+[IC@T=766]> Delivered [0000 0000 0000 0000] from #1060 to DE
+	(From IC's cache)
+[IC@T=767]> Requested fetch window starting at #1068 from LS
+[LS@T=767]> Stored { 0005 } at #1052 for EX
+	(Entirely using LS's cache)
+[LS@T=768]> Accepted request from IC regarding #1068
+[EX@T=771]> Finished executing: mov [1052],  5 ([1052] = 5)
+[EX@T=772]> Began executing 'div r4,  0' from #104e
+[EX@T=772]> Encountered exception 'Division by 0' at #104e
+	!EX forcefully ends simulation at T=772 due to double exception!

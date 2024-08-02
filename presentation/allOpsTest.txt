@@ -1,0 +1,1271 @@
+	!IC signals beginning of simulation at T=0 from #fff0!
+[IC@T=1]> Requested fetch window starting at #fff0 from LS
+[LS@T=2]> Accepted request from IC regarding #fff0
+[LS@T=16]> Fetched [1c20 1000 0000 0000] from #fff0 for IC
+[IC@T=18]> Delivered [1c20 1000 0000 0000] from #fff0 to DE
+[IC@T=19]> Requested fetch window starting at #fff8 from LS
+[DE@T=20]> Decoded 'jmp 4096 ' from #fff0
+[LS@T=20]> Accepted request from IC regarding #fff8
+[EX@T=21]> Began executing 'jmp 4096 ' from #fff0
+[EX@T=25]> Finished executing: jmp #1000 (yes)
+[DE@T=26]> Received signal to jump to #1000; Sent signal furter to IC
+[EX@T=26]> Ignored malformed / residual instruction at #fff4
+[EX@T=26]> Ignored malformed / residual instruction at #fff6
+[EX@T=26]> Skipped empty instruction from #fff6 (trying to wait for #1000)
+[LS@T=34]> Fetched [0000 0000 0000 0000] from #fff8 for IC
+[IC@T=36]> Received signal to change IP to #1000 (aligned as #1000)
+[IC@T=37]> Requested fetch window starting at #1000 from LS
+[LS@T=38]> Accepted request from IC regarding #1000
+[LS@T=52]> Fetched [1841 1064 0000 2420] from #1000 for IC
+[IC@T=54]> Delivered [1841 1064 0000 2420] from #1000 to DE
+[IC@T=55]> Requested fetch window starting at #1008 from LS
+[DE@T=56]> Decoded 'cmp [1064],  0' from #1000
+[LS@T=56]> Accepted request from IC regarding #1008
+[EX@T=57]> Began executing 'cmp [1064],  0' from #1000
+[LS@T=70]> Fetched [1018 0502 1064 0841] from #1008 for IC
+[LS@T=71]> Accepted request from EX regarding #1064
+[IC@T=72]> Delivered [1018 0502 1064 0841] from #1008 to DE
+[IC@T=73]> Requested fetch window starting at #1010 from LS
+[DE@T=74]> Decoded 'je 4120 ' from #1006
+[DE@T=76]> Decoded 'add r0,  [1064]' from #100a
+[LS@T=85]> Fetched { 0005 } from #1064 for EX
+[LS@T=86]> Accepted request from IC regarding #1010
+[EX@T=89]> Finished executing: cmp [1064],  0 (5 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[EX@T=90]> Began executing 'je 4120 ' from #1006
+[EX@T=94]> Finished executing: je #1018 (no)
+[EX@T=95]> Began executing 'add r0,  [1064]' from #100a
+[LS@T=100]> Fetched [1064 0001 1c20 1000] from #1010 for IC
+[LS@T=101]> Accepted request from EX regarding #1064
+[IC@T=102]> Delivered [1064 0001 1c20 1000] from #1010 to DE
+[IC@T=103]> Requested fetch window starting at #1018 from LS
+[DE@T=104]> Decoded 'sub [1064],  1' from #100e
+[DE@T=106]> Decoded 'jmp 4096 ' from #1014
+[LS@T=107]> Fetched { 0005 } from #1064 for EX
+	(Entirely using LS's cache)
+[LS@T=108]> Accepted request from IC regarding #1018
+[EX@T=111]> Finished executing: add r0,  [1064] (r0 = 5)
+[EX@T=112]> Began executing 'sub [1064],  1' from #100e
+[LS@T=122]> Fetched [4100 1101 0002 0c49] from #1018 for IC
+[LS@T=123]> Accepted request from EX regarding #1064
+[IC@T=124]> Delivered [4100 1101 0002 0c49] from #1018 to DE
+[IC@T=125]> Requested fetch window starting at #1020 from LS
+[DE@T=126]> Decoded 'push r0 ' from #1018
+[DE@T=128]> Decoded 'mul r0,  2' from #101a
+[LS@T=129]> Fetched { 0005 } from #1064 for EX
+	(Entirely using LS's cache)
+[LS@T=130]> Accepted request from IC regarding #1020
+[LS@T=144]> Fetched [1066 3420 102e 4500] from #1020 for IC
+[LS@T=145]> Accepted request from EX regarding #1064
+[IC@T=146]> Delivered [1066 3420 102e 4500] from #1020 to DE
+[IC@T=147]> Requested fetch window starting at #1028 from LS
+[DE@T=148]> Decoded 'mov [1066],  r1' from #101e
+[DE@T=150]> Decoded 'call 4142 ' from #1022
+[LS@T=151]> Stored { 0004 } at #1064 for EX
+	(Entirely using LS's cache)
+[DE@T=152]> Decoded 'pop r0 ' from #1026
+[LS@T=152]> Accepted request from IC regarding #1028
+[EX@T=154]> Finished executing: sub [1064],  1 ([1064] = 4)
+[EX@T=155]> Began executing 'jmp 4096 ' from #1014
+[EX@T=159]> Finished executing: jmp #1000 (yes)
+[DE@T=160]> Received signal to jump to #1000; Sent signal furter to IC
+[EX@T=160]> Ignored instruction 'push r0 ' from #1018 (expecting #1000)
+[EX@T=160]> Ignored instruction 'mul r0,  2' from #101a (expecting #1000)
+[EX@T=160]> Ignored instruction 'mov [1066],  r1' from #101e (expecting #1000)
+[EX@T=160]> Ignored instruction 'call 4142 ' from #1022 (expecting #1000)
+[EX@T=160]> Ignored instruction 'pop r0 ' from #1026 (expecting #1000)
+[LS@T=166]> Fetched [1902 1068 3c00 0d41] from #1028 for IC
+[IC@T=168]> Received signal to change IP to #1000 (aligned as #1000)
+[IC@T=170]> Delivered [1841 1064 0000 2420] from #1000 to DE
+	(From IC's cache)
+[DE@T=172]> Decoded 'cmp [1064],  0' from #1000
+[IC@T=172]> Delivered [1018 0502 1064 0841] from #1008 to DE
+	(From IC's cache)
+[EX@T=173]> Began executing 'cmp [1064],  0' from #1000
+[DE@T=174]> Decoded 'je 4120 ' from #1006
+[IC@T=174]> Delivered [1064 0001 1c20 1000] from #1010 to DE
+	(From IC's cache)
+[LS@T=174]> Accepted request from EX regarding #1064
+[DE@T=176]> Decoded 'add r0,  [1064]' from #100a
+[IC@T=176]> Delivered [4100 1101 0002 0c49] from #1018 to DE
+	(From IC's cache)
+[DE@T=178]> Decoded 'sub [1064],  1' from #100e
+[IC@T=178]> Delivered [1066 3420 102e 4500] from #1020 to DE
+	(From IC's cache)
+[DE@T=180]> Decoded 'jmp 4096 ' from #1014
+[IC@T=180]> Delivered [1902 1068 3c00 0d41] from #1028 to DE
+	(From IC's cache)
+[LS@T=180]> Fetched { 0004 } from #1064 for EX
+	(Entirely using LS's cache)
+[IC@T=181]> Requested fetch window starting at #1030 from LS
+[DE@T=182]> Decoded 'push r0 ' from #1018
+[LS@T=182]> Accepted request from IC regarding #1030
+[DE@T=184]> Decoded 'mul r0,  2' from #101a
+[EX@T=184]> Finished executing: cmp [1064],  0 (4 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[EX@T=185]> Began executing 'je 4120 ' from #1006
+[DE@T=186]> Decoded 'mov [1066],  r1' from #101e
+[DE@T=188]> Decoded 'call 4142 ' from #1022
+[EX@T=189]> Finished executing: je #1018 (no)
+[DE@T=190]> Decoded 'pop r0 ' from #1026
+[EX@T=190]> Began executing 'add r0,  [1064]' from #100a
+[DE@T=192]> Decoded 'cmp r0,  [1068]' from #1028
+[DE@T=194]> Decoded 'end_sim  ' from #102c
+[LS@T=196]> Fetched [0000 1841 1066 0000] from #1030 for IC
+[LS@T=197]> Accepted request from EX regarding #1064
+[IC@T=198]> Delivered [0000 1841 1066 0000] from #1030 to DE
+[IC@T=199]> Requested fetch window starting at #1038 from LS
+[DE@T=200]> Decoded 'mov r2,  0' from #102e
+[DE@T=202]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=203]> Fetched { 0004 } from #1064 for EX
+	(Entirely using LS's cache)
+[LS@T=204]> Accepted request from IC regarding #1038
+[EX@T=207]> Finished executing: add r0,  [1064] (r0 = 9)
+[EX@T=208]> Began executing 'sub [1064],  1' from #100e
+[LS@T=218]> Fetched [3020 105e 1441 1066] from #1038 for IC
+[LS@T=219]> Accepted request from EX regarding #1064
+[IC@T=220]> Delivered [3020 105e 1441 1066] from #1038 to DE
+[IC@T=221]> Requested fetch window starting at #1040 from LS
+[DE@T=222]> Decoded 'jz 4190 ' from #1038
+[LS@T=225]> Fetched { 0004 } from #1064 for EX
+	(Entirely using LS's cache)
+[LS@T=226]> Accepted request from IC regarding #1040
+[LS@T=240]> Fetched [0002 1921 0000 2c20] from #1040 for IC
+[LS@T=241]> Accepted request from EX regarding #1064
+[IC@T=242]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+[IC@T=243]> Requested fetch window starting at #1048 from LS
+[DE@T=244]> Decoded 'div [1066],  2' from #103c
+[DE@T=246]> Decoded 'cmp r1,  0' from #1042
+[LS@T=247]> Stored { 0003 } at #1064 for EX
+	(Entirely using LS's cache)
+[LS@T=248]> Accepted request from IC regarding #1048
+[EX@T=250]> Finished executing: sub [1064],  1 ([1064] = 3)
+[EX@T=251]> Began executing 'jmp 4096 ' from #1014
+[EX@T=255]> Finished executing: jmp #1000 (yes)
+[DE@T=256]> Received signal to jump to #1000; Sent signal furter to IC
+[EX@T=256]> Ignored instruction 'push r0 ' from #1018 (expecting #1000)
+[EX@T=256]> Ignored instruction 'mul r0,  2' from #101a (expecting #1000)
+[EX@T=256]> Ignored instruction 'mov [1066],  r1' from #101e (expecting #1000)
+[EX@T=256]> Ignored instruction 'call 4142 ' from #1022 (expecting #1000)
+[EX@T=256]> Ignored instruction 'pop r0 ' from #1026 (expecting #1000)
+[EX@T=256]> Ignored instruction 'cmp r0,  [1068]' from #1028 (expecting #1000)
+[EX@T=256]> Ignored instruction 'end_sim  ' from #102c (expecting #1000)
+[EX@T=256]> Ignored instruction 'mov r2,  0' from #102e (expecting #1000)
+[EX@T=256]> Ignored instruction 'cmp [1066],  0' from #1032 (expecting #1000)
+[EX@T=256]> Ignored instruction 'jz 4190 ' from #1038 (expecting #1000)
+[EX@T=256]> Ignored instruction 'div [1066],  2' from #103c (expecting #1000)
+[EX@T=256]> Ignored instruction 'cmp r1,  0' from #1042 (expecting #1000)
+[LS@T=262]> Fetched [1052 0c48 1066 1c20] from #1048 for IC
+[IC@T=264]> Received signal to change IP to #1000 (aligned as #1000)
+[IC@T=266]> Delivered [1841 1064 0000 2420] from #1000 to DE
+	(From IC's cache)
+[DE@T=268]> Decoded 'cmp [1064],  0' from #1000
+[IC@T=268]> Delivered [1018 0502 1064 0841] from #1008 to DE
+	(From IC's cache)
+[EX@T=269]> Began executing 'cmp [1064],  0' from #1000
+[DE@T=270]> Decoded 'je 4120 ' from #1006
+[LS@T=270]> Accepted request from EX regarding #1064
+[IC@T=270]> Delivered [1064 0001 1c20 1000] from #1010 to DE
+	(From IC's cache)
+[DE@T=272]> Decoded 'add r0,  [1064]' from #100a
+[IC@T=272]> Delivered [4100 1101 0002 0c49] from #1018 to DE
+	(From IC's cache)
+[DE@T=274]> Decoded 'sub [1064],  1' from #100e
+[IC@T=274]> Delivered [1066 3420 102e 4500] from #1020 to DE
+	(From IC's cache)
+[DE@T=276]> Decoded 'jmp 4096 ' from #1014
+[LS@T=276]> Fetched { 0003 } from #1064 for EX
+	(Entirely using LS's cache)
+[IC@T=276]> Delivered [1902 1068 3c00 0d41] from #1028 to DE
+	(From IC's cache)
+[DE@T=278]> Decoded 'push r0 ' from #1018
+[IC@T=278]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[DE@T=280]> Decoded 'mul r0,  2' from #101a
+[EX@T=280]> Finished executing: cmp [1064],  0 (3 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[IC@T=280]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[EX@T=281]> Began executing 'je 4120 ' from #1006
+[DE@T=282]> Decoded 'mov [1066],  r1' from #101e
+[IC@T=282]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=284]> Decoded 'call 4142 ' from #1022
+[IC@T=284]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[EX@T=285]> Finished executing: je #1018 (no)
+[IC@T=285]> Requested fetch window starting at #1050 from LS
+[DE@T=286]> Decoded 'pop r0 ' from #1026
+[EX@T=286]> Began executing 'add r0,  [1064]' from #100a
+[LS@T=286]> Accepted request from IC regarding #1050
+[DE@T=288]> Decoded 'cmp r0,  [1068]' from #1028
+[DE@T=290]> Decoded 'end_sim  ' from #102c
+[DE@T=292]> Decoded 'mov r2,  0' from #102e
+[DE@T=294]> Decoded 'cmp [1066],  0' from #1032
+[DE@T=296]> Decoded 'jz 4190 ' from #1038
+[DE@T=298]> Decoded 'div [1066],  2' from #103c
+[DE@T=300]> Decoded 'cmp r1,  0' from #1042
+[LS@T=300]> Fetched [1032 0541 0001 0c48] from #1050 for IC
+[LS@T=301]> Accepted request from EX regarding #1064
+[IC@T=302]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+[DE@T=302]> Decoded 'jg 4178 ' from #1046
+[IC@T=303]> Requested fetch window starting at #1058 from LS
+[DE@T=304]> Decoded 'mov [1066],  r0' from #104a
+[DE@T=306]> Decoded 'jmp 4146 ' from #104e
+[LS@T=307]> Fetched { 0003 } from #1064 for EX
+	(Entirely using LS's cache)
+[DE@T=308]> Decoded 'add r2,  1' from #1052
+[LS@T=308]> Accepted request from IC regarding #1058
+[EX@T=311]> Finished executing: add r0,  [1064] (r0 = 12)
+[EX@T=312]> Began executing 'sub [1064],  1' from #100e
+[LS@T=322]> Fetched [1066 1c20 1032 0c4a] from #1058 for IC
+[LS@T=323]> Accepted request from EX regarding #1064
+[IC@T=324]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+[IC@T=325]> Requested fetch window starting at #1060 from LS
+[DE@T=326]> Decoded 'mov [1066],  r0' from #1056
+[DE@T=328]> Decoded 'jmp 4146 ' from #105a
+[LS@T=329]> Fetched { 0003 } from #1064 for EX
+	(Entirely using LS's cache)
+[LS@T=330]> Accepted request from IC regarding #1060
+[LS@T=344]> Fetched [1068 3800 0005 0000] from #1060 for IC
+[LS@T=345]> Accepted request from EX regarding #1064
+[IC@T=346]> Delivered [1068 3800 0003 0000] from #1060 to DE
+[IC@T=347]> Invalidated cached fetch window from #1060 as per LS's signal
+[IC@T=347]> Requested fetch window starting at #1068 from LS
+[DE@T=348]> Decoded 'mov [1068],  r2' from #105e
+[DE@T=350]> Decoded 'ret  ' from #1062
+[LS@T=351]> Stored { 0002 } at #1064 for EX
+	(Entirely using LS's cache)
+[LS@T=352]> Accepted request from IC regarding #1068
+[EX@T=354]> Finished executing: sub [1064],  1 ([1064] = 2)
+[EX@T=355]> Began executing 'jmp 4096 ' from #1014
+[EX@T=359]> Finished executing: jmp #1000 (yes)
+[EX@T=360]> Ignored instruction 'push r0 ' from #1018 (expecting #1000)
+[EX@T=360]> Ignored instruction 'mul r0,  2' from #101a (expecting #1000)
+[EX@T=360]> Ignored instruction 'mov [1066],  r1' from #101e (expecting #1000)
+[EX@T=360]> Ignored instruction 'call 4142 ' from #1022 (expecting #1000)
+[EX@T=360]> Ignored instruction 'pop r0 ' from #1026 (expecting #1000)
+[EX@T=360]> Ignored instruction 'cmp r0,  [1068]' from #1028 (expecting #1000)
+[EX@T=360]> Ignored instruction 'end_sim  ' from #102c (expecting #1000)
+[EX@T=360]> Ignored instruction 'mov r2,  0' from #102e (expecting #1000)
+[EX@T=360]> Ignored instruction 'cmp [1066],  0' from #1032 (expecting #1000)
+[EX@T=360]> Ignored instruction 'jz 4190 ' from #1038 (expecting #1000)
+[EX@T=360]> Ignored instruction 'div [1066],  2' from #103c (expecting #1000)
+[EX@T=360]> Ignored instruction 'cmp r1,  0' from #1042 (expecting #1000)
+[EX@T=360]> Ignored instruction 'jg 4178 ' from #1046 (expecting #1000)
+[EX@T=360]> Ignored instruction 'mov [1066],  r0' from #104a (expecting #1000)
+[EX@T=360]> Ignored instruction 'jmp 4146 ' from #104e (expecting #1000)
+[EX@T=360]> Ignored instruction 'add r2,  1' from #1052 (expecting #1000)
+[EX@T=360]> Ignored instruction 'mov [1066],  r0' from #1056 (expecting #1000)
+[EX@T=360]> Ignored instruction 'jmp 4146 ' from #105a (expecting #1000)
+[EX@T=360]> Ignored instruction 'mov [1068],  r2' from #105e (expecting #1000)
+[EX@T=360]> Ignored instruction 'ret  ' from #1062 (expecting #1000)
+[EX@T=360]> Ignored malformed / residual instruction at #1064
+[EX@T=360]> Ignored malformed / residual instruction at #1066
+[EX@T=360]> Skipped empty instruction from #1066 (trying to wait for #1000)
+[DE@T=360]> Received signal to jump to #1000; Sent signal furter to IC
+[LS@T=366]> Fetched [0000 0000 0000 0000] from #1068 for IC
+[IC@T=368]> Received signal to change IP to #1000 (aligned as #1000)
+[IC@T=370]> Delivered [1841 1064 0000 2420] from #1000 to DE
+	(From IC's cache)
+[IC@T=372]> Delivered [1018 0502 1064 0841] from #1008 to DE
+	(From IC's cache)
+[DE@T=372]> Decoded 'cmp [1064],  0' from #1000
+[EX@T=373]> Began executing 'cmp [1064],  0' from #1000
+[IC@T=374]> Delivered [1064 0001 1c20 1000] from #1010 to DE
+	(From IC's cache)
+[LS@T=374]> Accepted request from EX regarding #1064
+[DE@T=374]> Decoded 'je 4120 ' from #1006
+[IC@T=376]> Delivered [4100 1101 0002 0c49] from #1018 to DE
+	(From IC's cache)
+[DE@T=376]> Decoded 'add r0,  [1064]' from #100a
+[IC@T=378]> Delivered [1066 3420 102e 4500] from #1020 to DE
+	(From IC's cache)
+[DE@T=378]> Decoded 'sub [1064],  1' from #100e
+[IC@T=380]> Delivered [1902 1068 3c00 0d41] from #1028 to DE
+	(From IC's cache)
+[LS@T=380]> Fetched { 0002 } from #1064 for EX
+	(Entirely using LS's cache)
+[DE@T=380]> Decoded 'jmp 4096 ' from #1014
+[IC@T=382]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[DE@T=382]> Decoded 'push r0 ' from #1018
+[IC@T=384]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[EX@T=384]> Finished executing: cmp [1064],  0 (2 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[DE@T=384]> Decoded 'mul r0,  2' from #101a
+[EX@T=385]> Began executing 'je 4120 ' from #1006
+[IC@T=386]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=386]> Decoded 'mov [1066],  r1' from #101e
+[IC@T=388]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[DE@T=388]> Decoded 'call 4142 ' from #1022
+[EX@T=389]> Finished executing: je #1018 (no)
+[EX@T=390]> Began executing 'add r0,  [1064]' from #100a
+[IC@T=390]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[DE@T=390]> Decoded 'pop r0 ' from #1026
+[LS@T=391]> Accepted request from EX regarding #1064
+[DE@T=392]> Decoded 'cmp r0,  [1068]' from #1028
+[IC@T=392]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[IC@T=393]> Requested fetch window starting at #1060 from LS
+[DE@T=394]> Decoded 'end_sim  ' from #102c
+[DE@T=396]> Decoded 'mov r2,  0' from #102e
+[LS@T=397]> Fetched { 0002 } from #1064 for EX
+	(Entirely using LS's cache)
+[DE@T=398]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=398]> Accepted request from IC regarding #1060
+[DE@T=400]> Decoded 'jz 4190 ' from #1038
+[EX@T=401]> Finished executing: add r0,  [1064] (r0 = 14)
+[EX@T=402]> Began executing 'sub [1064],  1' from #100e
+[DE@T=402]> Decoded 'div [1066],  2' from #103c
+[DE@T=404]> Decoded 'cmp r1,  0' from #1042
+[DE@T=406]> Decoded 'jg 4178 ' from #1046
+[DE@T=408]> Decoded 'mov [1066],  r0' from #104a
+[DE@T=410]> Decoded 'jmp 4146 ' from #104e
+[DE@T=412]> Decoded 'add r2,  1' from #1052
+[LS@T=412]> Fetched [1068 3800 0005 0000] from #1060 for IC
+[LS@T=413]> Accepted request from EX regarding #1064
+[DE@T=414]> Decoded 'mov [1066],  r0' from #1056
+[IC@T=414]> Delivered [1068 3800 0002 0000] from #1060 to DE
+[DE@T=416]> Decoded 'jmp 4146 ' from #105a
+[IC@T=416]> Delivered [0000 0000 0000 0000] from #1068 to DE
+	(From IC's cache)
+[IC@T=417]> Requested fetch window starting at #1070 from LS
+[DE@T=418]> Decoded 'mov [1068],  r2' from #105e
+[LS@T=419]> Fetched { 0002 } from #1064 for EX
+	(Entirely using LS's cache)
+[DE@T=420]> Decoded 'ret  ' from #1062
+[LS@T=420]> Accepted request from IC regarding #1070
+[LS@T=434]> Fetched [0000 0000 0000 0000] from #1070 for IC
+[LS@T=435]> Accepted request from EX regarding #1064
+[IC@T=436]> Delivered [0000 0000 0000 0000] from #1070 to DE
+[IC@T=437]> Invalidated cached fetch window from #1060 as per LS's signal
+[IC@T=437]> Requested fetch window starting at #1078 from LS
+[LS@T=441]> Stored { 0001 } at #1064 for EX
+	(Entirely using LS's cache)
+[LS@T=442]> Accepted request from IC regarding #1078
+[EX@T=444]> Finished executing: sub [1064],  1 ([1064] = 1)
+[EX@T=445]> Began executing 'jmp 4096 ' from #1014
+[EX@T=449]> Finished executing: jmp #1000 (yes)
+[DE@T=450]> Received signal to jump to #1000; Sent signal furter to IC
+[EX@T=450]> Ignored instruction 'push r0 ' from #1018 (expecting #1000)
+[EX@T=450]> Ignored instruction 'mul r0,  2' from #101a (expecting #1000)
+[EX@T=450]> Ignored instruction 'mov [1066],  r1' from #101e (expecting #1000)
+[EX@T=450]> Ignored instruction 'call 4142 ' from #1022 (expecting #1000)
+[EX@T=450]> Ignored instruction 'pop r0 ' from #1026 (expecting #1000)
+[EX@T=450]> Ignored instruction 'cmp r0,  [1068]' from #1028 (expecting #1000)
+[EX@T=450]> Ignored instruction 'end_sim  ' from #102c (expecting #1000)
+[EX@T=450]> Ignored instruction 'mov r2,  0' from #102e (expecting #1000)
+[EX@T=450]> Ignored instruction 'cmp [1066],  0' from #1032 (expecting #1000)
+[EX@T=450]> Ignored instruction 'jz 4190 ' from #1038 (expecting #1000)
+[EX@T=450]> Ignored instruction 'div [1066],  2' from #103c (expecting #1000)
+[EX@T=450]> Ignored instruction 'cmp r1,  0' from #1042 (expecting #1000)
+[EX@T=450]> Ignored instruction 'jg 4178 ' from #1046 (expecting #1000)
+[EX@T=450]> Ignored instruction 'mov [1066],  r0' from #104a (expecting #1000)
+[EX@T=450]> Ignored instruction 'jmp 4146 ' from #104e (expecting #1000)
+[EX@T=450]> Ignored instruction 'add r2,  1' from #1052 (expecting #1000)
+[EX@T=450]> Ignored instruction 'mov [1066],  r0' from #1056 (expecting #1000)
+[EX@T=450]> Ignored instruction 'jmp 4146 ' from #105a (expecting #1000)
+[EX@T=450]> Ignored instruction 'mov [1068],  r2' from #105e (expecting #1000)
+[EX@T=450]> Ignored instruction 'ret  ' from #1062 (expecting #1000)
+[EX@T=450]> Ignored malformed / residual instruction at #1064
+[EX@T=450]> Ignored malformed / residual instruction at #1066
+[EX@T=450]> Ignored malformed / residual instruction at #1068
+[EX@T=450]> Ignored malformed / residual instruction at #106a
+[EX@T=450]> Ignored malformed / residual instruction at #106c
+[EX@T=450]> Ignored malformed / residual instruction at #106e
+[EX@T=450]> Ignored malformed / residual instruction at #1070
+[EX@T=450]> Ignored malformed / residual instruction at #1072
+[EX@T=450]> Ignored malformed / residual instruction at #1074
+[EX@T=450]> Ignored malformed / residual instruction at #1076
+[EX@T=450]> Skipped empty instruction from #1076 (trying to wait for #1000)
+[LS@T=456]> Fetched [0000 0000 0000 0000] from #1078 for IC
+[IC@T=458]> Received signal to change IP to #1000 (aligned as #1000)
+[IC@T=460]> Delivered [1841 1064 0000 2420] from #1000 to DE
+	(From IC's cache)
+[DE@T=462]> Decoded 'cmp [1064],  0' from #1000
+[IC@T=462]> Delivered [1018 0502 1064 0841] from #1008 to DE
+	(From IC's cache)
+[EX@T=463]> Began executing 'cmp [1064],  0' from #1000
+[DE@T=464]> Decoded 'je 4120 ' from #1006
+[IC@T=464]> Delivered [1064 0001 1c20 1000] from #1010 to DE
+	(From IC's cache)
+[LS@T=464]> Accepted request from EX regarding #1064
+[DE@T=466]> Decoded 'add r0,  [1064]' from #100a
+[IC@T=466]> Delivered [4100 1101 0002 0c49] from #1018 to DE
+	(From IC's cache)
+[DE@T=468]> Decoded 'sub [1064],  1' from #100e
+[IC@T=468]> Delivered [1066 3420 102e 4500] from #1020 to DE
+	(From IC's cache)
+[DE@T=470]> Decoded 'jmp 4096 ' from #1014
+[IC@T=470]> Delivered [1902 1068 3c00 0d41] from #1028 to DE
+	(From IC's cache)
+[LS@T=470]> Fetched { 0001 } from #1064 for EX
+	(Entirely using LS's cache)
+[DE@T=472]> Decoded 'push r0 ' from #1018
+[IC@T=472]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[DE@T=474]> Decoded 'mul r0,  2' from #101a
+[EX@T=474]> Finished executing: cmp [1064],  0 (1 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[IC@T=474]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[EX@T=475]> Began executing 'je 4120 ' from #1006
+[DE@T=476]> Decoded 'mov [1066],  r1' from #101e
+[IC@T=476]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=478]> Decoded 'call 4142 ' from #1022
+[IC@T=478]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[EX@T=479]> Finished executing: je #1018 (no)
+[DE@T=480]> Decoded 'pop r0 ' from #1026
+[EX@T=480]> Began executing 'add r0,  [1064]' from #100a
+[IC@T=480]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[LS@T=481]> Accepted request from EX regarding #1064
+[DE@T=482]> Decoded 'cmp r0,  [1068]' from #1028
+[IC@T=482]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[IC@T=483]> Requested fetch window starting at #1060 from LS
+[DE@T=484]> Decoded 'end_sim  ' from #102c
+[DE@T=486]> Decoded 'mov r2,  0' from #102e
+[LS@T=487]> Fetched { 0001 } from #1064 for EX
+	(Entirely using LS's cache)
+[DE@T=488]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=488]> Accepted request from IC regarding #1060
+[DE@T=490]> Decoded 'jz 4190 ' from #1038
+[EX@T=491]> Finished executing: add r0,  [1064] (r0 = 15)
+[DE@T=492]> Decoded 'div [1066],  2' from #103c
+[EX@T=492]> Began executing 'sub [1064],  1' from #100e
+[DE@T=494]> Decoded 'cmp r1,  0' from #1042
+[DE@T=496]> Decoded 'jg 4178 ' from #1046
+[DE@T=498]> Decoded 'mov [1066],  r0' from #104a
+[DE@T=500]> Decoded 'jmp 4146 ' from #104e
+[LS@T=502]> Fetched [1068 3800 0005 0000] from #1060 for IC
+[DE@T=502]> Decoded 'add r2,  1' from #1052
+[LS@T=503]> Accepted request from EX regarding #1064
+[DE@T=504]> Decoded 'mov [1066],  r0' from #1056
+[IC@T=504]> Delivered [1068 3800 0001 0000] from #1060 to DE
+[DE@T=506]> Decoded 'jmp 4146 ' from #105a
+[IC@T=506]> Delivered [0000 0000 0000 0000] from #1068 to DE
+	(From IC's cache)
+[DE@T=508]> Decoded 'mov [1068],  r2' from #105e
+[IC@T=508]> Delivered [0000 0000 0000 0000] from #1070 to DE
+	(From IC's cache)
+[LS@T=509]> Fetched { 0001 } from #1064 for EX
+	(Entirely using LS's cache)
+[DE@T=510]> Decoded 'ret  ' from #1062
+[IC@T=510]> Delivered [0000 0000 0000 0000] from #1078 to DE
+	(From IC's cache)
+[LS@T=511]> Accepted request from EX regarding #1064
+[IC@T=511]> Invalidated cached fetch window from #1060 as per LS's signal
+[IC@T=511]> Requested fetch window starting at #1080 from LS
+[LS@T=517]> Stored { 0000 } at #1064 for EX
+	(Entirely using LS's cache)
+[LS@T=518]> Accepted request from IC regarding #1080
+[EX@T=520]> Finished executing: sub [1064],  1 ([1064] = 0) Flags.Z=1
+[EX@T=521]> Began executing 'jmp 4096 ' from #1014
+[EX@T=525]> Finished executing: jmp #1000 (yes)
+[EX@T=526]> Ignored instruction 'push r0 ' from #1018 (expecting #1000)
+[EX@T=526]> Ignored instruction 'mul r0,  2' from #101a (expecting #1000)
+[EX@T=526]> Ignored instruction 'mov [1066],  r1' from #101e (expecting #1000)
+[EX@T=526]> Ignored instruction 'call 4142 ' from #1022 (expecting #1000)
+[EX@T=526]> Ignored instruction 'pop r0 ' from #1026 (expecting #1000)
+[EX@T=526]> Ignored instruction 'cmp r0,  [1068]' from #1028 (expecting #1000)
+[EX@T=526]> Ignored instruction 'end_sim  ' from #102c (expecting #1000)
+[EX@T=526]> Ignored instruction 'mov r2,  0' from #102e (expecting #1000)
+[EX@T=526]> Ignored instruction 'cmp [1066],  0' from #1032 (expecting #1000)
+[EX@T=526]> Ignored instruction 'jz 4190 ' from #1038 (expecting #1000)
+[EX@T=526]> Ignored instruction 'div [1066],  2' from #103c (expecting #1000)
+[EX@T=526]> Ignored instruction 'cmp r1,  0' from #1042 (expecting #1000)
+[EX@T=526]> Ignored instruction 'jg 4178 ' from #1046 (expecting #1000)
+[EX@T=526]> Ignored instruction 'mov [1066],  r0' from #104a (expecting #1000)
+[EX@T=526]> Ignored instruction 'jmp 4146 ' from #104e (expecting #1000)
+[EX@T=526]> Ignored instruction 'add r2,  1' from #1052 (expecting #1000)
+[EX@T=526]> Ignored instruction 'mov [1066],  r0' from #1056 (expecting #1000)
+[EX@T=526]> Ignored instruction 'jmp 4146 ' from #105a (expecting #1000)
+[EX@T=526]> Ignored instruction 'mov [1068],  r2' from #105e (expecting #1000)
+[EX@T=526]> Ignored instruction 'ret  ' from #1062 (expecting #1000)
+[EX@T=526]> Ignored malformed / residual instruction at #1064
+[EX@T=526]> Ignored malformed / residual instruction at #1066
+[EX@T=526]> Ignored malformed / residual instruction at #1068
+[EX@T=526]> Ignored malformed / residual instruction at #106a
+[EX@T=526]> Ignored malformed / residual instruction at #106c
+[EX@T=526]> Ignored malformed / residual instruction at #106e
+[EX@T=526]> Ignored malformed / residual instruction at #1070
+[EX@T=526]> Ignored malformed / residual instruction at #1072
+[EX@T=526]> Skipped empty instruction from #1072 (trying to wait for #1000)
+[DE@T=527]> Received signal to jump to #1000; Sent signal furter to IC
+[DE@T=527]> Ignored fetch window with start address #1078 (awaiting one containing #1000)
+[LS@T=532]> Fetched [0000 0000 0000 0000] from #1080 for IC
+[IC@T=534]> Received signal to change IP to #1000 (aligned as #1000)
+[IC@T=535]> Requested fetch window starting at #1000 from LS
+[LS@T=536]> Accepted request from IC regarding #1000
+[LS@T=550]> Fetched [1841 1064 0000 2420] from #1000 for IC
+[IC@T=552]> Delivered [1841 1064 0000 2420] from #1000 to DE
+[IC@T=554]> Delivered [1018 0502 1064 0841] from #1008 to DE
+	(From IC's cache)
+[DE@T=554]> Decoded 'cmp [1064],  0' from #1000
+[EX@T=555]> Began executing 'cmp [1064],  0' from #1000
+[IC@T=556]> Delivered [1064 0001 1c20 1000] from #1010 to DE
+	(From IC's cache)
+[LS@T=556]> Accepted request from EX regarding #1064
+[DE@T=556]> Decoded 'je 4120 ' from #1006
+[IC@T=558]> Delivered [4100 1101 0002 0c49] from #1018 to DE
+	(From IC's cache)
+[DE@T=558]> Decoded 'add r0,  [1064]' from #100a
+[IC@T=560]> Delivered [1066 3420 102e 4500] from #1020 to DE
+	(From IC's cache)
+[DE@T=560]> Decoded 'sub [1064],  1' from #100e
+[IC@T=562]> Delivered [1902 1068 3c00 0d41] from #1028 to DE
+	(From IC's cache)
+[LS@T=562]> Fetched { 0000 } from #1064 for EX
+	(Entirely using LS's cache)
+[DE@T=562]> Decoded 'jmp 4096 ' from #1014
+[IC@T=564]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[DE@T=564]> Decoded 'push r0 ' from #1018
+[IC@T=566]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[DE@T=566]> Decoded 'mul r0,  2' from #101a
+[EX@T=566]> Finished executing: cmp [1064],  0 (0 ? 0) Flags.Z=1 Flags.E=1 Flags.G=0 
+[EX@T=567]> Began executing 'je 4120 ' from #1006
+[IC@T=568]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=568]> Decoded 'mov [1066],  r1' from #101e
+[IC@T=570]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[DE@T=570]> Decoded 'call 4142 ' from #1022
+[EX@T=571]> Finished executing: je #1018 (yes)
+[IC@T=572]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[EX@T=572]> Ignored instruction 'add r0,  [1064]' from #100a (expecting #1018)
+[EX@T=572]> Ignored instruction 'sub [1064],  1' from #100e (expecting #1018)
+[EX@T=572]> Ignored instruction 'jmp 4096 ' from #1014 (expecting #1018)
+[EX@T=572]> Began executing 'push r0 ' from #1018
+[DE@T=572]> Received signal to jump to #1018; Sent signal furter to IC
+[DE@T=572]> Ignored fetch window with start address #1028 (awaiting one containing #1018)
+[DE@T=572]> Ignored fetch window with start address #1030 (awaiting one containing #1018)
+[DE@T=572]> Ignored fetch window with start address #1038 (awaiting one containing #1018)
+[DE@T=572]> Ignored fetch window with start address #1040 (awaiting one containing #1018)
+[DE@T=572]> Ignored fetch window with start address #1048 (awaiting one containing #1018)
+[DE@T=572]> Ignored fetch window with start address #1050 (awaiting one containing #1018)
+[LS@T=573]> Accepted request from EX regarding #ffec
+[IC@T=574]> Received signal to change IP to #1018 (aligned as #1018)
+[IC@T=576]> Delivered [4100 1101 0002 0c49] from #1018 to DE
+	(From IC's cache)
+[DE@T=578]> Decoded 'push r0 ' from #1018
+[IC@T=578]> Delivered [1066 3420 102e 4500] from #1020 to DE
+	(From IC's cache)
+[LS@T=579]> Stored { 000f } at #ffec for EX
+	(Entirely using LS's cache)
+[IC@T=580]> Delivered [1902 1068 3c00 0d41] from #1028 to DE
+	(From IC's cache)
+[DE@T=580]> Decoded 'mul r0,  2' from #101a
+[IC@T=582]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[DE@T=582]> Decoded 'mov [1066],  r1' from #101e
+[EX@T=583]> Finished executing: push r0 (push 15 )
+[IC@T=584]> Delivered [3020 105e 1441 1066] from #1038 to DE
+[EX@T=584]> Began executing 'mul r0,  2' from #101a
+	(From IC's cache)
+[DE@T=584]> Decoded 'call 4142 ' from #1022
+[IC@T=586]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=586]> Decoded 'pop r0 ' from #1026
+[EX@T=588]> Finished executing: mul r0,  2 (r0 = 0, r1 = 30)
+[IC@T=588]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[DE@T=588]> Decoded 'cmp r0,  [1068]' from #1028
+[EX@T=589]> Began executing 'mov [1066],  r1' from #101e
+[LS@T=590]> Accepted request from EX regarding #1066
+[DE@T=590]> Decoded 'end_sim  ' from #102c
+[IC@T=590]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[IC@T=591]> Invalidated cached fetch window from #1060 as per LS's signal
+[DE@T=592]> Decoded 'mov r2,  0' from #102e
+[IC@T=592]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[IC@T=593]> Requested fetch window starting at #1060 from LS
+[DE@T=594]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=596]> Stored { 001e } at #1066 for EX
+	(Entirely using LS's cache)
+[DE@T=596]> Decoded 'jz 4190 ' from #1038
+[LS@T=597]> Accepted request from IC regarding #1060
+[DE@T=598]> Decoded 'div [1066],  2' from #103c
+[EX@T=600]> Finished executing: mov [1066],  r1 ([1066] = 30)
+[DE@T=600]> Decoded 'cmp r1,  0' from #1042
+[EX@T=601]> Began executing 'call 4142 ' from #1022
+[DE@T=602]> Decoded 'jg 4178 ' from #1046
+[DE@T=604]> Decoded 'mov [1066],  r0' from #104a
+[DE@T=606]> Decoded 'jmp 4146 ' from #104e
+[DE@T=608]> Decoded 'add r2,  1' from #1052
+[DE@T=610]> Decoded 'mov [1066],  r0' from #1056
+[LS@T=611]> Fetched [1068 3800 0005 0000] from #1060 for IC
+[LS@T=612]> Accepted request from EX regarding #ffd8
+[DE@T=612]> Decoded 'jmp 4146 ' from #105a
+[IC@T=613]> Delivered [1068 3800 0000 001e] from #1060 to DE
+[IC@T=615]> Delivered [0000 0000 0000 0000] from #1068 to DE
+	(From IC's cache)
+[DE@T=615]> Decoded 'mov [1068],  r2' from #105e
+[IC@T=617]> Delivered [0000 0000 0000 0000] from #1070 to DE
+	(From IC's cache)
+[DE@T=617]> Decoded 'ret  ' from #1062
+[LS@T=618]> Stored { 0000 0000 0000 0000 0000 0000 001e 0000 c000 1026 } at #ffd8 for EX
+	(Entirely using LS's cache)
+[IC@T=619]> Delivered [0000 0000 0000 0000] from #1078 to DE
+	(From IC's cache)
+[IC@T=620]> Requested fetch window starting at #1080 from LS
+[LS@T=621]> Accepted request from IC regarding #1080
+[EX@T=622]> Finished executing: call 4142 
+Saved state:
+	IP = #1026
+	Flags.Z=1 Flags.E=1 Flags.G=0 
+	Registers: r0=0 r1=30 r2=0 r3=0 r4=0 r5=0 r6=0 r7=0
+[EX@T=623]> Ignored instruction 'push r0 ' from #1018 (expecting #102e)
+[EX@T=623]> Ignored instruction 'mul r0,  2' from #101a (expecting #102e)
+[EX@T=623]> Ignored instruction 'mov [1066],  r1' from #101e (expecting #102e)
+[EX@T=623]> Ignored instruction 'call 4142 ' from #1022 (expecting #102e)
+[EX@T=623]> Ignored instruction 'pop r0 ' from #1026 (expecting #102e)
+[EX@T=623]> Ignored instruction 'cmp r0,  [1068]' from #1028 (expecting #102e)
+[EX@T=623]> Ignored instruction 'end_sim  ' from #102c (expecting #102e)
+[EX@T=623]> Began executing 'mov r2,  0' from #102e
+[DE@T=623]> Received signal to jump to #102e; Sent signal furter to IC
+[DE@T=623]> Ignored fetch window with start address #1068 (awaiting one containing #102e)
+[DE@T=623]> Ignored fetch window with start address #1070 (awaiting one containing #102e)
+[DE@T=623]> Ignored fetch window with start address #1078 (awaiting one containing #102e)
+[EX@T=627]> Finished executing: mov r2,  0 (r2 = 0)
+[EX@T=628]> Began executing 'cmp [1066],  0' from #1032
+[LS@T=635]> Fetched [0000 0000 0000 0000] from #1080 for IC
+[LS@T=636]> Accepted request from EX regarding #1066
+[IC@T=637]> Received signal to change IP to #102e (aligned as #1028)
+[IC@T=639]> Delivered [1902 1068 3c00 0d41] from #1028 to DE
+	(From IC's cache)
+[IC@T=641]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[LS@T=642]> Fetched { 001e } from #1066 for EX
+	(Entirely using LS's cache)
+[DE@T=643]> Decoded 'mov r2,  0' from #102e
+[IC@T=643]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[DE@T=645]> Decoded 'cmp [1066],  0' from #1032
+[IC@T=645]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[EX@T=646]> Finished executing: cmp [1066],  0 (30 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[DE@T=647]> Decoded 'jz 4190 ' from #1038
+[IC@T=647]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[EX@T=647]> Began executing 'jz 4190 ' from #1038
+[IC@T=649]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[DE@T=649]> Decoded 'div [1066],  2' from #103c
+[DE@T=651]> Decoded 'cmp r1,  0' from #1042
+[IC@T=651]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[EX@T=651]> Finished executing: jz #105e (no)
+[EX@T=652]> Began executing 'div [1066],  2' from #103c
+[DE@T=653]> Decoded 'jg 4178 ' from #1046
+[LS@T=653]> Accepted request from EX regarding #1066
+[IC@T=653]> Delivered [1068 3800 0000 001e] from #1060 to DE
+	(From IC's cache)
+[IC@T=654]> Requested fetch window starting at #1068 from LS
+[DE@T=655]> Decoded 'mov [1066],  r0' from #104a
+[DE@T=657]> Decoded 'jmp 4146 ' from #104e
+[LS@T=659]> Fetched { 001e } from #1066 for EX
+	(Entirely using LS's cache)
+[DE@T=659]> Decoded 'add r2,  1' from #1052
+[LS@T=660]> Accepted request from IC regarding #1068
+[DE@T=661]> Decoded 'mov [1066],  r0' from #1056
+[DE@T=663]> Decoded 'jmp 4146 ' from #105a
+[EX@T=663]> Finished executing: div [1066],  2 (r0 = 15, r1 = 0)
+[EX@T=664]> Began executing 'cmp r1,  0' from #1042
+[DE@T=665]> Decoded 'mov [1068],  r2' from #105e
+[DE@T=667]> Decoded 'ret  ' from #1062
+[EX@T=668]> Finished executing: cmp r1,  0 (0 ? 0) Flags.Z=1 Flags.E=1 Flags.G=0 
+[EX@T=669]> Began executing 'jg 4178 ' from #1046
+[EX@T=673]> Finished executing: jg #1052 (no)
+[LS@T=674]> Fetched [0000 0000 0000 0000] from #1068 for IC
+[EX@T=674]> Began executing 'mov [1066],  r0' from #104a
+[LS@T=675]> Accepted request from EX regarding #1066
+[IC@T=676]> Delivered [0000 0000 0000 0000] from #1068 to DE
+[IC@T=677]> Invalidated cached fetch window from #1060 as per LS's signal
+[IC@T=678]> Delivered [0000 0000 0000 0000] from #1070 to DE
+	(From IC's cache)
+[IC@T=680]> Delivered [0000 0000 0000 0000] from #1078 to DE
+	(From IC's cache)
+[LS@T=681]> Stored { 000f } at #1066 for EX
+	(Entirely using LS's cache)
+[IC@T=681]> Requested fetch window starting at #1080 from LS
+[LS@T=682]> Accepted request from IC regarding #1080
+[EX@T=685]> Finished executing: mov [1066],  r0 ([1066] = 15)
+[EX@T=686]> Began executing 'jmp 4146 ' from #104e
+[EX@T=690]> Finished executing: jmp #1032 (yes)
+[DE@T=691]> Received signal to jump to #1032; Sent signal furter to IC
+[DE@T=691]> Ignored fetch window with start address #1078 (awaiting one containing #1032)
+[EX@T=691]> Ignored instruction 'add r2,  1' from #1052 (expecting #1032)
+[EX@T=691]> Ignored instruction 'mov [1066],  r0' from #1056 (expecting #1032)
+[EX@T=691]> Ignored instruction 'jmp 4146 ' from #105a (expecting #1032)
+[EX@T=691]> Ignored instruction 'mov [1068],  r2' from #105e (expecting #1032)
+[EX@T=691]> Ignored instruction 'ret  ' from #1062 (expecting #1032)
+[EX@T=691]> Ignored malformed / residual instruction at #1064
+[EX@T=691]> Ignored malformed / residual instruction at #1066
+[EX@T=691]> Ignored instruction 'mov r2,  0' from #102e (expecting #1032)
+[EX@T=691]> Began executing 'cmp [1066],  0' from #1032
+[LS@T=696]> Fetched [0000 0000 0000 0000] from #1080 for IC
+[LS@T=697]> Accepted request from EX regarding #1066
+[IC@T=698]> Received signal to change IP to #1032 (aligned as #1030)
+[IC@T=700]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[IC@T=702]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[DE@T=702]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=703]> Fetched { 000f } from #1066 for EX
+	(Entirely using LS's cache)
+[IC@T=704]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=704]> Decoded 'jz 4190 ' from #1038
+[IC@T=706]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[DE@T=706]> Decoded 'div [1066],  2' from #103c
+[EX@T=707]> Finished executing: cmp [1066],  0 (15 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[IC@T=708]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[DE@T=708]> Decoded 'cmp r1,  0' from #1042
+[EX@T=708]> Began executing 'jz 4190 ' from #1038
+[IC@T=710]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[DE@T=710]> Decoded 'jg 4178 ' from #1046
+[IC@T=711]> Requested fetch window starting at #1060 from LS
+[EX@T=712]> Finished executing: jz #105e (no)
+[LS@T=712]> Accepted request from IC regarding #1060
+[DE@T=712]> Decoded 'mov [1066],  r0' from #104a
+[EX@T=713]> Began executing 'div [1066],  2' from #103c
+[DE@T=714]> Decoded 'jmp 4146 ' from #104e
+[DE@T=716]> Decoded 'add r2,  1' from #1052
+[DE@T=718]> Decoded 'mov [1066],  r0' from #1056
+[DE@T=720]> Decoded 'jmp 4146 ' from #105a
+[LS@T=726]> Fetched [1068 3800 0005 0000] from #1060 for IC
+[LS@T=727]> Accepted request from EX regarding #1066
+[IC@T=728]> Delivered [1068 3800 0000 000f] from #1060 to DE
+[IC@T=730]> Delivered [0000 0000 0000 0000] from #1068 to DE
+	(From IC's cache)
+[DE@T=730]> Decoded 'mov [1068],  r2' from #105e
+[IC@T=732]> Delivered [0000 0000 0000 0000] from #1070 to DE
+	(From IC's cache)
+[DE@T=732]> Decoded 'ret  ' from #1062
+[LS@T=733]> Fetched { 000f } from #1066 for EX
+	(Entirely using LS's cache)
+[IC@T=734]> Delivered [0000 0000 0000 0000] from #1078 to DE
+	(From IC's cache)
+[IC@T=736]> Delivered [0000 0000 0000 0000] from #1080 to DE
+	(From IC's cache)
+[IC@T=737]> Requested fetch window starting at #1088 from LS
+[EX@T=737]> Finished executing: div [1066],  2 (r0 = 7, r1 = 1)
+[LS@T=738]> Accepted request from IC regarding #1088
+[EX@T=738]> Began executing 'cmp r1,  0' from #1042
+[EX@T=742]> Finished executing: cmp r1,  0 (1 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[EX@T=743]> Began executing 'jg 4178 ' from #1046
+[EX@T=747]> Finished executing: jg #1052 (yes)
+[EX@T=748]> Ignored instruction 'mov [1066],  r0' from #104a (expecting #1052)
+[EX@T=748]> Ignored instruction 'jmp 4146 ' from #104e (expecting #1052)
+[EX@T=748]> Began executing 'add r2,  1' from #1052
+[DE@T=749]> Received signal to jump to #1052; Sent signal furter to IC
+[DE@T=749]> Ignored fetch window with start address #1078 (awaiting one containing #1052)
+[DE@T=749]> Ignored fetch window with start address #1080 (awaiting one containing #1052)
+[LS@T=752]> Fetched [0000 0000 0000 0000] from #1088 for IC
+[EX@T=752]> Finished executing: add r2,  1 (r2 = 1)
+[EX@T=753]> Began executing 'mov [1066],  r0' from #1056
+[IC@T=754]> Received signal to change IP to #1052 (aligned as #1050)
+[LS@T=754]> Accepted request from EX regarding #1066
+[IC@T=755]> Invalidated cached fetch window from #1060 as per LS's signal
+[IC@T=756]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[DE@T=758]> Decoded 'add r2,  1' from #1052
+[IC@T=758]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[IC@T=759]> Requested fetch window starting at #1060 from LS
+[LS@T=760]> Stored { 0007 } at #1066 for EX
+	(Entirely using LS's cache)
+[DE@T=760]> Decoded 'mov [1066],  r0' from #1056
+[LS@T=761]> Accepted request from IC regarding #1060
+[DE@T=762]> Decoded 'jmp 4146 ' from #105a
+[EX@T=764]> Finished executing: mov [1066],  r0 ([1066] = 7)
+[EX@T=765]> Began executing 'jmp 4146 ' from #105a
+[EX@T=769]> Finished executing: jmp #1032 (yes)
+[EX@T=770]> Ignored instruction 'mov [1068],  r2' from #105e (expecting #1032)
+[DE@T=770]> Received signal to jump to #1032; Sent signal furter to IC
+[EX@T=770]> Ignored instruction 'ret  ' from #1062 (expecting #1032)
+[EX@T=770]> Ignored malformed / residual instruction at #1064
+[EX@T=770]> Ignored malformed / residual instruction at #1066
+[EX@T=770]> Ignored malformed / residual instruction at #1068
+[EX@T=770]> Ignored malformed / residual instruction at #106a
+[EX@T=770]> Ignored malformed / residual instruction at #106c
+[EX@T=770]> Ignored malformed / residual instruction at #106e
+[EX@T=770]> Ignored malformed / residual instruction at #1070
+[EX@T=770]> Ignored malformed / residual instruction at #1072
+[EX@T=770]> Ignored malformed / residual instruction at #1074
+[EX@T=770]> Began executing 'cmp [1066],  0' from #1032
+[LS@T=775]> Fetched [1068 3800 0005 0000] from #1060 for IC
+[LS@T=776]> Accepted request from EX regarding #1066
+[IC@T=777]> Received signal to change IP to #1032 (aligned as #1030)
+[IC@T=779]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[IC@T=781]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[DE@T=781]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=782]> Fetched { 0007 } from #1066 for EX
+	(Entirely using LS's cache)
+[IC@T=783]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=783]> Decoded 'jz 4190 ' from #1038
+[IC@T=785]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[DE@T=785]> Decoded 'div [1066],  2' from #103c
+[EX@T=786]> Finished executing: cmp [1066],  0 (7 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[IC@T=787]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[EX@T=787]> Began executing 'jz 4190 ' from #1038
+[DE@T=787]> Decoded 'cmp r1,  0' from #1042
+[IC@T=789]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[DE@T=789]> Decoded 'jg 4178 ' from #1046
+[IC@T=791]> Delivered [1068 3800 0000 0007] from #1060 to DE
+	(From IC's cache)
+[EX@T=791]> Finished executing: jz #105e (no)
+[DE@T=791]> Decoded 'mov [1066],  r0' from #104a
+[EX@T=792]> Began executing 'div [1066],  2' from #103c
+[IC@T=793]> Delivered [0000 0000 0000 0000] from #1068 to DE
+	(From IC's cache)
+[DE@T=793]> Decoded 'jmp 4146 ' from #104e
+[LS@T=793]> Accepted request from EX regarding #1066
+[IC@T=795]> Delivered [0000 0000 0000 0000] from #1070 to DE
+	(From IC's cache)
+[DE@T=795]> Decoded 'add r2,  1' from #1052
+[IC@T=797]> Delivered [0000 0000 0000 0000] from #1078 to DE
+	(From IC's cache)
+[DE@T=797]> Decoded 'mov [1066],  r0' from #1056
+[IC@T=799]> Delivered [0000 0000 0000 0000] from #1080 to DE
+	(From IC's cache)
+[LS@T=799]> Fetched { 0007 } from #1066 for EX
+	(Entirely using LS's cache)
+[DE@T=799]> Decoded 'jmp 4146 ' from #105a
+[IC@T=801]> Delivered [0000 0000 0000 0000] from #1088 to DE
+	(From IC's cache)
+[DE@T=801]> Decoded 'mov [1068],  r2' from #105e
+[IC@T=802]> Requested fetch window starting at #1090 from LS
+[EX@T=803]> Finished executing: div [1066],  2 (r0 = 3, r1 = 1)
+[DE@T=803]> Decoded 'ret  ' from #1062
+[LS@T=803]> Accepted request from IC regarding #1090
+[EX@T=804]> Began executing 'cmp r1,  0' from #1042
+[EX@T=808]> Finished executing: cmp r1,  0 (1 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[EX@T=809]> Began executing 'jg 4178 ' from #1046
+[EX@T=813]> Finished executing: jg #1052 (yes)
+[DE@T=814]> Received signal to jump to #1052; Sent signal furter to IC
+[DE@T=814]> Ignored fetch window with start address #1070 (awaiting one containing #1052)
+[DE@T=814]> Ignored fetch window with start address #1078 (awaiting one containing #1052)
+[DE@T=814]> Ignored fetch window with start address #1080 (awaiting one containing #1052)
+[DE@T=814]> Ignored fetch window with start address #1088 (awaiting one containing #1052)
+[EX@T=814]> Ignored instruction 'mov [1066],  r0' from #104a (expecting #1052)
+[EX@T=814]> Ignored instruction 'jmp 4146 ' from #104e (expecting #1052)
+[EX@T=814]> Began executing 'add r2,  1' from #1052
+[LS@T=817]> Fetched [0000 0000 0000 0000] from #1090 for IC
+[EX@T=818]> Finished executing: add r2,  1 (r2 = 2)
+[IC@T=819]> Received signal to change IP to #1052 (aligned as #1050)
+[EX@T=819]> Began executing 'mov [1066],  r0' from #1056
+[LS@T=820]> Accepted request from EX regarding #1066
+[IC@T=820]> Invalidated cached fetch window from #1060 as per LS's signal
+[IC@T=821]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[DE@T=823]> Decoded 'add r2,  1' from #1052
+[IC@T=823]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[IC@T=824]> Requested fetch window starting at #1060 from LS
+[DE@T=825]> Decoded 'mov [1066],  r0' from #1056
+[LS@T=826]> Stored { 0003 } at #1066 for EX
+	(Entirely using LS's cache)
+[LS@T=827]> Accepted request from IC regarding #1060
+[DE@T=827]> Decoded 'jmp 4146 ' from #105a
+[EX@T=830]> Finished executing: mov [1066],  r0 ([1066] = 3)
+[EX@T=831]> Began executing 'jmp 4146 ' from #105a
+[EX@T=835]> Finished executing: jmp #1032 (yes)
+[EX@T=836]> Ignored instruction 'mov [1068],  r2' from #105e (expecting #1032)
+[EX@T=836]> Ignored instruction 'ret  ' from #1062 (expecting #1032)
+[EX@T=836]> Ignored malformed / residual instruction at #1064
+[EX@T=836]> Ignored malformed / residual instruction at #1066
+[EX@T=836]> Ignored malformed / residual instruction at #1068
+[EX@T=836]> Ignored malformed / residual instruction at #106a
+[EX@T=836]> Ignored malformed / residual instruction at #106c
+[EX@T=836]> Ignored malformed / residual instruction at #106e
+[EX@T=836]> Ignored malformed / residual instruction at #1070
+[EX@T=836]> Ignored malformed / residual instruction at #1072
+[EX@T=836]> Ignored instruction 'add r2,  1' from #1052 (expecting #1032)
+[EX@T=836]> Ignored instruction 'mov [1066],  r0' from #1056 (expecting #1032)
+[EX@T=836]> Ignored instruction 'jmp 4146 ' from #105a (expecting #1032)
+[EX@T=836]> Began executing 'cmp [1066],  0' from #1032
+[DE@T=836]> Received signal to jump to #1032; Sent signal furter to IC
+[LS@T=841]> Fetched [1068 3800 0005 0000] from #1060 for IC
+[LS@T=842]> Accepted request from EX regarding #1066
+[IC@T=843]> Received signal to change IP to #1032 (aligned as #1030)
+[IC@T=845]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[IC@T=847]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[DE@T=847]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=848]> Fetched { 0003 } from #1066 for EX
+	(Entirely using LS's cache)
+[IC@T=849]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=849]> Decoded 'jz 4190 ' from #1038
+[IC@T=851]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[DE@T=851]> Decoded 'div [1066],  2' from #103c
+[EX@T=852]> Finished executing: cmp [1066],  0 (3 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[IC@T=853]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[EX@T=853]> Began executing 'jz 4190 ' from #1038
+[DE@T=853]> Decoded 'cmp r1,  0' from #1042
+[IC@T=855]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[DE@T=855]> Decoded 'jg 4178 ' from #1046
+[IC@T=857]> Delivered [1068 3800 0000 0003] from #1060 to DE
+	(From IC's cache)
+[EX@T=857]> Finished executing: jz #105e (no)
+[DE@T=857]> Decoded 'mov [1066],  r0' from #104a
+[EX@T=858]> Began executing 'div [1066],  2' from #103c
+[IC@T=859]> Delivered [0000 0000 0000 0000] from #1068 to DE
+	(From IC's cache)
+[DE@T=859]> Decoded 'jmp 4146 ' from #104e
+[LS@T=859]> Accepted request from EX regarding #1066
+[IC@T=861]> Delivered [0000 0000 0000 0000] from #1070 to DE
+	(From IC's cache)
+[DE@T=861]> Decoded 'add r2,  1' from #1052
+[IC@T=863]> Delivered [0000 0000 0000 0000] from #1078 to DE
+	(From IC's cache)
+[DE@T=863]> Decoded 'mov [1066],  r0' from #1056
+[IC@T=865]> Delivered [0000 0000 0000 0000] from #1080 to DE
+	(From IC's cache)
+[LS@T=865]> Fetched { 0003 } from #1066 for EX
+	(Entirely using LS's cache)
+[DE@T=865]> Decoded 'jmp 4146 ' from #105a
+[IC@T=867]> Delivered [0000 0000 0000 0000] from #1088 to DE
+	(From IC's cache)
+[DE@T=867]> Decoded 'mov [1068],  r2' from #105e
+[IC@T=869]> Delivered [0000 0000 0000 0000] from #1090 to DE
+	(From IC's cache)
+[EX@T=869]> Finished executing: div [1066],  2 (r0 = 1, r1 = 1)
+[DE@T=869]> Decoded 'ret  ' from #1062
+[IC@T=870]> Requested fetch window starting at #1098 from LS
+[EX@T=870]> Began executing 'cmp r1,  0' from #1042
+[LS@T=871]> Accepted request from IC regarding #1098
+[EX@T=874]> Finished executing: cmp r1,  0 (1 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[EX@T=875]> Began executing 'jg 4178 ' from #1046
+[EX@T=879]> Finished executing: jg #1052 (yes)
+[EX@T=880]> Ignored instruction 'mov [1066],  r0' from #104a (expecting #1052)
+[EX@T=880]> Ignored instruction 'jmp 4146 ' from #104e (expecting #1052)
+[EX@T=880]> Began executing 'add r2,  1' from #1052
+[DE@T=880]> Received signal to jump to #1052; Sent signal furter to IC
+[DE@T=880]> Ignored fetch window with start address #1070 (awaiting one containing #1052)
+[DE@T=880]> Ignored fetch window with start address #1078 (awaiting one containing #1052)
+[DE@T=880]> Ignored fetch window with start address #1080 (awaiting one containing #1052)
+[DE@T=880]> Ignored fetch window with start address #1088 (awaiting one containing #1052)
+[DE@T=880]> Ignored fetch window with start address #1090 (awaiting one containing #1052)
+[EX@T=884]> Finished executing: add r2,  1 (r2 = 3)
+[EX@T=885]> Began executing 'mov [1066],  r0' from #1056
+[LS@T=885]> Fetched [0000 0000 0000 0000] from #1098 for IC
+[LS@T=886]> Accepted request from EX regarding #1066
+[IC@T=887]> Received signal to change IP to #1052 (aligned as #1050)
+[IC@T=888]> Invalidated cached fetch window from #1060 as per LS's signal
+[IC@T=889]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[IC@T=891]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[DE@T=891]> Decoded 'add r2,  1' from #1052
+[IC@T=892]> Requested fetch window starting at #1060 from LS
+[LS@T=892]> Stored { 0001 } at #1066 for EX
+	(Entirely using LS's cache)
+[LS@T=893]> Accepted request from IC regarding #1060
+[DE@T=893]> Decoded 'mov [1066],  r0' from #1056
+[DE@T=895]> Decoded 'jmp 4146 ' from #105a
+[EX@T=896]> Finished executing: mov [1066],  r0 ([1066] = 1)
+[EX@T=897]> Began executing 'jmp 4146 ' from #105a
+[EX@T=901]> Finished executing: jmp #1032 (yes)
+[EX@T=902]> Ignored instruction 'mov [1068],  r2' from #105e (expecting #1032)
+[EX@T=902]> Ignored instruction 'ret  ' from #1062 (expecting #1032)
+[EX@T=902]> Ignored malformed / residual instruction at #1064
+[EX@T=902]> Ignored malformed / residual instruction at #1066
+[EX@T=902]> Ignored malformed / residual instruction at #1068
+[EX@T=902]> Ignored malformed / residual instruction at #106a
+[EX@T=902]> Ignored malformed / residual instruction at #106c
+[EX@T=902]> Ignored instruction 'add r2,  1' from #1052 (expecting #1032)
+[EX@T=902]> Ignored instruction 'mov [1066],  r0' from #1056 (expecting #1032)
+[EX@T=902]> Ignored instruction 'jmp 4146 ' from #105a (expecting #1032)
+[EX@T=902]> Began executing 'cmp [1066],  0' from #1032
+[DE@T=902]> Received signal to jump to #1032; Sent signal furter to IC
+[LS@T=907]> Fetched [1068 3800 0005 0000] from #1060 for IC
+[LS@T=908]> Accepted request from EX regarding #1066
+[IC@T=909]> Received signal to change IP to #1032 (aligned as #1030)
+[IC@T=911]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[IC@T=913]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[DE@T=913]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=914]> Fetched { 0001 } from #1066 for EX
+	(Entirely using LS's cache)
+[IC@T=915]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=915]> Decoded 'jz 4190 ' from #1038
+[IC@T=917]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[DE@T=917]> Decoded 'div [1066],  2' from #103c
+[EX@T=918]> Finished executing: cmp [1066],  0 (1 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[IC@T=919]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[DE@T=919]> Decoded 'cmp r1,  0' from #1042
+[EX@T=919]> Began executing 'jz 4190 ' from #1038
+[IC@T=921]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[DE@T=921]> Decoded 'jg 4178 ' from #1046
+[IC@T=923]> Delivered [1068 3800 0000 0001] from #1060 to DE
+	(From IC's cache)
+[EX@T=923]> Finished executing: jz #105e (no)
+[DE@T=923]> Decoded 'mov [1066],  r0' from #104a
+[EX@T=924]> Began executing 'div [1066],  2' from #103c
+[LS@T=925]> Accepted request from EX regarding #1066
+[IC@T=925]> Delivered [0000 0000 0000 0000] from #1068 to DE
+	(From IC's cache)
+[DE@T=925]> Decoded 'jmp 4146 ' from #104e
+[IC@T=927]> Delivered [0000 0000 0000 0000] from #1070 to DE
+	(From IC's cache)
+[DE@T=927]> Decoded 'add r2,  1' from #1052
+[IC@T=929]> Delivered [0000 0000 0000 0000] from #1078 to DE
+	(From IC's cache)
+[DE@T=929]> Decoded 'mov [1066],  r0' from #1056
+[LS@T=931]> Fetched { 0001 } from #1066 for EX
+	(Entirely using LS's cache)
+[IC@T=931]> Delivered [0000 0000 0000 0000] from #1080 to DE
+	(From IC's cache)
+[DE@T=931]> Decoded 'jmp 4146 ' from #105a
+[IC@T=933]> Delivered [0000 0000 0000 0000] from #1088 to DE
+	(From IC's cache)
+[DE@T=933]> Decoded 'mov [1068],  r2' from #105e
+[IC@T=935]> Delivered [0000 0000 0000 0000] from #1090 to DE
+	(From IC's cache)
+[DE@T=935]> Decoded 'ret  ' from #1062
+[EX@T=935]> Finished executing: div [1066],  2 (r0 = 0, r1 = 1)
+[EX@T=936]> Began executing 'cmp r1,  0' from #1042
+[IC@T=937]> Delivered [0000 0000 0000 0000] from #1098 to DE
+	(From IC's cache)
+[IC@T=938]> Requested fetch window starting at #10a0 from LS
+[LS@T=939]> Accepted request from IC regarding #10a0
+[EX@T=940]> Finished executing: cmp r1,  0 (1 ? 0) Flags.Z=0 Flags.E=0 Flags.G=1 
+[EX@T=941]> Began executing 'jg 4178 ' from #1046
+[EX@T=945]> Finished executing: jg #1052 (yes)
+[DE@T=946]> Received signal to jump to #1052; Sent signal furter to IC
+[DE@T=946]> Ignored fetch window with start address #1070 (awaiting one containing #1052)
+[DE@T=946]> Ignored fetch window with start address #1078 (awaiting one containing #1052)
+[DE@T=946]> Ignored fetch window with start address #1080 (awaiting one containing #1052)
+[DE@T=946]> Ignored fetch window with start address #1088 (awaiting one containing #1052)
+[DE@T=946]> Ignored fetch window with start address #1090 (awaiting one containing #1052)
+[DE@T=946]> Ignored fetch window with start address #1098 (awaiting one containing #1052)
+[EX@T=946]> Ignored instruction 'mov [1066],  r0' from #104a (expecting #1052)
+[EX@T=946]> Ignored instruction 'jmp 4146 ' from #104e (expecting #1052)
+[EX@T=946]> Began executing 'add r2,  1' from #1052
+[EX@T=950]> Finished executing: add r2,  1 (r2 = 4)
+[EX@T=951]> Began executing 'mov [1066],  r0' from #1056
+[LS@T=953]> Fetched [0000 0000 0000 0000] from #10a0 for IC
+[LS@T=954]> Accepted request from EX regarding #1066
+[IC@T=955]> Received signal to change IP to #1052 (aligned as #1050)
+[IC@T=956]> Invalidated cached fetch window from #1060 as per LS's signal
+[IC@T=957]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[IC@T=959]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[DE@T=959]> Decoded 'add r2,  1' from #1052
+[LS@T=960]> Stored { 0000 } at #1066 for EX
+	(Entirely using LS's cache)
+[IC@T=960]> Requested fetch window starting at #1060 from LS
+[LS@T=961]> Accepted request from IC regarding #1060
+[DE@T=961]> Decoded 'mov [1066],  r0' from #1056
+[DE@T=963]> Decoded 'jmp 4146 ' from #105a
+[EX@T=964]> Finished executing: mov [1066],  r0 ([1066] = 0)
+[EX@T=965]> Began executing 'jmp 4146 ' from #105a
+[EX@T=969]> Finished executing: jmp #1032 (yes)
+[DE@T=970]> Received signal to jump to #1032; Sent signal furter to IC
+[EX@T=970]> Ignored instruction 'mov [1068],  r2' from #105e (expecting #1032)
+[EX@T=970]> Ignored instruction 'ret  ' from #1062 (expecting #1032)
+[EX@T=970]> Ignored malformed / residual instruction at #1064
+[EX@T=970]> Ignored malformed / residual instruction at #1066
+[EX@T=970]> Ignored malformed / residual instruction at #1068
+[EX@T=970]> Ignored malformed / residual instruction at #106a
+[EX@T=970]> Ignored malformed / residual instruction at #106c
+[EX@T=970]> Ignored instruction 'add r2,  1' from #1052 (expecting #1032)
+[EX@T=970]> Ignored instruction 'mov [1066],  r0' from #1056 (expecting #1032)
+[EX@T=970]> Ignored instruction 'jmp 4146 ' from #105a (expecting #1032)
+[EX@T=970]> Began executing 'cmp [1066],  0' from #1032
+[LS@T=975]> Fetched [1068 3800 0005 0000] from #1060 for IC
+[LS@T=976]> Accepted request from EX regarding #1066
+[IC@T=977]> Received signal to change IP to #1032 (aligned as #1030)
+[IC@T=979]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[IC@T=981]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[DE@T=981]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=982]> Fetched { 0000 } from #1066 for EX
+	(Entirely using LS's cache)
+[IC@T=983]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=983]> Decoded 'jz 4190 ' from #1038
+[IC@T=985]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[DE@T=985]> Decoded 'div [1066],  2' from #103c
+[EX@T=986]> Finished executing: cmp [1066],  0 (0 ? 0) Flags.Z=1 Flags.E=1 Flags.G=0 
+[EX@T=987]> Began executing 'jz 4190 ' from #1038
+[DE@T=987]> Decoded 'cmp r1,  0' from #1042
+[IC@T=987]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[IC@T=989]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+[DE@T=989]> Decoded 'jg 4178 ' from #1046
+	(From IC's cache)
+[EX@T=991]> Finished executing: jz #105e (yes)
+[DE@T=991]> Decoded 'mov [1066],  r0' from #104a
+[IC@T=991]> Delivered [1068 3800 0000 0000] from #1060 to DE
+	(From IC's cache)
+[EX@T=992]> Ignored instruction 'div [1066],  2' from #103c (expecting #105e)
+[EX@T=992]> Ignored instruction 'cmp r1,  0' from #1042 (expecting #105e)
+[EX@T=992]> Ignored instruction 'jg 4178 ' from #1046 (expecting #105e)
+[EX@T=992]> Ignored instruction 'mov [1066],  r0' from #104a (expecting #105e)
+[EX@T=992]> Ignored instruction 'jmp 4146 ' from #104e (expecting #105e)
+[EX@T=992]> Ignored instruction 'add r2,  1' from #1052 (expecting #105e)
+[EX@T=992]> Ignored instruction 'mov [1066],  r0' from #1056 (expecting #105e)
+[EX@T=992]> Ignored instruction 'jmp 4146 ' from #105a (expecting #105e)
+[EX@T=992]> Began executing 'mov [1068],  r2' from #105e
+[DE@T=992]> Received signal to jump to #105e; Sent signal furter to IC
+[DE@T=992]> Ignored fetch window with start address #1050 (awaiting one containing #105e)
+[DE@T=992]> Ignored fetch window with start address #1058 (awaiting one containing #105e)
+[DE@T=992]> Ignored fetch window with start address #1060 (awaiting one containing #105e)
+[LS@T=993]> Accepted request from EX regarding #1068
+[IC@T=993]> Received signal to change IP to #105e (aligned as #1058)
+[IC@T=994]> Invalidated cached fetch window from #1068 as per LS's signal
+[IC@T=995]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[IC@T=997]> Delivered [1068 3800 0000 0000] from #1060 to DE
+	(From IC's cache)
+[IC@T=998]> Requested fetch window starting at #1068 from LS
+[LS@T=999]> Stored { 0004 } at #1068 for EX
+	(Entirely using LS's cache)
+[DE@T=999]> Decoded 'mov [1068],  r2' from #105e
+[LS@T=1000]> Accepted request from IC regarding #1068
+[DE@T=1001]> Decoded 'ret  ' from #1062
+[EX@T=1003]> Finished executing: mov [1068],  r2 ([1068] = 4)
+[EX@T=1004]> Began executing 'ret  ' from #1062
+[LS@T=1014]> Fetched [0000 0000 0000 0000] from #1068 for IC
+[LS@T=1015]> Accepted request from EX regarding #ffd8
+[IC@T=1016]> Delivered [0004 0000 0000 0000] from #1068 to DE
+[IC@T=1018]> Delivered [0000 0000 0000 0000] from #1070 to DE
+	(From IC's cache)
+[IC@T=1020]> Delivered [0000 0000 0000 0000] from #1078 to DE
+	(From IC's cache)
+[LS@T=1021]> Fetched { 0000 0000 0000 0000 0000 0000 001e 0000 c000 1026 } from #ffd8 for EX
+	(Entirely using LS's cache)
+[IC@T=1022]> Delivered [0000 0000 0000 0000] from #1080 to DE
+	(From IC's cache)
+[IC@T=1024]> Delivered [0000 0000 0000 0000] from #1088 to DE
+	(From IC's cache)
+[EX@T=1025]> Finished executing: ret  
+Returned to state:
+	IP = #1026
+	Flags.Z=1 Flags.E=1 Flags.G=0 
+	Registers: r0=0 r1=30 r2=0 r3=0 r4=0 r5=0 r6=0 r7=0
+[IC@T=1026]> Delivered [0000 0000 0000 0000] from #1090 to DE
+	(From IC's cache)
+[EX@T=1026]> Ignored malformed / residual instruction at #1064
+[EX@T=1026]> Ignored malformed / residual instruction at #1066
+[EX@T=1026]> Ignored malformed / residual instruction at #1068
+[EX@T=1026]> Ignored malformed / residual instruction at #106a
+[EX@T=1026]> Ignored malformed / residual instruction at #106c
+[EX@T=1026]> Ignored instruction 'add r2,  1' from #1052 (expecting #1026)
+[EX@T=1026]> Ignored instruction 'mov [1066],  r0' from #1056 (expecting #1026)
+[EX@T=1026]> Ignored instruction 'jmp 4146 ' from #105a (expecting #1026)
+[EX@T=1026]> Ignored instruction 'cmp [1066],  0' from #1032 (expecting #1026)
+[EX@T=1026]> Ignored instruction 'jz 4190 ' from #1038 (expecting #1026)
+[EX@T=1026]> Ignored instruction 'div [1066],  2' from #103c (expecting #1026)
+[EX@T=1026]> Ignored instruction 'cmp r1,  0' from #1042 (expecting #1026)
+[EX@T=1026]> Ignored instruction 'jg 4178 ' from #1046 (expecting #1026)
+[EX@T=1026]> Ignored instruction 'mov [1066],  r0' from #104a (expecting #1026)
+[EX@T=1026]> Ignored instruction 'mov [1068],  r2' from #105e (expecting #1026)
+[EX@T=1026]> Ignored instruction 'ret  ' from #1062 (expecting #1026)
+[EX@T=1026]> Ignored malformed / residual instruction at #1064
+[EX@T=1026]> Ignored malformed / residual instruction at #1066
+[EX@T=1026]> Ignored malformed / residual instruction at #1068
+[EX@T=1026]> Ignored malformed / residual instruction at #106a
+[EX@T=1026]> Ignored malformed / residual instruction at #106c
+[EX@T=1026]> Ignored malformed / residual instruction at #106e
+[EX@T=1026]> Ignored malformed / residual instruction at #1070
+[EX@T=1026]> Skipped empty instruction from #1070 (trying to wait for #1026)
+[DE@T=1027]> Received signal to jump to #1026; Sent signal furter to IC
+[DE@T=1027]> Ignored fetch window with start address #1078 (awaiting one containing #1026)
+[DE@T=1027]> Ignored fetch window with start address #1080 (awaiting one containing #1026)
+[DE@T=1027]> Ignored fetch window with start address #1088 (awaiting one containing #1026)
+[DE@T=1027]> Ignored fetch window with start address #1090 (awaiting one containing #1026)
+[IC@T=1028]> Received signal to change IP to #1026 (aligned as #1020)
+[IC@T=1029]> Requested fetch window starting at #1020 from LS
+[LS@T=1030]> Accepted request from IC regarding #1020
+[LS@T=1044]> Fetched [1066 3420 102e 4500] from #1020 for IC
+[IC@T=1046]> Delivered [1066 3420 102e 4500] from #1020 to DE
+[DE@T=1048]> Decoded 'pop r0 ' from #1026
+[IC@T=1048]> Delivered [1902 1068 3c00 0d41] from #1028 to DE
+	(From IC's cache)
+[EX@T=1049]> Began executing 'pop r0 ' from #1026
+[LS@T=1050]> Accepted request from EX regarding #ffec
+[IC@T=1050]> Delivered [0000 1841 1066 0000] from #1030 to DE
+	(From IC's cache)
+[DE@T=1050]> Decoded 'cmp r0,  [1068]' from #1028
+[IC@T=1052]> Delivered [3020 105e 1441 1066] from #1038 to DE
+	(From IC's cache)
+[DE@T=1052]> Decoded 'end_sim  ' from #102c
+[IC@T=1054]> Delivered [0002 1921 0000 2c20] from #1040 to DE
+	(From IC's cache)
+[DE@T=1054]> Decoded 'mov r2,  0' from #102e
+[IC@T=1056]> Delivered [1052 0c48 1066 1c20] from #1048 to DE
+	(From IC's cache)
+[DE@T=1056]> Decoded 'cmp [1066],  0' from #1032
+[LS@T=1056]> Fetched { 000f } from #ffec for EX
+	(Entirely using LS's cache)
+[IC@T=1058]> Delivered [1032 0541 0001 0c48] from #1050 to DE
+	(From IC's cache)
+[DE@T=1058]> Decoded 'jz 4190 ' from #1038
+[IC@T=1060]> Delivered [1066 1c20 1032 0c4a] from #1058 to DE
+	(From IC's cache)
+[EX@T=1060]> Finished executing: pop r0 ( r0 = 15)
+[DE@T=1060]> Decoded 'div [1066],  2' from #103c
+[EX@T=1061]> Began executing 'cmp r0,  [1068]' from #1028
+[IC@T=1062]> Delivered [1068 3800 0000 0000] from #1060 to DE
+	(From IC's cache)
+[DE@T=1062]> Decoded 'cmp r1,  0' from #1042
+[LS@T=1062]> Accepted request from EX regarding #1068
+[IC@T=1064]> Delivered [0004 0000 0000 0000] from #1068 to DE
+	(From IC's cache)
+[DE@T=1064]> Decoded 'jg 4178 ' from #1046
+[DE@T=1066]> Decoded 'mov [1066],  r0' from #104a
+[IC@T=1066]> Delivered [0000 0000 0000 0000] from #1070 to DE
+	(From IC's cache)
+[DE@T=1068]> Decoded 'jmp 4146 ' from #104e
+[LS@T=1068]> Fetched { 0004 } from #1068 for EX
+	(Entirely using LS's cache)
+[IC@T=1068]> Delivered [0000 0000 0000 0000] from #1078 to DE
+	(From IC's cache)
+[DE@T=1070]> Decoded 'add r2,  1' from #1052
+[IC@T=1070]> Delivered [0000 0000 0000 0000] from #1080 to DE
+	(From IC's cache)
+[EX@T=1072]> Finished executing: cmp r0,  [1068] (15 ? 4) Flags.Z=0 Flags.E=0 Flags.G=1 
+[DE@T=1072]> Decoded 'mov [1066],  r0' from #1056
+[IC@T=1072]> Delivered [0000 0000 0000 0000] from #1088 to DE
+	(From IC's cache)
+[EX@T=1073]> Began executing 'end_sim  ' from #102c
+[DE@T=1074]> Decoded 'jmp 4146 ' from #105a
+[IC@T=1074]> Delivered [0000 0000 0000 0000] from #1090 to DE
+	(From IC's cache)
+[DE@T=1076]> Decoded 'mov [1068],  r2' from #105e
+[IC@T=1076]> Delivered [0000 0000 0000 0000] from #1098 to DE
+	(From IC's cache)
+[EX@T=1077]> Finished executing: end_sim  
+	!EX ends simulation at T=1077!
