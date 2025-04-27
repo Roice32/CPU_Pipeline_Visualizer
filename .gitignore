@@ -2,7 +2,7 @@
 .vscode/*
 .cache/*
 build/*
-tests/batching/*
+tests/batch/*
 tests/outputs/*
 *.hex
 *.log
