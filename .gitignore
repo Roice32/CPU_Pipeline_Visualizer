@@ -1,7 +1,11 @@
 # Directories
+.vscode/*
 .cache/*
 build/*
+tests/batching/*
 tests/outputs/*
+*.hex
+*.log
 
 # Singular files
 utils/pyasm.exe
