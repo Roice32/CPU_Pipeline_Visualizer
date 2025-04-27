@@ -3,7 +3,7 @@
 cd ./build
 
 echo "    > Removing old executable"
-rm cpp_processor_model
+rm CPU_Pipeline_Visualizer
 
 echo "    > Generating build files with CMake"
 cmake build . -DCMAKE_BUILD_TYPE=Debug
@@ -16,9 +16,9 @@ if [ $# == 2 ]
 then
     for index in $(seq 1 $2);
     do
-        ./cpp_processor_model $1 ../program_files/batch"$index".txt
+        ./CPU_Pipeline_Visualizer $1 ../tests/batch/"$index".log
         echo "Run #$index:"
-        tail -1 ../program_files/batch"$index".txt
+        tail -1 ../tests/batch/"$index".log
     done
 else
     echo "Usage: run.sh <.hex source code file> <number of times to run>"

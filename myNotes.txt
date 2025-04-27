@@ -1,5 +1,0 @@
-Time differences with vs. without caches:
-    - basicTest.hex: ~1k vs ~630 ticks
-    - repeated_load_store.hex: ~21k vs. ~31k
-    - recursion.hex: ~31k vs. ~41k
-

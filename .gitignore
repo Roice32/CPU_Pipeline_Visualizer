@@ -1,18 +1,10 @@
 # Directories
 .cache/*
 build/*
-program_files/*
 tests/outputs/*
-presentation/*
-live_demo/*
 
 # Singular files
 utils/pyasm.exe
 
 # To be kept
 !build/CMakeLists.txt
-!program_files/*.asm
-!program_files/*.hex
-!live_demo/*.asm
-!live_demo/cpp_processor_model
-!live_demo/quickParse.sh

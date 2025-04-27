@@ -3,7 +3,7 @@
 cd ./build
 
 echo "    > Removing old executable"
-rm cpp_processor_model
+rm CPU_Pipeline_Visualizer
 
 echo "    > Generating build files with CMake"
 cmake build . -DCMAKE_BUILD_TYPE=Debug
@@ -14,7 +14,7 @@ make
 echo "    > Running test"
 if [ $# == 1 ]
 then
-    ./cpp_processor_model ../tests/inputs/$1.hex ../tests/outputs/$1.txt ../tests/mem_dump.txt
+    ./CPU_Pipeline_Visualizer $1.hex $1.log ../tests/mem_dump.log
 else
     echo "Usage: test.sh <name of input file>"
 fi

@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(cpp_processor_model VERSION 0.1.0 LANGUAGES C CXX)
+project(CPU_Pipeline_Visualizer VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 file(GLOB_RECURSE
     SOURCES CONFIGURE_DEPENDS
@@ -14,9 +16,9 @@ file(GLOB_RECURSE
         "../sources/modules/execute/*.cpp"
         "../sources/modules/execute/execution_strategies/*.cpp")
 
-add_executable(cpp_processor_model "../main.cpp" ${SOURCES})
+add_executable(CPU_Pipeline_Visualizer "../main.cpp" ${SOURCES})
 
-target_include_directories(cpp_processor_model
+target_include_directories(CPU_Pipeline_Visualizer
     PUBLIC 
         "../headers"
         "../headers/cpu"
@@ -29,7 +31,9 @@ target_include_directories(cpp_processor_model
         "../headers/modules/execute"
         "../headers/modules/execute/execution_strategies")
 
-target_include_directories(cpp_processor_model
+target_include_directories(CPU_Pipeline_Visualizer
     PUBLIC 
         "../interfaces")
+
+target_link_libraries(CPU_Pipeline_Visualizer pthread)
 
