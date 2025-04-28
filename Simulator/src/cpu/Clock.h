@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ClockSyncPackage.h"
+#include "../synchronization/ClockSyncPackage.h"
 
 class Clock
 {

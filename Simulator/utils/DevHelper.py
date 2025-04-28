@@ -24,7 +24,7 @@ class DevHelper:
     self.testsDir = os.path.join(self.projectRoot, "tests")
     self.outputsDir = os.path.join(self.testsDir, "outputs")
     self.batchDir = os.path.join(self.testsDir, "batch")
-    self.executable = "CPU_Pipeline_Visualizer"  # Just the executable name, as we'll run it from buildDir
+    self.executable = "CPU_Pipeline_Simulator"  # Just the executable name, as we'll run it from buildDir
 
     # Ensure necessary directories exist
     os.makedirs(self.outputsDir, exist_ok=True)

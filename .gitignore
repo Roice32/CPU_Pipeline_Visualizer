@@ -1,14 +1,11 @@
 # Directories
 .vscode/*
 .cache/*
-build/*
-tests/batch/*
-tests/outputs/*
+Simulator/build/*
+Simulator/tests/batch/*
+Simulator/tests/outputs/*
 *.hex
 *.log
-
-# Singular files
-utils/pyasm.exe
 
 # To be kept
 !build/CMakeLists.txt

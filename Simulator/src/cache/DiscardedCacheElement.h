@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Config.h"
+#include "../Config.h"
+
 template <typename DataType>
 class DiscardedCacheElement
 {

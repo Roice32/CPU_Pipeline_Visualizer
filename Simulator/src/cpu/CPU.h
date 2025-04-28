@@ -1,9 +1,9 @@
 #pragma once
 
-#include "LoadStore.h"
-#include "InstructionCache.h"
-#include "Decode.h"
-#include "Execute.h"
+#include "../modules/load_store/LoadStore.h"
+#include "../modules/instruction_cache/InstructionCache.h"
+#include "../modules/decode/Decode.h"
+#include "../modules/execute/Execute.h"
 #include "Clock.h"
 
 class CPU

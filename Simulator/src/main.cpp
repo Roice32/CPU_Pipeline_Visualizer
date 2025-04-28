@@ -1,5 +1,5 @@
-#include "headers/Memory.h"
-#include "CPU.h"
+#include "memory/Memory.h"
+#include "cpu/CPU.h"
 
 int main(int argc, char** argv)
 {
