@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IExecutionStrategy.cpp"
+#include "../../../interfaces/IExecutionStrategy.cpp"
 
 class ExecMov: public IExecutionStrategy
 {

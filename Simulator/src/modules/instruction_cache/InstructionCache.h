@@ -1,9 +1,9 @@
 #pragma once
 
-#include "ICLogger.h"
-#include "InterThreadCommPipe.h"
-#include "DMCache.h"
-#include "IClockBoundModule.cpp"
+#include "../../logging/ICLogger.h"
+#include "../../synchronization/InterThreadCommPipe.h"
+#include "../../interfaces/IClockBoundModule.cpp"
+#include "../../cache/DMCache.h"
 
 class InstructionCache: public IClockBoundModule, public ICLogger
 {

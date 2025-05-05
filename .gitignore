@@ -8,4 +8,4 @@ Simulator/tests/outputs/*
 *.log
 
 # To be kept
-!build/CMakeLists.txt
+!Simulator/build/CMakeLists.txt

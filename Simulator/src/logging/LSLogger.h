@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ILogger.cpp"
+#include "../interfaces/ILogger.cpp"
 
 class LSLogger: public ILogger
 {
