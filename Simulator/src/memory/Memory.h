@@ -19,5 +19,6 @@ public:
   Memory(const char* hexSourceFilePath);
   byte getMemoryCell(address addr);
   void setMemoryCell(address addr, byte value);
+  std::unordered_map<address, byte> getMemory() const;
   void dumpMemoryContents(const char* outputFile);
 };

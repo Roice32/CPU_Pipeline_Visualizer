@@ -1,5 +1,5 @@
-#include "memory/Memory.h"
 #include "cpu/CPU.h"
+#include "logging/ExecutionRecorder.h"
 
 int main(int argc, char** argv)
 {
@@ -18,11 +18,14 @@ int main(int argc, char** argv)
   else
     ILogger::markOutputForTerminal();
   
+  std::shared_ptr<ExecutionRecorder> recorder = std::make_shared<ExecutionRecorder>(mem);
+  
   CPU cpu(mem);
   cpu.runSimulation();
   
   if (argc >= 4 && argv[3][0] != '\0')
-    mem->dumpMemoryContents(argv[3]);
+    recorder->dumpToJSON(argv[3]);
+    //mem->dumpMemoryContents(argv[3]);
   
   return 0;
 }

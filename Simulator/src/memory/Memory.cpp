@@ -90,6 +90,11 @@ void Memory::setMemoryCell(address addr, byte value)
     foundMemoryCell->second = value;
 }
 
+std::unordered_map<address, byte> Memory::getMemory() const
+{
+  return data;
+}
+
 void Memory::dumpMemoryContents(const char* outputFile)
 {
   std::ofstream output(outputFile);
