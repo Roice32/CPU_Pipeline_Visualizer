@@ -7,11 +7,11 @@
 class ClockSyncPackage
 {
 public:
-    clock_time cycleCount;
-    std::condition_variable update;
-    std::mutex updateLock;
-    bool ICReady;
-    bool running;
+  clock_time cycleCount;
+  std::condition_variable update;
+  std::mutex updateLock;
+  bool ICReady;
+  bool running;
 
-    ClockSyncPackage(): running(true), ICReady(false), cycleCount(0) {};
+  ClockSyncPackage(): running(true), ICReady(false), cycleCount(0) {};
 };

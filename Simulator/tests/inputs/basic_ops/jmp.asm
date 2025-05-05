@@ -1,22 +1,22 @@
 .boot
-    jmp main
+  jmp main
 
 .code
 main:
 first:
-    jmp second
+  jmp second
 end:
-    end_sim
+  end_sim
 
 second:
-    mov r0, 3
-    jmp third
+  mov r0, 3
+  jmp third
 
 third:
-    cmp 2, 3
-    jl end
+  cmp 2, 3
+  jl end
 
-    jmp end
+  jmp end
 
 .data
 someVar:

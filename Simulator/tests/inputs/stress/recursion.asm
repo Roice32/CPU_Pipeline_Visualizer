@@ -1,36 +1,36 @@
 .boot
-    jmp main
+  jmp main
 
 .code
 main:
-    call fib
-    push [glob_var_a]
-    end_sim
+  call fib
+  push [glob_var_a]
+  end_sim
 
 fib:
-    cmp [param_n], 2
-    jl base_case_1
-    je base_case_2
+  cmp [param_n], 2
+  jl base_case_1
+  je base_case_2
 
-    push [param_n]
-    sub [param_n], 1
-    call fib
-    push [glob_var_a]
-    
-    sub [param_n], 1
-    call fib
-    pop [glob_var_b]
-    add [glob_var_a], [glob_var_b]
-    pop [param_n]
-    ret
+  push [param_n]
+  sub [param_n], 1
+  call fib
+  push [glob_var_a]
+  
+  sub [param_n], 1
+  call fib
+  pop [glob_var_b]
+  add [glob_var_a], [glob_var_b]
+  pop [param_n]
+  ret
 
 base_case_1:
-    mov [glob_var_a], 0
-    ret
+  mov [glob_var_a], 0
+  ret
 
 base_case_2:
-    mov [glob_var_a], 1
-    ret
+  mov [glob_var_a], 1
+  ret
 
 .data:
 param_n:

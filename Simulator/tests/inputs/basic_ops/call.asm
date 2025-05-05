@@ -1,26 +1,26 @@
 .boot
-    jmp main
+  jmp main
 
 .code
 main:
-    mov [someVar], 2
+  mov [someVar], 2
 someCode:
-    call methodA
-    ;cmp [someVar], 0
-    ;jz end
-    ;jmp someCode
+  call methodA
+  ;cmp [someVar], 0
+  ;jz end
+  ;jmp someCode
 end:
-    end_sim
+  end_sim
 
 methodA:
-    mov r1, 1
-    sub [someVar], r1
-    call methodB
-    ret
+  mov r1, 1
+  sub [someVar], r1
+  call methodB
+  ret
 
 methodB:
-    mov [someVar], 0
-    ret
+  mov [someVar], 0
+  ret
 
 .data
 someVar:

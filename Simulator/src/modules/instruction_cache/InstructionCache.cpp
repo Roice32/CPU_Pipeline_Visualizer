@@ -1,104 +1,104 @@
 #include "InstructionCache.h"
 
 InstructionCache::InstructionCache(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithLS,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithDE,
-    std::shared_ptr<ClockSyncPackage> clockSyncVars,
-    std::shared_ptr<register_16b> ip):
-        IClockBoundModule(clockSyncVars, 3),
-        fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), internalIP(0xfff0), cache() {};
+  std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithDE,
+  std::shared_ptr<ClockSyncPackage> clockSyncVars,
+  std::shared_ptr<register_16b> ip):
+    IClockBoundModule(clockSyncVars, 3),
+    fromMetoLS(commPipeWithLS), fromMetoDE(commPipeWithDE), internalIP(0xfff0), cache() {};
 
 fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
-    clock_time reqSendTime = getCurrTime();
-    SynchronizedDataPackage<address> syncReq(addr, clockSyncVars->cycleCount);
-    syncReq.sentAt = reqSendTime;
-    fromMetoLS->sendA(syncReq);
+  clock_time reqSendTime = getCurrTime();
+  SynchronizedDataPackage<address> syncReq(addr, clockSyncVars->cycleCount);
+  syncReq.sentAt = reqSendTime;
+  fromMetoLS->sendA(syncReq);
 
-    if (clockSyncVars->running)
-        logComplete(reqSendTime, logRequest(internalIP));
+  if (clockSyncVars->running)
+    logComplete(reqSendTime, logRequest(internalIP));
+  
+  enterIdlingState();
+  SynchronizedDataPackage<fetch_window> receivedPckg;
+  while (clockSyncVars->running)
+  {
+    while (!fromMetoLS->pendingB() && clockSyncVars->running)
+      returnFromIdlingState();
     
-    enterIdlingState();
-    SynchronizedDataPackage<fetch_window> receivedPckg;
-    while (clockSyncVars->running)
-    {
-        while (!fromMetoLS->pendingB() && clockSyncVars->running)
-            returnFromIdlingState();
-        
-        if (!clockSyncVars->running)
-            return 0;
-        receivedPckg = fromMetoLS->getB();
-        
-        if (!receivedPckg.exceptionTriggered)
-            break;
-        
-        address invalidatedFW = receivedPckg.data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
-        cache.prepareForOps(invalidatedFW);
-        cache.invalidate();
-    }
+    if (!clockSyncVars->running)
+      return 0;
+    receivedPckg = fromMetoLS->getB();
     
-    awaitNextTickToHandle(receivedPckg);
-    return receivedPckg.data;
+    if (!receivedPckg.exceptionTriggered)
+      break;
+    
+    address invalidatedFW = receivedPckg.data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
+    cache.prepareForOps(invalidatedFW);
+    cache.invalidate();
+  }
+  
+  awaitNextTickToHandle(receivedPckg);
+  return receivedPckg.data;
 }
 
 bool InstructionCache::checkIPChangeSignal()
 {
-    if (!fromMetoDE->pendingB())
-        return false;
-    SynchronizedDataPackage<address> signalFromDE = fromMetoDE->getB();
-    clock_time timeReceived = getCurrTime();
-    internalIP = signalFromDE.data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
-    logComplete(timeReceived, logJump(signalFromDE.data, internalIP));
-    return true;
+  if (!fromMetoDE->pendingB())
+    return false;
+  SynchronizedDataPackage<address> signalFromDE = fromMetoDE->getB();
+  clock_time timeReceived = getCurrTime();
+  internalIP = signalFromDE.data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
+  logComplete(timeReceived, logJump(signalFromDE.data, internalIP));
+  return true;
 }
 
 void InstructionCache::executeModuleLogic()
 {
-    if (fromMetoLS->pendingB())
-    {
-        address invalidatedFW = fromMetoLS->getB().data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
-        cache.prepareForOps(invalidatedFW);
-        if(cache.invalidate())
-            logComplete(getCurrTime(), "Invalidated cached fetch window from #" + convDecToHex(invalidatedFW) + " as per LS's signal\n");
-    }
+  if (fromMetoLS->pendingB())
+  {
+    address invalidatedFW = fromMetoLS->getB().data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
+    cache.prepareForOps(invalidatedFW);
+    if(cache.invalidate())
+      logComplete(getCurrTime(), "Invalidated cached fetch window from #" + convDecToHex(invalidatedFW) + " as per LS's signal\n");
+  }
 
-    fetch_window currBatch;
-    cache.prepareForOps(internalIP);
-    bool fwAlreadyInCache = cache.isAHit();
+  fetch_window currBatch;
+  cache.prepareForOps(internalIP);
+  bool fwAlreadyInCache = cache.isAHit();
+  if (fwAlreadyInCache)
+  {
+    shortenThisCycleBy(1);
+    currBatch = cache.get();
+  }
+  else
+  {
+    currBatch = getFetchWindowFromLS(internalIP);
+    address removedElement = cache.store(currBatch);
+    if (removedElement != DUMMY_ADDRESS)
+      logAdditional("\tSwapping fetch window at #" +
+        convDecToHex(removedElement) + 
+        " from cache with fetch window at #" +
+        convDecToHex(internalIP) +
+        " from LS\n");
+  }
+  SynchronizedDataPackage<fetch_window> syncResponse(currBatch, internalIP);
+  internalIP += FETCH_WINDOW_BYTES;
+  
+  clock_time lastTick = waitTillLastTick();
+  syncResponse.sentAt = lastTick;
+  if (clockSyncVars->running && !checkIPChangeSignal())
+  {
+    fromMetoDE->sendA(syncResponse);
+    logComplete(lastTick, log(LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch)));
     if (fwAlreadyInCache)
-    {
-        shortenThisCycleBy(1);
-        currBatch = cache.get();
-    }
-    else
-    {
-        currBatch = getFetchWindowFromLS(internalIP);
-        address removedElement = cache.store(currBatch);
-        if (removedElement != DUMMY_ADDRESS)
-            logAdditional("\tSwapping fetch window at #" +
-                convDecToHex(removedElement) + 
-                " from cache with fetch window at #" +
-                convDecToHex(internalIP) +
-                " from LS\n");
-    }
-    SynchronizedDataPackage<fetch_window> syncResponse(currBatch, internalIP);
-    internalIP += FETCH_WINDOW_BYTES;
-    
-    clock_time lastTick = waitTillLastTick();
-    syncResponse.sentAt = lastTick;
-    if (clockSyncVars->running && !checkIPChangeSignal())
-    {
-        fromMetoDE->sendA(syncResponse);
-        logComplete(lastTick, log(LoggablePackage(internalIP - FETCH_WINDOW_BYTES, currBatch)));
-        if (fwAlreadyInCache)
-            logAdditional("\t(From IC's cache)\n");
-    }
+      logAdditional("\t(From IC's cache)\n");
+  }
 }
 
 void InstructionCache::run()
 {
-    std::string startMessage = "\t!IC signals beginning of simulation at T=" + std::to_string(getCurrTime()) + " from #fff0!\n";
-    logAdditional(startMessage);
-    clockSyncVars->ICReady = true;
-    startCurrOpTimer();
-    executeModuleLogic();
-    IClockBoundModule::run();
+  std::string startMessage = "\t!IC signals beginning of simulation at T=" + std::to_string(getCurrTime()) + " from #fff0!\n";
+  logAdditional(startMessage);
+  clockSyncVars->ICReady = true;
+  startCurrOpTimer();
+  executeModuleLogic();
+  IClockBoundModule::run();
 }

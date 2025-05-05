@@ -9,197 +9,197 @@
 class IExecutionStrategy: public IMemoryAccesser, public EXLogger
 {
 protected:
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> fromDEtoMe;
-    IClockBoundModule* refToEX;
-    std::shared_ptr<CPURegisters> regs;
+  std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> fromDEtoMe;
+  IClockBoundModule* refToEX;
+  std::shared_ptr<CPURegisters> regs;
 
-    IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> fromDEtoMe,
-        IClockBoundModule* refToEX,
-        std::shared_ptr<CPURegisters> registers):
-            IMemoryAccesser(commPipeWithLS), EXLogger(), fromDEtoMe(fromDEtoMe), refToEX(refToEX), regs(registers) {};
+  IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> fromDEtoMe,
+    IClockBoundModule* refToEX,
+    std::shared_ptr<CPURegisters> registers):
+      IMemoryAccesser(commPipeWithLS), EXLogger(), fromDEtoMe(fromDEtoMe), refToEX(refToEX), regs(registers) {};
 
-    SynchronizedDataPackage<std::vector<word>> getFinalArgValue(byte src, word param = 0, byte isForZReg = false)
+  SynchronizedDataPackage<std::vector<word>> getFinalArgValue(byte src, word param = 0, byte isForZReg = false)
+  {
+    switch(src)
     {
-        switch(src)
+      case NULL_VAL:
+        return std::vector<word> { 0 };
+      case IMM:
+        return std::vector<word> { param };
+      case ADDR:
         {
-            case NULL_VAL:
-                return std::vector<word> { 0 };
-            case IMM:
-                return std::vector<word> { param };
-            case ADDR:
-                {
-                    SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(param, isForZReg ? WORDS_PER_Z_REGISTER : 1);
-                    if (!respFromLS.exceptionTriggered)
-                        return respFromLS;
-                    return SynchronizedDataPackage<std::vector<word>>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
-                }
-            case SP_REG:
-                return std::vector<word> { *regs->stackPointer };
-            case ST_BASE:
-                return std::vector<word> { *regs->stackBase };
-            case ST_SIZE:
-                return std::vector<word> { *regs->stackSize };
-            case R0 ... R7:
-                return std::vector<word> { *regs->registers[src - R0] };
-            case ADDR_R0 ... ADDR_R7:
-                {
-                    SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(*regs->registers[src - ADDR_R0], isForZReg ? WORDS_PER_Z_REGISTER : 1);
-                    if (!respFromLS.exceptionTriggered)
-                        return respFromLS.data;
-                    return SynchronizedDataPackage<std::vector<word>>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
-                }
-            case Z0 ... Z3:
-                return *regs->zRegisters[src - Z0];
-            default:
-                assert(0 && "Wrong or unimplemented parameter type");
+          SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(param, isForZReg ? WORDS_PER_Z_REGISTER : 1);
+          if (!respFromLS.exceptionTriggered)
+            return respFromLS;
+          return SynchronizedDataPackage<std::vector<word>>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
         }
-    }
-
-    SynchronizedDataPackage<word> storeResultAtDest(std::vector<word> result, byte destType, word destLocation = 0)
-    {
-        switch (destType)
+      case SP_REG:
+        return std::vector<word> { *regs->stackPointer };
+      case ST_BASE:
+        return std::vector<word> { *regs->stackBase };
+      case ST_SIZE:
+        return std::vector<word> { *regs->stackSize };
+      case R0 ... R7:
+        return std::vector<word> { *regs->registers[src - R0] };
+      case ADDR_R0 ... ADDR_R7:
         {
-            case ADDR:
-                {
-                    SynchronizedDataPackage<std::vector<word>> respFromLS = storeDataAt(destLocation, result.size(), result);
-                    if (!respFromLS.exceptionTriggered)
-                        return respFromLS.data.size() > 0 ? respFromLS.data[0] : 0;
-                    return SynchronizedDataPackage<word>(*regs->IP, destLocation, MISALIGNED_ACCESS_HANDL);
-                }
-            break;
-            case SP_REG:
-                *regs->stackPointer = result[0];
-            break;
-            case ST_BASE:
-                *regs->stackBase = result[0];
-            break;
-            case ST_SIZE:
-                *regs->stackSize = result[0];
-            break;
-            case R0 ... R7:
-                *regs->registers[destType - R0] = result[0];
-            break;
-            case ADDR_R0 ... ADDR_R7:
-                {
-                    SynchronizedDataPackage<std::vector<word>> respFromLS = storeDataAt(*regs->registers[destType - ADDR_R0], result.size(), result);
-                    if (!respFromLS.exceptionTriggered)
-                        return respFromLS.data.size() > 0 ? respFromLS.data[0] : 0;
-                    return SynchronizedDataPackage<word>(*regs->IP, *regs->registers[destType - ADDR_R0], MISALIGNED_ACCESS_HANDL);
-                }
-            break;
-            case Z0 ... Z3:
-                *regs->zRegisters[destType - Z0] = result;
-            break;
-            default:
-                assert(0 && "Wrong or unimplemented parameter type");
+          SynchronizedDataPackage<std::vector<word>> respFromLS = requestDataAt(*regs->registers[src - ADDR_R0], isForZReg ? WORDS_PER_Z_REGISTER : 1);
+          if (!respFromLS.exceptionTriggered)
+            return respFromLS.data;
+          return SynchronizedDataPackage<std::vector<word>>(*regs->IP, param, MISALIGNED_ACCESS_HANDL);
         }
-        return 0;
+      case Z0 ... Z3:
+        return *regs->zRegisters[src - Z0];
+      default:
+        assert(0 && "Wrong or unimplemented parameter type");
     }
+  }
 
-    SynchronizedDataPackage<std::vector<word>> requestDataAt(address addr, byte howManyWords)
+  SynchronizedDataPackage<word> storeResultAtDest(std::vector<word> result, byte destType, word destLocation = 0)
+  {
+    switch (destType)
     {
-        MemoryAccessRequest newReq(addr, howManyWords);
-        SynchronizedDataPackage<MemoryAccessRequest> syncReq(newReq, addr);
-        clock_time currTick = refToEX->getCurrTime();
-        syncReq.sentAt = currTick;
-        fromEXtoLS->sendA(syncReq);
-        refToEX->enterIdlingState();
-        while (!fromEXtoLS->pendingB())
-            refToEX->returnFromIdlingState();
-        SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
-        refToEX->awaitNextTickToHandle(receivedPckg);
-        return receivedPckg;
-    }
-
-    SynchronizedDataPackage<std::vector<word>> storeDataAt(address addr, byte howManyWords, std::vector<word> data)
-    {
-        MemoryAccessRequest newReq(addr, howManyWords, true, data);
-        SynchronizedDataPackage<MemoryAccessRequest> syncReq(newReq, addr);
-        clock_time currTick = refToEX->getCurrTime();
-        syncReq.sentAt = currTick;
-        fromEXtoLS->sendA(syncReq);
-        refToEX->enterIdlingState();
-        while (!fromEXtoLS->pendingB())
-            refToEX->returnFromIdlingState();
-        SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
-        refToEX->awaitNextTickToHandle(receivedPckg);
-        return receivedPckg;
-    }
-
-    void moveIP(Instruction instr)
-    {
-        *regs->IP += WORD_BYTES;
-        if (instr.src1 == IMM || instr.src1 == ADDR)
-            *regs->IP += WORD_BYTES;
-        if (instr.src2 == IMM || instr.src2 == ADDR)
-            *regs->IP += WORD_BYTES;
-    }
-
-    static std::string logException(SynchronizedDataPackage<Instruction> faultyInstr)
-    {
-        std::string result = "Encountered exception ";
-        if (faultyInstr.handlerAddr == DIV_BY_ZERO_HANDL)
-            result += "'Division by 0'";
-        if (faultyInstr.handlerAddr == INVALID_DECODE_HANDL)
+      case ADDR:
         {
-            if (faultyInstr.excpData == UNKNOWN_OP_CODE)
-                result += "'Unknown operation code'";
-            else if (faultyInstr.excpData == NULL_SRC)
-                result += "'Null where argument expected'";
-            else if (faultyInstr.excpData == NON_NULL_SRC)
-                result += "'Argument where null expected'";
-            else
-                result += "'Incompatible parameters (mutually / for given operation)'";
+          SynchronizedDataPackage<std::vector<word>> respFromLS = storeDataAt(destLocation, result.size(), result);
+          if (!respFromLS.exceptionTriggered)
+            return respFromLS.data.size() > 0 ? respFromLS.data[0] : 0;
+          return SynchronizedDataPackage<word>(*regs->IP, destLocation, MISALIGNED_ACCESS_HANDL);
         }
-        if (faultyInstr.handlerAddr == MISALIGNED_ACCESS_HANDL)
-            result += "'Request to memory address not aligned to 16b'";
-        if (faultyInstr.handlerAddr == STACK_OVERFLOW_HANDL)
+      break;
+      case SP_REG:
+        *regs->stackPointer = result[0];
+      break;
+      case ST_BASE:
+        *regs->stackBase = result[0];
+      break;
+      case ST_SIZE:
+        *regs->stackSize = result[0];
+      break;
+      case R0 ... R7:
+        *regs->registers[destType - R0] = result[0];
+      break;
+      case ADDR_R0 ... ADDR_R7:
         {
-            if (faultyInstr.excpData == PUSH_OVERFLOW)
-                result += "'Over-pushed stack exceeded upper limit'";
-            else
-                result += "'Over-popped stack exceeded lower limit'";
+          SynchronizedDataPackage<std::vector<word>> respFromLS = storeDataAt(*regs->registers[destType - ADDR_R0], result.size(), result);
+          if (!respFromLS.exceptionTriggered)
+            return respFromLS.data.size() > 0 ? respFromLS.data[0] : 0;
+          return SynchronizedDataPackage<word>(*regs->IP, *regs->registers[destType - ADDR_R0], MISALIGNED_ACCESS_HANDL);
         }
-        if (faultyInstr.handlerAddr == MISALIGNED_IP_HANDL)
-            result += "'IP not aligned to 16b'";
-        
-        result += " at #" + convDecToHex(faultyInstr.associatedIP) + "\n";
-        return result;
+      break;
+      case Z0 ... Z3:
+        *regs->zRegisters[destType - Z0] = result;
+      break;
+      default:
+        assert(0 && "Wrong or unimplemented parameter type");
     }
+    return 0;
+  }
+
+  SynchronizedDataPackage<std::vector<word>> requestDataAt(address addr, byte howManyWords)
+  {
+    MemoryAccessRequest newReq(addr, howManyWords);
+    SynchronizedDataPackage<MemoryAccessRequest> syncReq(newReq, addr);
+    clock_time currTick = refToEX->getCurrTime();
+    syncReq.sentAt = currTick;
+    fromEXtoLS->sendA(syncReq);
+    refToEX->enterIdlingState();
+    while (!fromEXtoLS->pendingB())
+      refToEX->returnFromIdlingState();
+    SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
+    refToEX->awaitNextTickToHandle(receivedPckg);
+    return receivedPckg;
+  }
+
+  SynchronizedDataPackage<std::vector<word>> storeDataAt(address addr, byte howManyWords, std::vector<word> data)
+  {
+    MemoryAccessRequest newReq(addr, howManyWords, true, data);
+    SynchronizedDataPackage<MemoryAccessRequest> syncReq(newReq, addr);
+    clock_time currTick = refToEX->getCurrTime();
+    syncReq.sentAt = currTick;
+    fromEXtoLS->sendA(syncReq);
+    refToEX->enterIdlingState();
+    while (!fromEXtoLS->pendingB())
+      refToEX->returnFromIdlingState();
+    SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
+    refToEX->awaitNextTickToHandle(receivedPckg);
+    return receivedPckg;
+  }
+
+  void moveIP(Instruction instr)
+  {
+    *regs->IP += WORD_BYTES;
+    if (instr.src1 == IMM || instr.src1 == ADDR)
+      *regs->IP += WORD_BYTES;
+    if (instr.src2 == IMM || instr.src2 == ADDR)
+      *regs->IP += WORD_BYTES;
+  }
+
+  static std::string logException(SynchronizedDataPackage<Instruction> faultyInstr)
+  {
+    std::string result = "Encountered exception ";
+    if (faultyInstr.handlerAddr == DIV_BY_ZERO_HANDL)
+      result += "'Division by 0'";
+    if (faultyInstr.handlerAddr == INVALID_DECODE_HANDL)
+    {
+      if (faultyInstr.excpData == UNKNOWN_OP_CODE)
+        result += "'Unknown operation code'";
+      else if (faultyInstr.excpData == NULL_SRC)
+        result += "'Null where argument expected'";
+      else if (faultyInstr.excpData == NON_NULL_SRC)
+        result += "'Argument where null expected'";
+      else
+        result += "'Incompatible parameters (mutually / for given operation)'";
+    }
+    if (faultyInstr.handlerAddr == MISALIGNED_ACCESS_HANDL)
+      result += "'Request to memory address not aligned to 16b'";
+    if (faultyInstr.handlerAddr == STACK_OVERFLOW_HANDL)
+    {
+      if (faultyInstr.excpData == PUSH_OVERFLOW)
+        result += "'Over-pushed stack exceeded upper limit'";
+      else
+        result += "'Over-popped stack exceeded lower limit'";
+    }
+    if (faultyInstr.handlerAddr == MISALIGNED_IP_HANDL)
+      result += "'IP not aligned to 16b'";
+    
+    result += " at #" + convDecToHex(faultyInstr.associatedIP) + "\n";
+    return result;
+  }
 
 public:
-    virtual void executeInstruction(SynchronizedDataPackage<Instruction> instrPackage) = 0;
+  virtual void executeInstruction(SynchronizedDataPackage<Instruction> instrPackage) = 0;
 
-    void handleException(SynchronizedDataPackage<Instruction> faultyInstr)
+  void handleException(SynchronizedDataPackage<Instruction> faultyInstr)
+  {
+    logComplete(refToEX->getCurrTime(), logException(faultyInstr));
+    if (*regs->flags & EXCEPTION)
     {
-        logComplete(refToEX->getCurrTime(), logException(faultyInstr));
-        if (*regs->flags & EXCEPTION)
-        {
-            refToEX->endSimulation();
-            std::string endMessage = "\t!EX forcefully ends simulation at T=" + std::to_string(refToEX->getCurrTime()) + " due to double exception!\n";
-            logAdditional(endMessage);
-            return;
-        }
-
-        *regs->flags |= EXCEPTION;
-
-        SynchronizedDataPackage<std::vector<word>> methodAddressPckg = requestDataAt(faultyInstr.handlerAddr, 1);
-        word methodAddress = methodAddressPckg.data[0];
-
-        std::vector<word> savedState;
-        savedState.push_back(faultyInstr.associatedIP);
-        savedState.push_back(*regs->stackPointer);
-        savedState.push_back(*regs->flags);
-        savedState.push_back(faultyInstr.excpData);
-        for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
-            savedState.push_back(*regs->registers[reg]);
-        storeDataAt(SAVE_STATE_ADDR, REGISTER_COUNT + 4, savedState);
-
-        std::string message = "Calling exception handler at #" + convDecToHex(methodAddress) + "\n";
-        *regs->IP = methodAddress;
-        clock_time lastTick = refToEX->waitTillLastTick();
-        fromDEtoMe->sendB(methodAddress);
-        logComplete(lastTick, message);
+      refToEX->endSimulation();
+      std::string endMessage = "\t!EX forcefully ends simulation at T=" + std::to_string(refToEX->getCurrTime()) + " due to double exception!\n";
+      logAdditional(endMessage);
+      return;
     }
+
+    *regs->flags |= EXCEPTION;
+
+    SynchronizedDataPackage<std::vector<word>> methodAddressPckg = requestDataAt(faultyInstr.handlerAddr, 1);
+    word methodAddress = methodAddressPckg.data[0];
+
+    std::vector<word> savedState;
+    savedState.push_back(faultyInstr.associatedIP);
+    savedState.push_back(*regs->stackPointer);
+    savedState.push_back(*regs->flags);
+    savedState.push_back(faultyInstr.excpData);
+    for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
+      savedState.push_back(*regs->registers[reg]);
+    storeDataAt(SAVE_STATE_ADDR, REGISTER_COUNT + 4, savedState);
+
+    std::string message = "Calling exception handler at #" + convDecToHex(methodAddress) + "\n";
+    *regs->IP = methodAddress;
+    clock_time lastTick = refToEX->waitTillLastTick();
+    fromDEtoMe->sendB(methodAddress);
+    logComplete(lastTick, message);
+  }
 };

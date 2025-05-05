@@ -1,19 +1,19 @@
 .boot
-    jmp loop
+  jmp loop
 
 .code 
 loop:
-    cmp [counter], [iter_count]
-    je end
-    add [var_a], 1
-    add [var_b], [var_a]
-    add [counter], 1
-    jmp loop
+  cmp [counter], [iter_count]
+  je end
+  add [var_a], 1
+  add [var_b], [var_a]
+  add [counter], 1
+  jmp loop
 
 end:
-    push [var_a]
-    push [var_b]
-    end_sim
+  push [var_a]
+  push [var_b]
+  end_sim
 
 .data
 var_a:

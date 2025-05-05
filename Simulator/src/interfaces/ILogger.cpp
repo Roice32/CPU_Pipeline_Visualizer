@@ -13,171 +13,171 @@
 class ILogger
 {
 protected:
-    const char* moduleName;
-    static inline std::unordered_map<OpCode, const char*> opNames;
-    static inline std::unordered_map<TypeCode, const char*> typeNames;
-    static inline std::shared_ptr<std::ofstream> outputFile;
-    static inline std::mutex outputLock;
+  const char* moduleName;
+  static inline std::unordered_map<OpCode, const char*> opNames;
+  static inline std::unordered_map<TypeCode, const char*> typeNames;
+  static inline std::shared_ptr<std::ofstream> outputFile;
+  static inline std::mutex outputLock;
 
-    ILogger(const char* moduleName): moduleName(moduleName)
+  ILogger(const char* moduleName): moduleName(moduleName)
+  {
+    if (opNames.empty())
     {
-        if (opNames.empty())
-        {
-            opNames.insert({ADD, "add"});
-            opNames.insert({SUB, "sub"});
-            opNames.insert({MOV, "mov"});
-            opNames.insert({MUL, "mul"});
-            opNames.insert({DIV, "div"});
-            opNames.insert({CMP, "cmp"});
-            opNames.insert({JMP, "jmp"});
-            opNames.insert({JE, "je"});
-            opNames.insert({JL, "jl"});
-            opNames.insert({JG, "jg"});
-            opNames.insert({JZ, "jz"});
-            opNames.insert({CALL, "call"});
-            opNames.insert({RET, "ret"});
-            opNames.insert({END_SIM, "end_sim"});
-            opNames.insert({PUSH, "push"});
-            opNames.insert({POP, "pop"});
-            opNames.insert({EXCP_EXIT, "excp_exit"});
-            opNames.insert({GATHER, "gather"});
-            opNames.insert({SCATTER, "scatter"});
-        }
-        if (typeNames.empty())
-        {
-            typeNames.insert({NULL_VAL, ""});
-            typeNames.insert({SP_REG, "sp"});
-            typeNames.insert({ST_BASE, "stack_base"});
-            typeNames.insert({ST_SIZE, "stack_size"});
-            typeNames.insert({R0, "r0"});
-            typeNames.insert({R1, "r1"});
-            typeNames.insert({R2, "r2"});
-            typeNames.insert({R3, "r3"});
-            typeNames.insert({R4, "r4"});
-            typeNames.insert({R5, "r5"});
-            typeNames.insert({R6, "r6"});
-            typeNames.insert({R7, "r7"});
-            typeNames.insert({ADDR_R0, "[r0]"});
-            typeNames.insert({ADDR_R1, "[r1]"});
-            typeNames.insert({ADDR_R2, "[r2]"});
-            typeNames.insert({ADDR_R3, "[r3]"});
-            typeNames.insert({ADDR_R4, "[r4]"});
-            typeNames.insert({ADDR_R5, "[r5]"});
-            typeNames.insert({ADDR_R6, "[r6]"});
-            typeNames.insert({ADDR_R7, "[r7]"});
-            typeNames.insert({Z0, "z0"});
-            typeNames.insert({Z1, "z1"});
-            typeNames.insert({Z2, "z2"});
-            typeNames.insert({Z3, "z3"});
-            // If registers' count ever changes, this needs changing, too.
-        }
-    };
-
-    static std::string fetchWindowToString(fetch_window fw)
-    {
-        std::string result = "[";
-        byte wordsPerFW = FETCH_WINDOW_BYTES / WORD_BYTES;
-        char valuesInHex[WORD_BYTES * 2 + 1];
-        for (byte ind = 0; ind < wordsPerFW; ++ind)
-        {
-            result += convDecToHex(fw >> ((wordsPerFW - ind - 1) * 16));
-            if (ind != wordsPerFW - 1)
-                result += " ";
-        }
-        result += "]";
-        return result;
+      opNames.insert({ADD, "add"});
+      opNames.insert({SUB, "sub"});
+      opNames.insert({MOV, "mov"});
+      opNames.insert({MUL, "mul"});
+      opNames.insert({DIV, "div"});
+      opNames.insert({CMP, "cmp"});
+      opNames.insert({JMP, "jmp"});
+      opNames.insert({JE, "je"});
+      opNames.insert({JL, "jl"});
+      opNames.insert({JG, "jg"});
+      opNames.insert({JZ, "jz"});
+      opNames.insert({CALL, "call"});
+      opNames.insert({RET, "ret"});
+      opNames.insert({END_SIM, "end_sim"});
+      opNames.insert({PUSH, "push"});
+      opNames.insert({POP, "pop"});
+      opNames.insert({EXCP_EXIT, "excp_exit"});
+      opNames.insert({GATHER, "gather"});
+      opNames.insert({SCATTER, "scatter"});
     }
-
-    static std::string convDecToHex(word source)
+    if (typeNames.empty())
     {
-        std::string result = "xxxx";
-        byte bytesGroup;
-        for (byte ind = 0; ind < WORD_BYTES * 2; ++ind)
-        {
-            bytesGroup = source & 0xf;
-            result.at(WORD_BYTES * 2 - ind - 1) = (bytesGroup > 9) ? ('a' + bytesGroup - 10) : ('0' + bytesGroup);
-            source >>= 4;
-        }
-        return result;
+      typeNames.insert({NULL_VAL, ""});
+      typeNames.insert({SP_REG, "sp"});
+      typeNames.insert({ST_BASE, "stack_base"});
+      typeNames.insert({ST_SIZE, "stack_size"});
+      typeNames.insert({R0, "r0"});
+      typeNames.insert({R1, "r1"});
+      typeNames.insert({R2, "r2"});
+      typeNames.insert({R3, "r3"});
+      typeNames.insert({R4, "r4"});
+      typeNames.insert({R5, "r5"});
+      typeNames.insert({R6, "r6"});
+      typeNames.insert({R7, "r7"});
+      typeNames.insert({ADDR_R0, "[r0]"});
+      typeNames.insert({ADDR_R1, "[r1]"});
+      typeNames.insert({ADDR_R2, "[r2]"});
+      typeNames.insert({ADDR_R3, "[r3]"});
+      typeNames.insert({ADDR_R4, "[r4]"});
+      typeNames.insert({ADDR_R5, "[r5]"});
+      typeNames.insert({ADDR_R6, "[r6]"});
+      typeNames.insert({ADDR_R7, "[r7]"});
+      typeNames.insert({Z0, "z0"});
+      typeNames.insert({Z1, "z1"});
+      typeNames.insert({Z2, "z2"});
+      typeNames.insert({Z3, "z3"});
+      // If registers' count ever changes, this needs changing, too.
     }
+  };
 
-    static bool mustDisplayParamValue(byte src)
+  static std::string fetchWindowToString(fetch_window fw)
+  {
+    std::string result = "[";
+    byte wordsPerFW = FETCH_WINDOW_BYTES / WORD_BYTES;
+    char valuesInHex[WORD_BYTES * 2 + 1];
+    for (byte ind = 0; ind < wordsPerFW; ++ind)
     {
-        return src == IMM || src == ADDR;
+      result += convDecToHex(fw >> ((wordsPerFW - ind - 1) * 16));
+      if (ind != wordsPerFW - 1)
+        result += " ";
     }
+    result += "]";
+    return result;
+  }
 
-    static std::string plainArgToString(byte src, word param, bool spaced = true)
+  static std::string convDecToHex(word source)
+  {
+    std::string result = "xxxx";
+    byte bytesGroup;
+    for (byte ind = 0; ind < WORD_BYTES * 2; ++ind)
     {
-        std::string result = "";
-        if (spaced)
-            result += " ";
-        if (mustDisplayParamValue(src))
-        {
-            if (src == IMM)
-                result += std::to_string(param);
-            else
-                result += "[" + convDecToHex(param) + "]";
-        }
-        else
-        {
-            auto argNameFound = typeNames.find((TypeCode) src);
-            if (argNameFound == typeNames.end())
-                result += "???";
-            else
-                result += typeNames.at((TypeCode) src);
-        }
-        return result;
+      bytesGroup = source & 0xf;
+      result.at(WORD_BYTES * 2 - ind - 1) = (bytesGroup > 9) ? ('a' + bytesGroup - 10) : ('0' + bytesGroup);
+      source >>= 4;
     }
+    return result;
+  }
 
-    static std::string plainInstructionToString(Instruction instr)
+  static bool mustDisplayParamValue(byte src)
+  {
+    return src == IMM || src == ADDR;
+  }
+
+  static std::string plainArgToString(byte src, word param, bool spaced = true)
+  {
+    std::string result = "";
+    if (spaced)
+      result += " ";
+    if (mustDisplayParamValue(src))
     {
-        std::string result = opNames.at((OpCode) instr.opCode);
-        result += plainArgToString(instr.src1, instr.param1);
-        if (instr.src1 * instr.src2 != NULL_VAL)
-            result += ", ";
-        result += plainArgToString(instr.src2, instr.param2);
-        return result;
+      if (src == IMM)
+        result += std::to_string(param);
+      else
+        result += "[" + convDecToHex(param) + "]";
     }
-
-    std::string buildMessageHeader(clock_time timestamp)
+    else
     {
-        std::string result = "[";
-        result += moduleName;
-        result += "@T=" + std::to_string(timestamp) + "]> ";
-        return result;
+      auto argNameFound = typeNames.find((TypeCode) src);
+      if (argNameFound == typeNames.end())
+        result += "???";
+      else
+        result += typeNames.at((TypeCode) src);
     }
+    return result;
+  }
 
-    virtual std::string log(LoggablePackage toLog) = 0;
+  static std::string plainInstructionToString(Instruction instr)
+  {
+    std::string result = opNames.at((OpCode) instr.opCode);
+    result += plainArgToString(instr.src1, instr.param1);
+    if (instr.src1 * instr.src2 != NULL_VAL)
+      result += ", ";
+    result += plainArgToString(instr.src2, instr.param2);
+    return result;
+  }
+
+  std::string buildMessageHeader(clock_time timestamp)
+  {
+    std::string result = "[";
+    result += moduleName;
+    result += "@T=" + std::to_string(timestamp) + "]> ";
+    return result;
+  }
+
+  virtual std::string log(LoggablePackage toLog) = 0;
 
 public:
-    void logComplete(clock_time timestamp, std::string messageBody)
-    {
-        std::string message = buildMessageHeader(timestamp) + messageBody;
-        std::lock_guard<std::mutex> lock(outputLock);
-        if (outputFile->is_open())
-            (*outputFile) << message;
-        else
-            std::cout << message;
-    }
+  void logComplete(clock_time timestamp, std::string messageBody)
+  {
+    std::string message = buildMessageHeader(timestamp) + messageBody;
+    std::lock_guard<std::mutex> lock(outputLock);
+    if (outputFile->is_open())
+      (*outputFile) << message;
+    else
+      std::cout << message;
+  }
 
-    void logAdditional(std::string message)
-    {
-        std::lock_guard<std::mutex> lock(outputLock);
-        if (outputFile->is_open())
-            (*outputFile) << message;
-        else
-            std::cout << message;
-    }
+  void logAdditional(std::string message)
+  {
+    std::lock_guard<std::mutex> lock(outputLock);
+    if (outputFile->is_open())
+      (*outputFile) << message;
+    else
+      std::cout << message;
+  }
 
-    static void openDumpFile(const char* outputFilePath)
-    {
-        outputFile = std::make_shared<std::ofstream>(outputFilePath);
-        assert(outputFile->is_open() && "Could not create specified dump output file");
-    }
+  static void openDumpFile(const char* outputFilePath)
+  {
+    outputFile = std::make_shared<std::ofstream>(outputFilePath);
+    assert(outputFile->is_open() && "Could not create specified dump output file");
+  }
 
-    static void markOutputForTerminal()
-    {
-        outputFile = std::make_shared<std::ofstream>();
-        assert(!outputFile->is_open());
-    }
+  static void markOutputForTerminal()
+  {
+    outputFile = std::make_shared<std::ofstream>();
+    assert(!outputFile->is_open());
+  }
 };

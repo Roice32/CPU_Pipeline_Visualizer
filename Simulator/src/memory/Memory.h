@@ -8,16 +8,16 @@
 class Memory
 {
 private:
-    std::unordered_map<address, byte> data;
+  std::unordered_map<address, byte> data;
 
-    bool isValidInputLine(std::string inLine);
-    static byte hexCharToDec(const char digit);
-    static void jumpToNewAddr(address& currAddr, const char* newAddr);
-    void storeData(address& currAddr, const char* instr);
+  bool isValidInputLine(std::string inLine);
+  static byte hexCharToDec(const char digit);
+  static void jumpToNewAddr(address& currAddr, const char* newAddr);
+  void storeData(address& currAddr, const char* instr);
 
 public:
-    Memory(const char* hexSourceFilePath);
-    byte getMemoryCell(address addr);
-    void setMemoryCell(address addr, byte value);
-    void dumpMemoryContents(const char* outputFile);
+  Memory(const char* hexSourceFilePath);
+  byte getMemoryCell(address addr);
+  void setMemoryCell(address addr, byte value);
+  void dumpMemoryContents(const char* outputFile);
 };

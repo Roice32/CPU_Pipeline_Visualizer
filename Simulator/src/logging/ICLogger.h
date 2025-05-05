@@ -5,8 +5,8 @@
 class ICLogger: public ILogger
 {
 public:
-    ICLogger();
-    std::string log(LoggablePackage toLog) override;
-    std::string logRequest(address requested);
-    std::string logJump(address addr, address alignedAddr);
+  ICLogger();
+  std::string log(LoggablePackage toLog) override;
+  std::string logRequest(address requested);
+  std::string logJump(address addr, address alignedAddr);
 };

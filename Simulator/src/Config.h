@@ -31,99 +31,99 @@ using clock_time = uint64_t;
 
 enum OpCode
 {
-    UNINITIALIZED_MEM,
-    ADD = 0x1,
-    SUB, 
-    MOV,
-    MUL,
-    DIV,
-    CMP,
-    JMP,
-    UNDEFINED,
-    JE,
-    JL,
-    JG,
-    JZ,
-    CALL,
-    RET,
-    END_SIM,
-    PUSH,
-    POP,
-    EXCP_EXIT,
-    GATHER = 0x16,
-    SCATTER
+  UNINITIALIZED_MEM,
+  ADD = 0x1,
+  SUB, 
+  MOV,
+  MUL,
+  DIV,
+  CMP,
+  JMP,
+  UNDEFINED,
+  JE,
+  JL,
+  JG,
+  JZ,
+  CALL,
+  RET,
+  END_SIM,
+  PUSH,
+  POP,
+  EXCP_EXIT,
+  GATHER = 0x16,
+  SCATTER
 };
 
 enum TypeCode
 {
-    NULL_VAL = 0x0,
-    IMM,
-    ADDR,
-    SP_REG,
-    ST_BASE,
-    ST_SIZE,
-    R0 = 0x8,
-    R1,
-    R2,
-    R3,
-    R4,
-    R5,
-    R6,
-    R7,
-    Z0 = 0x10,
-    Z1,
-    Z2,
-    Z3,
-    ADDR_R0 = 0x18,
-    ADDR_R1,
-    ADDR_R2,
-    ADDR_R3,
-    ADDR_R4,
-    ADDR_R5,
-    ADDR_R6,
-    ADDR_R7
+  NULL_VAL = 0x0,
+  IMM,
+  ADDR,
+  SP_REG,
+  ST_BASE,
+  ST_SIZE,
+  R0 = 0x8,
+  R1,
+  R2,
+  R3,
+  R4,
+  R5,
+  R6,
+  R7,
+  Z0 = 0x10,
+  Z1,
+  Z2,
+  Z3,
+  ADDR_R0 = 0x18,
+  ADDR_R1,
+  ADDR_R2,
+  ADDR_R3,
+  ADDR_R4,
+  ADDR_R5,
+  ADDR_R6,
+  ADDR_R7
 };
 
 enum Flags
 {
-    ZERO = 0x8000,
-    EQUAL = 0x4000,
-    GREATER = 0x2000,
-    EXCEPTION = 0x0800,
+  ZERO = 0x8000,
+  EQUAL = 0x4000,
+  GREATER = 0x2000,
+  EXCEPTION = 0x0800,
 };
 
 enum ExceptionHandlerAddress
 {
-    DIV_BY_ZERO_HANDL = 0x0000,
-    INVALID_DECODE_HANDL = 0x0002,
-    MISALIGNED_ACCESS_HANDL = 0x0004,
-    STACK_OVERFLOW_HANDL = 0x0006,
-    MISALIGNED_IP_HANDL = 0x0008
+  DIV_BY_ZERO_HANDL = 0x0000,
+  INVALID_DECODE_HANDL = 0x0002,
+  MISALIGNED_ACCESS_HANDL = 0x0004,
+  STACK_OVERFLOW_HANDL = 0x0006,
+  MISALIGNED_IP_HANDL = 0x0008
 };
 
 enum Exception
 {
-    DIV_BY_ZERO = 0x0000,
-    UNKNOWN_OP_CODE = 0x0001,
-    NULL_SRC = 0x0002,
-    NON_NULL_SRC = 0x0004,
-    INCOMPATIBLE_PARAMS = 0x0008,
-    PUSH_OVERFLOW = 0x0000,
-    POP_OVERFLOW = 0xffff,
-    MISALIGNED_IP = 0x0000
+  DIV_BY_ZERO = 0x0000,
+  UNKNOWN_OP_CODE = 0x0001,
+  NULL_SRC = 0x0002,
+  NON_NULL_SRC = 0x0004,
+  INCOMPATIBLE_PARAMS = 0x0008,
+  PUSH_OVERFLOW = 0x0000,
+  POP_OVERFLOW = 0xffff,
+  MISALIGNED_IP = 0x0000
 };
 
 inline bool isReg(byte src)
 {
-    return src >= R0 && src <= R7;
+  return src >= R0 && src <= R7;
 }
 
 inline bool isAddrReg(byte src)
 {
-    return src >= ADDR_R0 && src <= ADDR_R7;
+  return src >= ADDR_R0 && src <= ADDR_R7;
 }
 
 inline bool isZReg(byte src)
 {
-    return src >= Z0 && src <= Z3;
+  return src >= Z0 && src <= Z3;
 }

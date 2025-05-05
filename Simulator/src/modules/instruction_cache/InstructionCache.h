@@ -8,21 +8,21 @@
 class InstructionCache: public IClockBoundModule, public ICLogger
 {
 private:
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> fromMetoLS;
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> fromMetoDE;
-    register_16b internalIP;
-    DMCache<fetch_window> cache;
+  std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> fromMetoLS;
+  std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> fromMetoDE;
+  register_16b internalIP;
+  DMCache<fetch_window> cache;
 
-    fetch_window getFetchWindowFromLS(address addr);
-    void passForDecode(fetch_window currBatch);
-    bool checkIPChangeSignal();
-    
+  fetch_window getFetchWindowFromLS(address addr);
+  void passForDecode(fetch_window currBatch);
+  bool checkIPChangeSignal();
+  
 public:
-    InstructionCache(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithLS,
-        std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithDE,
-        std::shared_ptr<ClockSyncPackage> clockSyncVars,
-        std::shared_ptr<register_16b> ip);
-    
-    void executeModuleLogic() override;
-    void run() override;
+  InstructionCache(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithLS,
+    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithDE,
+    std::shared_ptr<ClockSyncPackage> clockSyncVars,
+    std::shared_ptr<register_16b> ip);
+  
+  void executeModuleLogic() override;
+  void run() override;
 };

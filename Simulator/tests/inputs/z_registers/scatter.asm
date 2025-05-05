@@ -1,28 +1,28 @@
 .boot
-    jmp main
+  jmp main
 
 .code
 main:
-    mov [0x2000], addr4
-    mov [0x2002], addr1
-    mov [0x2004], addr3
-    mov [0x2006], addr2
-    mov z0, [0x2000]
-    
-    mov [0x3000], 1
-    mov [0x3002], 2
-    mov [0x3004], 3
-    mov [0x3006], 4
-    mov z1, [0x3000]
+  mov [0x2000], addr4
+  mov [0x2002], addr1
+  mov [0x2004], addr3
+  mov [0x2006], addr2
+  mov z0, [0x2000]
+  
+  mov [0x3000], 1
+  mov [0x3002], 2
+  mov [0x3004], 3
+  mov [0x3006], 4
+  mov z1, [0x3000]
 
-    scatter z0, z1
+  scatter z0, z1
 
-    scatter z0, z0 ; modified hex code to be scatter z0, r0
-    end_sim
+  scatter z0, z0 ; modified hex code to be scatter z0, r0
+  end_sim
 
 invalid_decode_handl:
-    push 3
-    end_sim
+  push 3
+  end_sim
 
 .data
 
