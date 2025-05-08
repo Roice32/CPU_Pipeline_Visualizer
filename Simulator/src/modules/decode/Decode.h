@@ -3,6 +3,7 @@
 #include "../../logging/DELogger.h"
 #include "../../synchronization/InterThreadCommPipe.h"
 #include "../../interfaces/IClockBoundModule.cpp"
+#include "../../logging/ExecutionRecorder.h"
 #include "WorkTempStorage.h"
 
 class Decode: public IClockBoundModule, public DELogger
@@ -13,6 +14,7 @@ private:
   std::shared_ptr<register_16b> const flags;
   WorkTempStorage fwTempStorage;
   address discardUntilAddr;
+  std::shared_ptr<ExecutionRecorder> recorder;
 
   static byte getExpectedParamCount(byte opCode);
   static char providedVsExpectedArgsCountDif(byte opCode, byte src1, byte src2);
@@ -23,9 +25,10 @@ private:
 
 public:
   Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithIC,
-    std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithEX,
-    std::shared_ptr<ClockSyncPackage> clockSyncVars,
-    std::shared_ptr<register_16b> flags);
+         std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithEX,
+         std::shared_ptr<ClockSyncPackage> clockSyncVars,
+         std::shared_ptr<register_16b> flags,
+         std::shared_ptr<ExecutionRecorder> recorder);
 
   void executeModuleLogic() override;
 };

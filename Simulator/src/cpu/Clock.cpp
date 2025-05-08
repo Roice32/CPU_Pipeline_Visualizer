@@ -3,7 +3,10 @@
 #include <cstdio>
 #include <thread>
 
-Clock::Clock(): clockSyncVars(std::make_shared<ClockSyncPackage>()), selfRunning(std::make_shared<bool>(true)) {};
+Clock::Clock(std::shared_ptr<ExecutionRecorder> recorder):
+  clockSyncVars(std::make_shared<ClockSyncPackage>()),
+  selfRunning(std::make_shared<bool>(true)),
+  recorder(recorder) {};
 
 void Clock::run()
 {
@@ -15,6 +18,7 @@ void Clock::run()
     {
       std::lock_guard<std::mutex> lockdown(clockSyncVars->updateLock);
       ++clockSyncVars->cycleCount;
+      recorder->goToNextState();
     }
     clockSyncVars->update.notify_all();
   }

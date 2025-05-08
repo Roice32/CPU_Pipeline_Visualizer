@@ -25,6 +25,6 @@ private:
   std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> fromEXtoLS;
 
 public:
-  CPU(std::shared_ptr<Memory> memory);
+  CPU(std::shared_ptr<Memory> memory, std::shared_ptr<ExecutionRecorder> recorder);
   void runSimulation();
 };

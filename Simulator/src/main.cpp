@@ -20,7 +20,7 @@ int main(int argc, char** argv)
   
   std::shared_ptr<ExecutionRecorder> recorder = std::make_shared<ExecutionRecorder>(mem);
   
-  CPU cpu(mem);
+  CPU cpu(mem, recorder);
   cpu.runSimulation();
   
   if (argc >= 4 && argv[3][0] != '\0')

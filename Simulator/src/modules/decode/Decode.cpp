@@ -2,11 +2,16 @@
 #include <cassert>
 
 Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> commPipeWithIC,
-  std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithEX,
-  std::shared_ptr<ClockSyncPackage> clockSyncVars,
-  std::shared_ptr<register_16b> flags):
+               std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithEX,
+               std::shared_ptr<ClockSyncPackage> clockSyncVars,
+               std::shared_ptr<register_16b> flags,
+               std::shared_ptr<ExecutionRecorder> recorder):
     IClockBoundModule(clockSyncVars, 2),
-    fromICtoMe(commPipeWithIC), fromMetoEX(commPipeWithEX), flags(flags), discardUntilAddr(DUMMY_ADDRESS) {};
+    fromICtoMe(commPipeWithIC),
+    fromMetoEX(commPipeWithEX),
+    flags(flags),
+    discardUntilAddr(DUMMY_ADDRESS),
+    recorder(recorder) {};
 
 byte Decode::getExpectedParamCount(byte opCode)
 {
@@ -140,6 +145,7 @@ void Decode::executeModuleLogic()
   if (fromMetoEX->pendingB())
   {
     SynchronizedDataPackage<address> ipChangePckg = fromMetoEX->getB();
+    recorder->modifyModuleState("DE", "Acknowledged IP change from EX");
     awaitNextTickToHandle(ipChangePckg);
     clock_time currTick = getCurrTime();
     SynchronizedDataPackage<address> mssgToIC(ipChangePckg.data);
@@ -148,13 +154,14 @@ void Decode::executeModuleLogic()
     discardUntilAddr = ipChangePckg.data;
     if (discardUntilAddr % 2 == 1)
     {
+      recorder->modifyModuleState("DE", "Sending misaligned IP exception to EX");
       fromMetoEX->sendA(SynchronizedDataPackage<Instruction> (discardUntilAddr,
         MISALIGNED_IP,
         MISALIGNED_IP_HANDL));
       discardUntilAddr = DUMMY_ADDRESS;
       return;
     }
-    
+
     fwTempStorage.discardCurrent();
     logComplete(getCurrTime(), logJump(discardUntilAddr));
     while (fromICtoMe->pendingA() && clockSyncVars->running)
