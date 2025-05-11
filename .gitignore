@@ -2,9 +2,11 @@
 .vscode/*
 .cache/*
 GUI/src/__pycache__/*
+GUI/src/dependencies/CPU_Pipeline_Simulator.exe
 GUI/tests/*.hex
 GUI/tests/*.json
 Simulator/build/*
+Simulator/release/*
 Simulator/tests/batch/*
 Simulator/tests/outputs/*
 *.hex
@@ -13,3 +15,5 @@ Simulator/tests/outputs/*
 # To be kept
 !GUI/src/*
 !Simulator/build/CMakeLists.txt
+!Simulator/release/CMakeLists.txt
+!Simulator/release/mingw-w64-toolchain.cmake

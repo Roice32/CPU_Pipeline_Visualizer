@@ -14,7 +14,7 @@ import shutil
 import readline
 
 
-# -----------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------
 class DevHelper:
 
   def __init__(self, projectRoot):
@@ -30,7 +30,7 @@ class DevHelper:
     os.makedirs(self.outputsDir, exist_ok=True)
     os.makedirs(self.batchDir, exist_ok=True)
 
-  # ---------------------------------------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------------------------------------------------------
   def RunCommand(self, command, cwd=None):
     """Run a shell command and return its status code"""
     if cwd is None:
@@ -46,7 +46,7 @@ class DevHelper:
     )
     return process.wait()
 
-  # ---------------------------------------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------------------------------------------------------
   def Clean(self):
     """Remove the previously built executable"""
     print("    > Removing old executable")
@@ -63,7 +63,7 @@ class DevHelper:
       print("No executable found to remove.")
       return True
 
-  # ---------------------------------------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------------------------------------------------------
   def Build(self):
     """Build the project"""
     print("    > Generating build files with CMake")
@@ -80,7 +80,7 @@ class DevHelper:
 
     return True
 
-  # ---------------------------------------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------------------------------------------------------
   def Parse(self, asm_file, hex_file=None):
     """Parse an assembly file to hex"""
     # Get absolute paths
@@ -105,7 +105,7 @@ class DevHelper:
       return False
     return True
 
-  # ---------------------------------------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------------------------------------------------------
   def Run(self, args):
     """Run the program with arguments"""
     executablePath = os.path.join(self.buildDir, self.executable)
@@ -141,7 +141,7 @@ class DevHelper:
       print("Usage: --run <.hex source code file> [output file]")
       return False
 
-  # ---------------------------------------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------------------------------------------------------
   def Test(self, test_name):
     """Run test case with memory dumping"""
     executablePath = os.path.join(self.buildDir, self.executable)
@@ -173,7 +173,7 @@ class DevHelper:
       return False
     return True
 
-  # ---------------------------------------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------------------------------------------------------
   def BatchRun(self, hex_file, num_runs):
     """Run the program multiple times without memory dumping"""
     executablePath = os.path.join(self.buildDir, self.executable)
@@ -212,8 +212,61 @@ class DevHelper:
 
     return True
 
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CreateMingwToolchainFile(self, toolchainPath):
+    """Create a MinGW toolchain file for cross-compiling to Windows"""
+    contents = """
+# Automatically generated MinGW toolchain file
+set(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
+set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
+set(CMAKE_RC_COMPILER x86_64-w64-mingw32-windres)
 
-# -----------------------------------------------------------------------------------------------------------
+# Avoid Unix-specific linker flags like -rdynamic
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+set(CMAKE_EXE_LINKER_FLAGS_INIT "")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -lwinpthread")
+"""
+
+    try:
+        with open(toolchainPath, "w") as f:
+            f.write(contents.strip())
+        print(f"Created toolchain file: {toolchainPath}")
+        return True
+    except Exception as e:
+        print(f"Error creating toolchain file: {e}")
+        return False
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def Release(self):
+    releaseDir = os.path.join(self.projectRoot, "release")
+
+    toolchainFile = os.path.join(releaseDir, "mingw_toolchain.cmake")
+    if not self.CreateMingwToolchainFile(toolchainFile):
+        print("Failed to create toolchain file.")
+        return False
+
+    print("    > Generating release build files with CMake (Windows target)")
+    status = self.RunCommand("cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE={toolchain_file}",
+                             cwd=releaseDir)
+    
+    if status != 0:
+      print(f"CMake for Windows release failed with status code {status}")
+      return False
+
+    print("    > Building release executable")
+    status = self.RunCommand("make", cwd=releaseDir)
+    if status != 0:
+        print(f"Make for Windows release failed with status code {status}")
+        return False
+
+    print(f"Release executable built in {releaseDir}/bin")
+    return True
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
 def SetupHistory():
   """Setup readline history for command recall"""
   historyFile = os.path.expanduser('~/.cpu_pipeline_history')
@@ -229,14 +282,14 @@ def SetupHistory():
   atexit.register(readline.write_history_file, historyFile)
 
 
-# -----------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------
 def ParseArgs():
   parser = argparse.ArgumentParser(description="CPU Pipeline Visualizer Development Helper")
   parser.add_argument("project_root", help="Path to the project root directory")
   return parser.parse_args()
 
 
-# -----------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------
 def PrintHelp():
   """Print available commands"""
   print("\nAvailable commands:")
@@ -246,12 +299,13 @@ def PrintHelp():
   print("  --run, -r <hex_file> [out_file]   - Run the program (no memory dump)")
   print("  --test, -t <test_name>            - Run test (with memory dump)")
   print("  --batch, -bt <hex_file> <runs>    - Run the program multiple times")
+  print("  --release, -re                    - Build Windows release version")
   print("  --help, -h                        - Show this help")
   print("  --quit, -q                        - Exit the script")
   print("\nUse Up/Down arrow keys to navigate command history")
 
 
-# -----------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------
 def Main():
   args = ParseArgs()
 
@@ -324,6 +378,9 @@ def Main():
           print("Usage: --batch <hex_file> <number_of_runs>")
         else:
           helper.BatchRun(commandArgs[0], commandArgs[1])
+      
+      elif command in ("--release", "-re"):
+        helper.Release()
 
       else:
         print(f"Unknown command: {command}")
@@ -335,6 +392,6 @@ def Main():
       print(f"Error: {e}")
 
 
-# -----------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
   Main()

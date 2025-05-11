@@ -21,8 +21,11 @@ file(GLOB_RECURSE
 
 add_executable(CPU_Pipeline_Simulator "${SRC_ROOT}/main.cpp" ${SOURCES})
 
+find_package(Threads REQUIRED)
+target_link_libraries(CPU_Pipeline_Simulator PRIVATE Threads::Threads)
+
 target_include_directories(CPU_Pipeline_Simulator
-  PUBLIC 
+  PRIVATE 
     "${SRC_ROOT}"
     "${SRC_ROOT}/cpu"
     "${SRC_ROOT}/logging"
@@ -33,11 +36,5 @@ target_include_directories(CPU_Pipeline_Simulator
     "${SRC_ROOT}/modules/instruction_cache"
     "${SRC_ROOT}/modules/decode"
     "${SRC_ROOT}/modules/execute"
-    "${SRC_ROOT}/modules/execute/execution_strategies")
-
-target_include_directories(CPU_Pipeline_Simulator
-  PUBLIC 
+    "${SRC_ROOT}/modules/execute/execution_strategies"
     "${SRC_ROOT}/interfaces")
-
-target_link_libraries(CPU_Pipeline_Simulator pthread)
-

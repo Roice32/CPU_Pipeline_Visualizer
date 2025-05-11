@@ -236,12 +236,6 @@ class InputTab(QWidget):
       process.start("python.exe", [parseScript, "--config-file", configFile, "--in-file", asmPath, "--out-file", hexPath])
       process.waitForFinished()
 
-      # Check for errors
-      if process.exitCode() != 0:
-        errorMessage = process.readAllStandardError().data().decode()
-        QMessageBox.critical(self, "Error", f"Error converting ASM to HEX:\n{errorMessage}")
-        return
-
       # Load the generated hex file
       if os.path.exists(hexPath):
         with open(hexPath, 'r') as file:
@@ -258,6 +252,24 @@ class InputTab(QWidget):
     hexPath = os.path.join(tempDir, "input.hex")
     with open(hexPath, 'w') as file:
       file.write(self.hexText.toPlainText())
+
+    logPath = os.path.join(tempDir, "execution.log")
+    statesPath = os.path.join(tempDir, "states.json")
+
+    try:
+      # Run parsing script
+      process = QProcess()
+      process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, logPath, statesPath])
+      process.waitForFinished()
+
+      # Check for errors
+      if process.exitCode() != 0:
+        errorMessage = process.readAllStandardError().data().decode()
+        QMessageBox.critical(self, "Error", f"Error converting ASM to HEX:\n{errorMessage}")
+        return
+
+    except Exception as e:
+      QMessageBox.critical(self, "Error", f"Error converting ASM to HEX: {str(e)}")
 
     # Notify simulation tab to load data
     self.parent.simulationTab.LoadSimulationData()
