@@ -1,7 +1,9 @@
 # Directories
 .vscode/*
 .cache/*
-GUI/*
+GUI/src/__pycache__/*
+GUI/tests/*.hex
+GUI/tests/*.json
 Simulator/build/*
 Simulator/tests/batch/*
 Simulator/tests/outputs/*
@@ -9,6 +11,5 @@ Simulator/tests/outputs/*
 *.log
 
 # To be kept
-!GUI/*.py
-!GUI/*.yml
+!GUI/src/*
 !Simulator/build/CMakeLists.txt

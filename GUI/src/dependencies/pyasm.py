@@ -97,7 +97,7 @@ class Assembler:
 
     return labelDict
 
-  def __init__(self, configFile:Path = Path("asm_cfg.yml")) -> None:
+  def __init__(self, configFile: Path) -> None:
 
     comment  : pp.ParserElement = pp.Literal(";") + pp.restOfLine
     lineEnder: pp.ParserElement = pp.Suppress(comment) | pp.LineEnd().suppress()
@@ -373,13 +373,15 @@ class Assembler:
 app = Typer(no_args_is_help=True, add_completion=False, pretty_exceptions_show_locals=False)
 
 @app.command()
-def generateBinary(infile :Path = Option(help = "Path to input file"),
-                   outFile:Path = Option(help = "Path to output file"),
-                   printLabels:bool = Option(False, help = "If True, it prints the values assigned to the labels to standard output")
-                   ):
-  avengers = Assembler()
+def generateBinary(
+    config_file: Path = Option(Path("asm_cfg.yml"), help = "Path to the assembler configuration file"),
+    in_file :Path = Option(help = "Path to input file"),
+    out_file:Path = Option(help = "Path to output file"),
+    print_labels:bool = Option(False, help = "If True, it prints the values assigned to the labels to standard output")
+):
+  avengers = Assembler(config_file)
   try:
-    avengers.assemble(infile, outFile, printLabels)
+    avengers.assemble(in_file, out_file, print_labels)
   except Exception as exc:
     print(exc)
 
