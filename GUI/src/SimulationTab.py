@@ -71,25 +71,37 @@ class SimulationTab(QWidget):
     borderColor = QColor(0, 0, 0)
     fillColor = QColor(255, 255, 255)
 
+    MODULE_SIDE = 120
+    PIPE_WIDTH = 40
+    SPACING = int((MODULE_SIDE - 2 * PIPE_WIDTH) / 3)
+    MEM_COMP_WIDTH = 60
+    MODULES_X_OFFSET = MEM_COMP_WIDTH + SPACING
+    MODULES_Y_OFFSET = MODULE_SIDE
+
+    EX_X, EX_Y = MODULES_X_OFFSET,                   MODULES_Y_OFFSET
+    DE_X, DE_Y = MODULES_X_OFFSET + 2 * MODULE_SIDE, MODULES_Y_OFFSET
+    IC_X, IC_Y = MODULES_X_OFFSET + 2 * MODULE_SIDE, MODULES_Y_OFFSET + 2 * MODULE_SIDE
+    LS_X, LS_Y = MODULES_X_OFFSET,                   MODULES_Y_OFFSET + 2 * MODULE_SIDE
+
     # Define component geometries (x, y, width, height)
     components = {
-      "Registers": (550, 30, 400, 80),
-      "Stack": (50, 140, 80, 210),
-      "EX": (330, 196, 130, 160),
-      "DE": (910, 196, 130, 160),
-      "LS": (330, 550, 130, 150),
-      "IC": (910, 550, 130, 150),
-      "LS_Cache": (90, 550, 120, 150),
-      "IC_Cache": (1150, 550, 120, 150),
-      "Memory": (590, 770, 400, 150),
-      "EX_to_DE": (620, 233, 130, 40),
-      "DE_to_EX": (620, 330, 130, 40),
-      "LS_to_EX": (153, 380, 180, 40),
-      "EX_to_LS": (444, 456, 130, 40),
-      "LS_to_IC": (556, 569, 130, 40),
-      "IC_to_LS": (556, 644, 130, 40),
-      "IC_to_DE": (840, 456, 130, 40),
-      "DE_to_IC": (1027, 380, 130, 40)
+      "Registers": (int(EX_X + MODULE_SIDE / 2),     0,                               2 * MODULE_SIDE, MEM_COMP_WIDTH),
+      "Stack":     (0,                               0,                               MEM_COMP_WIDTH,  2 * MODULE_SIDE),
+      "EX":        (EX_X,                            EX_Y,                            MODULE_SIDE,     MODULE_SIDE),
+      "DE":        (DE_X,                            DE_Y,                            MODULE_SIDE,     MODULE_SIDE),
+      "IC":        (IC_X,                            IC_Y,                            MODULE_SIDE,     MODULE_SIDE),
+      "LS":        (LS_X,                            LS_Y,                            MODULE_SIDE,     MODULE_SIDE),
+      "LS_Cache":  (LS_X - MEM_COMP_WIDTH,           LS_Y,                            MEM_COMP_WIDTH,  MODULE_SIDE),
+      "IC_Cache":  (IC_X + MODULE_SIDE,              IC_Y,                            MEM_COMP_WIDTH,  MODULE_SIDE),
+      "Memory":    (EX_X,                            LS_Y + MODULE_SIDE + SPACING,    3 * MODULE_SIDE, MEM_COMP_WIDTH),
+      "EX_to_DE":  (EX_X + MODULE_SIDE,              EX_Y + SPACING,                  MODULE_SIDE,     PIPE_WIDTH),
+      "DE_to_EX":  (EX_X + MODULE_SIDE,              EX_Y + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE,     PIPE_WIDTH),
+      "DE_to_IC":  (DE_X + SPACING,                  DE_Y + MODULE_SIDE,              PIPE_WIDTH,      MODULE_SIDE),
+      "IC_to_DE":  (DE_X + 2 * SPACING + PIPE_WIDTH, DE_Y + MODULE_SIDE,              PIPE_WIDTH,      MODULE_SIDE),
+      "IC_to_LS":  (LS_X + MODULE_SIDE,              LS_Y + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE,     PIPE_WIDTH),
+      "LS_to_IC":  (LS_X + MODULE_SIDE,              LS_Y + SPACING,                  MODULE_SIDE,     PIPE_WIDTH),
+      "LS_to_EX":  (EX_X + SPACING,                  EX_Y + MODULE_SIDE,              PIPE_WIDTH,      MODULE_SIDE),
+      "EX_to_LS":  (EX_X + 2 * SPACING + PIPE_WIDTH, EX_Y + MODULE_SIDE,              PIPE_WIDTH,      MODULE_SIDE)
     }
 
     # Create rectangular components with labels
@@ -100,7 +112,7 @@ class SimulationTab(QWidget):
       rect.setData(0, name)  # Store the component name
 
       # Add text label
-      text = QGraphicsTextItem(name.replace("_", " "))
+      text = QGraphicsTextItem(name.replace("_", " " if w > h else "\n"))
       text.setPos(x + w / 2 - text.boundingRect().width() / 2, y + h / 2 - text.boundingRect().height() / 2)
 
       # Store the reference to the rectangle

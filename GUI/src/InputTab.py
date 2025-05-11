@@ -62,10 +62,12 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 # -----------------------------------------------------------------------------------------------------------------------------
 class InputTab(QWidget):
   buttonStyle = "border: 1px solid black; border-radius: 5px; height: 30%; background-color: #f0f0f0; font: bold;"
+  statusStyle = "font-weight: bold; color: #333; margin: 5px; padding: 5px; border-radius: 4px; background-color: #f8f8f8;"
   parent = None
   asmText = None
   hexText = None
   syntaxHighlighter = None
+  statusLabel = None
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self, parent):
@@ -74,6 +76,18 @@ class InputTab(QWidget):
 
     # Main layout
     mainLayout = QVBoxLayout()
+    
+    # Status label (centered at the top)
+    self.statusLabel = QLabel()
+    self.statusLabel.setAlignment(Qt.AlignCenter)
+    self.statusLabel.setStyleSheet(InputTab.statusStyle)
+    self.statusLabel.setVisible(False)  # Hidden by default
+
+    # Set height to at most 10% of screen height
+    screenHeight = self.parent.screen().size().height()
+    self.statusLabel.setMaximumHeight(int(screenHeight * 0.05))
+
+    mainLayout.addWidget(self.statusLabel)
 
     # Create splitter for resizing
     splitter = QSplitter(Qt.Horizontal)
@@ -177,6 +191,24 @@ class InputTab(QWidget):
       self.asmText.setText(defaultAsm.read())
 
   # ---------------------------------------------------------------------------------------------------------------------------
+  def SetStatusText(self, text, error=False):
+    """Set the status text and make it visible with appropriate styling."""
+    if error:
+      self.statusLabel.setStyleSheet(InputTab.statusStyle + "color: #d32f2f; background-color: #ffebee;")
+    else:
+      self.statusLabel.setStyleSheet(InputTab.statusStyle + "color: #1b5e20; background-color: #e8f5e9;")
+    
+    self.statusLabel.setText(text)
+    self.statusLabel.setVisible(True)
+    self.statusLabel.repaint()  # Force a redraw of the status label
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def ClearStatusText(self):
+    """Clear the status text and hide the label."""
+    self.statusLabel.setText("")
+    self.statusLabel.setVisible(False)
+
+  # ---------------------------------------------------------------------------------------------------------------------------
   def OpenAsmFile(self):
     options = QFileDialog.Options()
     filename, _ = QFileDialog.getOpenFileName(self, "Open ASM File", "", "Assembly Files (*.asm);;All Files (*)", options=options)
@@ -221,6 +253,8 @@ class InputTab(QWidget):
   # ---------------------------------------------------------------------------------------------------------------------------
   def ConvertAsmToHex(self):
     # Save ASM to temp file
+    self.SetStatusText("Converting .asm to .hex...", error=False)
+
     tempDir = self.parent.GetTempDir()
     asmPath = os.path.join(tempDir, "input.asm")
     with open(asmPath, 'w') as file:
@@ -240,14 +274,16 @@ class InputTab(QWidget):
       if os.path.exists(hexPath):
         with open(hexPath, 'r') as file:
           self.hexText.setText(file.read())
+        self.SetStatusText(".asm to .hex conversion successful.", error=False)
       else:
-        QMessageBox.warning(self, "Warning", "Conversion did not produce input.hex file.")
+        self.SetStatusText("Conversion did not produce .hex file.", error=True)
     except Exception as e:
-      QMessageBox.critical(self, "Error", f"Error converting ASM to HEX: {str(e)}")
+      self.SetStatusText(f"Error converting .asm to .hex: {str(e)}", error=True)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def ExecuteSimulation(self):
     # Save HEX to temp file
+    self.SetStatusText("Saving hex source file...", error=False)
     tempDir = self.parent.GetTempDir()
     hexPath = os.path.join(tempDir, "input.hex")
     with open(hexPath, 'w') as file:
@@ -256,25 +292,23 @@ class InputTab(QWidget):
     logPath = os.path.join(tempDir, "execution.log")
     statesPath = os.path.join(tempDir, "states.json")
 
-    try:
-      # Run parsing script
-      process = QProcess()
-      process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, logPath, statesPath])
-      process.waitForFinished()
-
-      # Check for errors
-      if process.exitCode() != 0:
-        errorMessage = process.readAllStandardError().data().decode()
-        QMessageBox.critical(self, "Error", f"Error converting ASM to HEX:\n{errorMessage}")
-        return
-
-    except Exception as e:
-      QMessageBox.critical(self, "Error", f"Error converting ASM to HEX: {str(e)}")
+    # Run parsing script
+    self.SetStatusText("Executing simulation...", error=False)
+    process = QProcess()
+    process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, logPath, statesPath])
+    process.waitForFinished()
+    
+    # Check if the execution was successful
+    if process.exitCode() != 0:
+      self.SetStatusText("Invalid hex source. Simulation failed.", error=True)
+      return
 
     # Notify simulation tab to load data
+    self.SetStatusText("Processing simulation data...", error=False)
     self.parent.simulationTab.LoadSimulationData()
 
     # Switch to simulation tab
+    self.SetStatusText("Simulation complete.", error=False)
     self.parent.SwitchToSimulationTab()
 
   # ---------------------------------------------------------------------------------------------------------------------------
