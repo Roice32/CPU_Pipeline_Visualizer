@@ -63,6 +63,7 @@ class CPUSimulator(QMainWindow):
     self.tabs.addTab(self.inputTab, "Input")
     self.tabs.addTab(self.configTab, "Config")
     self.tabs.addTab(self.simulationTab, "Simulation")
+    self.tabs.setTabEnabled(self.tabs.indexOf(self.simulationTab), False)  # Disable the Simulation tab without any simulation
     self.tabs.addTab(self.helpTab, "Help")
 
   # ---------------------------------------------------------------------------------------------------------------------------
@@ -102,6 +103,10 @@ class CPUSimulator(QMainWindow):
   # ---------------------------------------------------------------------------------------------------------------------------
   def SwitchToSimulationTab(self):
     self.tabs.setCurrentIndex(2)  # Index 2 is the Simulation tab
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def SetSimulationTabEnabled(self, enabled):
+    self.tabs.setTabEnabled(self.tabs.indexOf(self.simulationTab), enabled)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def closeEvent(self, event):

@@ -1,11 +1,12 @@
 import os
 import json
 from PyQt5.QtWidgets import (
-  QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, QSlider, 
-  QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsTextItem, QMessageBox
+  QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, QSlider,
+  QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsTextItem, QMessageBox,
+  QPushButton
 )
-from PyQt5.QtCore import Qt, QEvent, QRectF
-from PyQt5.QtGui import QPainter, QPen, QColor, QBrush
+from PyQt5.QtCore import Qt, QEvent, QRectF, QTimer
+from PyQt5.QtGui import QPainter, QPen, QColor, QBrush, QIcon
 
 
 # -----------------------------------------------------------------------------------------------------------------------------
@@ -19,6 +20,9 @@ class SimulationTab(QWidget):
   diagramScene = None
   diagramView = None
   detailsText = None
+  playPauseButton = None
+  autoPlayTimer = None
+  isPlaying = False
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self, parent):
@@ -30,36 +34,143 @@ class SimulationTab(QWidget):
 
     layout = QVBoxLayout()
 
-    # Add slider for cycle selection
-    sliderLayout = QHBoxLayout()
-    sliderLayout.addWidget(QLabel("Cycle:"))
+    # Slider and control buttons layout
+    sliderLayout = QVBoxLayout()
+    sliderLayout.setContentsMargins(int(self.width() * 0.2), 0, int(self.width() * 0.2), 0)
+
+    # Slider
+    sliderBarLayout = QHBoxLayout()
+    sliderBarLayout.addWidget(QLabel("Cycle:"))
     self.cycleSlider = QSlider(Qt.Horizontal)
     self.cycleSlider.setMinimum(1)
-    self.cycleSlider.setMaximum(1)  # Will be updated when data is loaded
+    self.cycleSlider.setMaximum(1)
     self.cycleSlider.valueChanged.connect(self.UpdateSimulationView)
-    sliderLayout.addWidget(self.cycleSlider)
+    sliderBarLayout.addWidget(self.cycleSlider)
     self.cycleLabel = QLabel("1")
-    sliderLayout.addWidget(self.cycleLabel)
+    sliderBarLayout.addWidget(self.cycleLabel)
+    sliderLayout.addLayout(sliderBarLayout)
+
+    # Control buttons
+    buttonLayout = QHBoxLayout()
+    buttonLayout.setAlignment(Qt.AlignCenter)
+
+    # Button icons
+    toStartIcon  = QIcon("resources/icons/toStart.png")
+    previousIcon = QIcon("resources/icons/previous.png")
+    playIcon     = QIcon("resources/icons/play.png")
+    pauseIcon    = QIcon("resources/icons/pause.png")
+    nextIcon     = QIcon("resources/icons/next.png")
+    toEndIcon    = QIcon("resources/icons/toEnd.png")
+
+    # Create buttons
+    toStartButton        = QPushButton(toStartIcon, "")
+    previousButton       = QPushButton(previousIcon, "")
+    self.playPauseButton = QPushButton(playIcon, "")  # Initially play icon
+    nextButton           = QPushButton(nextIcon, "")
+    toEndButton          = QPushButton(toEndIcon, "")
+
+    # Connect buttons to functions
+    toStartButton.clicked.connect(self.GoToFirstCycle)
+    previousButton.clicked.connect(self.DecreaseCycle)
+    self.playPauseButton.clicked.connect(self.TogglePlayPause)
+    nextButton.clicked.connect(self.IncreaseCycle)
+    toEndButton.clicked.connect(self.GoToLastCycle)
+
+    # Add buttons to layout
+    buttonLayout.addWidget(toStartButton)
+    buttonLayout.addWidget(previousButton)
+    buttonLayout.addWidget(self.playPauseButton)
+    buttonLayout.addWidget(nextButton)
+    buttonLayout.addWidget(toEndButton)
+
+    sliderLayout.addLayout(buttonLayout)
     layout.addLayout(sliderLayout)
 
+    # Diagram and Details Layout
+    diagramDetailsLayout = QHBoxLayout()
+    diagramDetailsLayout.setContentsMargins(0, 10, 0, 0)  # Add some top margin
+
     # CPU diagram view
+    diagramLayout = QVBoxLayout()
+    label = QLabel("CPU Diagram:")
+    label.setAlignment(Qt.AlignCenter)
+    font = label.font()
+    font.setBold(True)
+    label.setFont(font)
+    diagramLayout.addWidget(label)
     self.diagramScene = QGraphicsScene()
     self.diagramView = QGraphicsView(self.diagramScene)
+    self.diagramView.setStyleSheet("border: 3px solid black; border-radius: 8px; background-color: #f0f0f0;")
     self.diagramView.setRenderHint(QPainter.Antialiasing)
-    self.diagramView.setMinimumHeight(500)
+    self.diagramView.setMinimumHeight(300)
+    self.diagramView.setMinimumWidth(300)  # Ensure it has some width
     self.diagramView.viewport().installEventFilter(self)
-    layout.addWidget(self.diagramView)
+    self.diagramView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Remove horizontal scrollbar
+    self.diagramView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)   # Remove vertical scrollbar
+    diagramLayout.addWidget(self.diagramView, 1)  # Stretch vertically
+    diagramDetailsLayout.addLayout(diagramLayout, 1)  # Stretch horizontally
 
     # Details text box
-    layout.addWidget(QLabel("Component Details:"))
+    detailsLayout = QVBoxLayout()
+    detailsLabel = QLabel("Component Details:")
+    detailsLabel.setAlignment(Qt.AlignCenter)
+    font = detailsLabel.font()
+    font.setBold(True)
+    detailsLabel.setFont(font)
+    detailsLayout.addWidget(detailsLabel)
     self.detailsText = QTextEdit()
+    self.detailsText.setStyleSheet("border: 3px solid black; border-radius: 8px; background-color: #f0f0f0;")
     self.detailsText.setReadOnly(True)
-    layout.addWidget(self.detailsText)
+    detailsLayout.addWidget(self.detailsText, 1)  # Stretch vertically
+    diagramDetailsLayout.addLayout(detailsLayout, 1)  # Stretch horizontally
+
+    layout.addLayout(diagramDetailsLayout, 1)  # Use all available space
 
     # Create the CPU diagram components
     self.CreateCpuDiagram()
 
     self.setLayout(layout)
+
+    # Timer for auto-play
+    self.autoPlayTimer = QTimer(self)
+    self.autoPlayTimer.timeout.connect(self.IncreaseCycle)
+    self.autoPlayTimer.setInterval(1000)  # 2 seconds
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def resizeEvent(self, event):
+    # Fit the scene into the view, keeping aspect ratio
+    self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+    super().resizeEvent(event)
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GoToFirstCycle(self):
+    self.cycleSlider.setValue(self.cycleSlider.minimum())
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def DecreaseCycle(self):
+    if self.cycleSlider.value() > self.cycleSlider.minimum():
+      self.cycleSlider.setValue(self.cycleSlider.value() - 1)
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def TogglePlayPause(self):
+    if self.isPlaying:
+      self.autoPlayTimer.stop()
+      self.playPauseButton.setIcon(QIcon("resources/icons/play.png"))
+    else:
+      self.autoPlayTimer.start()
+      self.playPauseButton.setIcon(QIcon("resources/icons/pause.png"))
+    self.isPlaying = not self.isPlaying
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def IncreaseCycle(self):
+    if self.cycleSlider.value() < self.cycleSlider.maximum():
+      self.cycleSlider.setValue(self.cycleSlider.value() + 1)
+    else:
+      self.TogglePlayPause()  # Stop playing at the end
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GoToLastCycle(self):
+    self.cycleSlider.setValue(self.cycleSlider.maximum())
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def CreateCpuDiagram(self):
@@ -78,30 +189,30 @@ class SimulationTab(QWidget):
     MODULES_X_OFFSET = MEM_COMP_WIDTH + SPACING
     MODULES_Y_OFFSET = MODULE_SIDE
 
-    EX_X, EX_Y = MODULES_X_OFFSET,                   MODULES_Y_OFFSET
+    EX_X, EX_Y = MODULES_X_OFFSET,           MODULES_Y_OFFSET
     DE_X, DE_Y = MODULES_X_OFFSET + 2 * MODULE_SIDE, MODULES_Y_OFFSET
     IC_X, IC_Y = MODULES_X_OFFSET + 2 * MODULE_SIDE, MODULES_Y_OFFSET + 2 * MODULE_SIDE
-    LS_X, LS_Y = MODULES_X_OFFSET,                   MODULES_Y_OFFSET + 2 * MODULE_SIDE
+    LS_X, LS_Y = MODULES_X_OFFSET,           MODULES_Y_OFFSET + 2 * MODULE_SIDE
 
     # Define component geometries (x, y, width, height)
     components = {
-      "Registers": (int(EX_X + MODULE_SIDE / 2),     0,                               2 * MODULE_SIDE, MEM_COMP_WIDTH),
-      "Stack":     (0,                               0,                               MEM_COMP_WIDTH,  2 * MODULE_SIDE),
-      "EX":        (EX_X,                            EX_Y,                            MODULE_SIDE,     MODULE_SIDE),
-      "DE":        (DE_X,                            DE_Y,                            MODULE_SIDE,     MODULE_SIDE),
-      "IC":        (IC_X,                            IC_Y,                            MODULE_SIDE,     MODULE_SIDE),
-      "LS":        (LS_X,                            LS_Y,                            MODULE_SIDE,     MODULE_SIDE),
-      "LS_Cache":  (LS_X - MEM_COMP_WIDTH,           LS_Y,                            MEM_COMP_WIDTH,  MODULE_SIDE),
-      "IC_Cache":  (IC_X + MODULE_SIDE,              IC_Y,                            MEM_COMP_WIDTH,  MODULE_SIDE),
-      "Memory":    (EX_X,                            LS_Y + MODULE_SIDE + SPACING,    3 * MODULE_SIDE, MEM_COMP_WIDTH),
-      "EX_to_DE":  (EX_X + MODULE_SIDE,              EX_Y + SPACING,                  MODULE_SIDE,     PIPE_WIDTH),
-      "DE_to_EX":  (EX_X + MODULE_SIDE,              EX_Y + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE,     PIPE_WIDTH),
-      "DE_to_IC":  (DE_X + SPACING,                  DE_Y + MODULE_SIDE,              PIPE_WIDTH,      MODULE_SIDE),
-      "IC_to_DE":  (DE_X + 2 * SPACING + PIPE_WIDTH, DE_Y + MODULE_SIDE,              PIPE_WIDTH,      MODULE_SIDE),
-      "IC_to_LS":  (LS_X + MODULE_SIDE,              LS_Y + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE,     PIPE_WIDTH),
-      "LS_to_IC":  (LS_X + MODULE_SIDE,              LS_Y + SPACING,                  MODULE_SIDE,     PIPE_WIDTH),
-      "LS_to_EX":  (EX_X + SPACING,                  EX_Y + MODULE_SIDE,              PIPE_WIDTH,      MODULE_SIDE),
-      "EX_to_LS":  (EX_X + 2 * SPACING + PIPE_WIDTH, EX_Y + MODULE_SIDE,              PIPE_WIDTH,      MODULE_SIDE)
+      "Registers": (int(EX_X + MODULE_SIDE / 2),   0,                 2 * MODULE_SIDE, MEM_COMP_WIDTH),
+      "Stack":   (0,                 0,                 MEM_COMP_WIDTH,  2 * MODULE_SIDE),
+      "EX":    (EX_X,              EX_Y,              MODULE_SIDE,   MODULE_SIDE),
+      "DE":    (DE_X,              DE_Y,              MODULE_SIDE,   MODULE_SIDE),
+      "IC":    (IC_X,              IC_Y,              MODULE_SIDE,   MODULE_SIDE),
+      "LS":    (LS_X,              LS_Y,              MODULE_SIDE,   MODULE_SIDE),
+      "LS_Cache":  (LS_X - MEM_COMP_WIDTH,       LS_Y,              MEM_COMP_WIDTH,  MODULE_SIDE),
+      "IC_Cache":  (IC_X + MODULE_SIDE,        IC_Y,              MEM_COMP_WIDTH,  MODULE_SIDE),
+      "Memory":  (EX_X,              LS_Y + MODULE_SIDE + SPACING,  3 * MODULE_SIDE, MEM_COMP_WIDTH),
+      "EX_to_DE":  (EX_X + MODULE_SIDE,        EX_Y + SPACING,          MODULE_SIDE,   PIPE_WIDTH),
+      "DE_to_EX":  (EX_X + MODULE_SIDE,        EX_Y + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE,   PIPE_WIDTH),
+      "DE_to_IC":  (DE_X + SPACING,          DE_Y + MODULE_SIDE,        PIPE_WIDTH,    MODULE_SIDE),
+      "IC_to_DE":  (DE_X + 2 * SPACING + PIPE_WIDTH, DE_Y + MODULE_SIDE,        PIPE_WIDTH,    MODULE_SIDE),
+      "IC_to_LS":  (LS_X + MODULE_SIDE,        LS_Y + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE,   PIPE_WIDTH),
+      "LS_to_IC":  (LS_X + MODULE_SIDE,        LS_Y + SPACING,          MODULE_SIDE,   PIPE_WIDTH),
+      "LS_to_EX":  (EX_X + SPACING,          EX_Y + MODULE_SIDE,        PIPE_WIDTH,    MODULE_SIDE),
+      "EX_to_LS":  (EX_X + 2 * SPACING + PIPE_WIDTH, EX_Y + MODULE_SIDE,        PIPE_WIDTH,    MODULE_SIDE)
     }
 
     # Create rectangular components with labels
@@ -113,7 +224,9 @@ class SimulationTab(QWidget):
 
       # Add text label
       text = QGraphicsTextItem(name.replace("_", " " if w > h else "\n"))
-      text.setPos(x + w / 2 - text.boundingRect().width() / 2, y + h / 2 - text.boundingRect().height() / 2)
+      scale = 1.25
+      text.setScale(scale)
+      text.setPos(x + w / 2 - text.boundingRect().width() / 2 * scale, y + h / 2 - text.boundingRect().height() / 2 * scale)
 
       # Store the reference to the rectangle
       self.componentItems[name] = rect
@@ -124,6 +237,9 @@ class SimulationTab(QWidget):
 
     # Set the scene rect to fit all components
     self.diagramScene.setSceneRect(self.diagramScene.itemsBoundingRect())
+
+    # Fit the view to the scene
+    self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def LoadSimulationData(self):

@@ -301,6 +301,7 @@ class InputTab(QWidget):
     # Check if the execution was successful
     if process.exitCode() != 0:
       self.SetStatusText("Invalid hex source. Simulation failed.", error=True)
+      self.parent.SetSimulationTabEnabled(False)
       return
 
     # Notify simulation tab to load data
@@ -309,6 +310,7 @@ class InputTab(QWidget):
 
     # Switch to simulation tab
     self.SetStatusText("Simulation complete.", error=False)
+    self.parent.SetSimulationTabEnabled(True)
     self.parent.SwitchToSimulationTab()
 
   # ---------------------------------------------------------------------------------------------------------------------------
