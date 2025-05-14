@@ -34,6 +34,12 @@ class CPUSimulator(QMainWindow):
     self.tempDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "CPU_PV.temp")
     if not os.path.exists(self.tempDir):
       os.makedirs(self.tempDir)
+    simulationCpuStatesDir = os.path.join(self.tempDir, "simulation", "cpu_states")
+    if not os.path.exists(simulationCpuStatesDir):
+      os.makedirs(simulationCpuStatesDir)
+    simulationMemoryDir = os.path.join(self.tempDir, "simulation", "memory")
+    if not os.path.exists(simulationMemoryDir):
+      os.makedirs(simulationMemoryDir)
     
     # Initialize UI
     self.setWindowTitle("CPU Simulator")
@@ -69,6 +75,18 @@ class CPUSimulator(QMainWindow):
   # ---------------------------------------------------------------------------------------------------------------------------
   def GetTempDir(self):
     return self.tempDir
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GetSimulationDir(self):
+    return os.path.join(self.tempDir, "simulation")
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GetSimulationCpuStatesDir(self):
+    return os.path.join(self.tempDir, "simulation", "cpu_states")
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GetSimulationMemoryDir(self):
+    return os.path.join(self.tempDir, "simulation", "memory")
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GetConfigValues(self):

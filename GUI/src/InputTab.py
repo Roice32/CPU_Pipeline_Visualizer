@@ -1,4 +1,5 @@
 import os
+from time import sleep
 from PyQt5.QtWidgets import (
   QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, QPushButton, QFileDialog, QSplitter, QMessageBox
 )
@@ -79,6 +80,7 @@ class InputTab(QWidget):
     
     # Status label (centered at the top)
     self.statusLabel = QLabel()
+    self.statusLabel.setWordWrap(True)
     self.statusLabel.setAlignment(Qt.AlignCenter)
     self.statusLabel.setStyleSheet(InputTab.statusStyle)
     self.statusLabel.setVisible(False)  # Hidden by default
@@ -284,24 +286,39 @@ class InputTab(QWidget):
   def ExecuteSimulation(self):
     # Save HEX to temp file
     self.SetStatusText("Saving hex source file...", error=False)
-    tempDir = self.parent.GetTempDir()
-    hexPath = os.path.join(tempDir, "input.hex")
+    hexPath = os.path.join(self.parent.GetTempDir(), "input.hex")
     with open(hexPath, 'w') as file:
       file.write(self.hexText.toPlainText())
 
-    logPath = os.path.join(tempDir, "execution.log")
-    statesPath = os.path.join(tempDir, "states.json")
+    simulationPath = self.parent.GetSimulationDir()
+    logPath = os.path.join(simulationPath, "sim.log")
+    cpuStatesPath = self.parent.GetSimulationCpuStatesDir()
+    memoryPath = self.parent.GetSimulationMemoryDir()
+
+    self.parent.SetSimulationTabEnabled(False)
+
+    # Delete all files in cpuStatesPath and memoryPath directories
+    for path in [cpuStatesPath, memoryPath]:
+      if os.path.exists(path):
+        for file in os.listdir(path):
+          file_path = os.path.join(path, file)
+          if os.path.isfile(file_path):
+            os.remove(file_path)
 
     # Run parsing script
     self.SetStatusText("Executing simulation...", error=False)
     process = QProcess()
-    process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, logPath, statesPath])
+    process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, logPath, simulationPath])
+
+    while not os.path.exists(logPath):
+      sleep(0.1)
+    self.SetStatusText("Saving simulation data...", error=False)
+
     process.waitForFinished()
-    
     # Check if the execution was successful
     if process.exitCode() != 0:
-      self.SetStatusText("Invalid hex source. Simulation failed.", error=True)
-      self.parent.SetSimulationTabEnabled(False)
+      processError = process.readAllStandardError().data().decode()
+      self.SetStatusText(f"Simulation failed: {processError}", error=True)
       return
 
     # Notify simulation tab to load data

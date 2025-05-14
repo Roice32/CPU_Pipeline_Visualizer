@@ -58,16 +58,9 @@ std::string ExecutionState::toJSON() const
   }
   ss << "],";
   
-  // Memory section
-  ss << "\"memory\":{";
-  bool first = true;
-  for (const auto& entry : memory) {
-    if (!first) ss << ",";
-    ss << "\"" << entry.first << "\":" << entry.second;
-    first = false;
-  }
-  ss << "},";
-  
+  // Memory changes section
+  ss << "\"memoryUnchangedSinceCycle\":" << memoryUnchangedSinceCycle << ",";
+
   // Pipes section
   ss << "\"pipes\":{";
   

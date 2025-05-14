@@ -2,7 +2,8 @@
 .vscode/*
 .cache/*
 GUI/src/__pycache__/*
-GUI/src/dependencies/CPU_Pipeline_Simulator.exe
+GUI/src/dependencies/CPU_Pipeline_Simulator*.exe
+**/CPU_PV.temp/*
 GUI/tests/*.hex
 GUI/tests/*.json
 Simulator/build/*

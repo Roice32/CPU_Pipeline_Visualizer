@@ -30,7 +30,8 @@ struct ExecutionState
 
   std::stack<word> stack = {};
 
-  std::unordered_map<address, word> memory = {};
+  std::unordered_map<address, word> memoryChanges = {};
+  clock_time memoryUnchangedSinceCycle = 1;
 
   struct {
     std::vector<SynchronizedDataPackage<address>> ICtoLS = {};

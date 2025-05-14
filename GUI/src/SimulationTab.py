@@ -13,6 +13,10 @@ from PyQt5.QtGui import QPainter, QPen, QColor, QBrush, QIcon
 class SimulationTab(QWidget):
   parent = None
   executionStates = None
+  memoryStates = None
+  memoryRanges = None
+  totalCycles = None
+  currentCycleIndex = None
   selectedComponent = None
   componentItems = None
   cycleSlider = None
@@ -28,7 +32,11 @@ class SimulationTab(QWidget):
   def __init__(self, parent):
     super().__init__()
     self.parent = parent
-    self.executionStates = []
+    self.executionStates = {}    # Dict to store loaded states by cycle number
+    self.memoryStates = {}       # Dict to store memory states
+    self.memoryRanges = {}       # Dict mapping ranges of cycles to memory states
+    self.totalCycles = 0
+    self.currentCycleIndex = 1
     self.selectedComponent = None
     self.componentItems = {}
 
@@ -134,7 +142,7 @@ class SimulationTab(QWidget):
     # Timer for auto-play
     self.autoPlayTimer = QTimer(self)
     self.autoPlayTimer.timeout.connect(self.IncreaseCycle)
-    self.autoPlayTimer.setInterval(1000)  # 2 seconds
+    self.autoPlayTimer.setInterval(1000)  # 1 second
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def resizeEvent(self, event):
@@ -145,11 +153,19 @@ class SimulationTab(QWidget):
   # ---------------------------------------------------------------------------------------------------------------------------
   def GoToFirstCycle(self):
     self.cycleSlider.setValue(self.cycleSlider.minimum())
+    # Load first 6 states or as many as available
+    self.LoadStateRange(1, min(6, self.totalCycles))
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def DecreaseCycle(self):
     if self.cycleSlider.value() > self.cycleSlider.minimum():
-      self.cycleSlider.setValue(self.cycleSlider.value() - 1)
+      newCycle = self.cycleSlider.value() - 1
+      self.cycleSlider.setValue(newCycle)
+      self.currentCycleIndex = newCycle
+      
+      # Check if we need to load more states (when current is at the lower edge of our window)
+      if newCycle % 11 == 1 and newCycle > 1:
+        self.LoadStateRange(max(1, newCycle - 5), min(newCycle + 5, self.totalCycles))
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def TogglePlayPause(self):
@@ -164,13 +180,22 @@ class SimulationTab(QWidget):
   # ---------------------------------------------------------------------------------------------------------------------------
   def IncreaseCycle(self):
     if self.cycleSlider.value() < self.cycleSlider.maximum():
-      self.cycleSlider.setValue(self.cycleSlider.value() + 1)
+      newCycle = self.cycleSlider.value() + 1
+      self.cycleSlider.setValue(newCycle)
+      self.currentCycleIndex = newCycle
+      
+      # Check if we need to load more states (when current is at the upper edge of our window)
+      if newCycle % 11 == 0 and newCycle < self.totalCycles:
+        self.LoadStateRange(max(1, newCycle - 5), min(newCycle + 5, self.totalCycles))
     else:
-      self.TogglePlayPause()  # Stop playing at the end
+      if self.isPlaying:
+        self.TogglePlayPause()  # Stop playing at the end
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GoToLastCycle(self):
     self.cycleSlider.setValue(self.cycleSlider.maximum())
+    # Load last 6 states or as many as available
+    self.LoadStateRange(max(1, self.totalCycles - 5), self.totalCycles)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def CreateCpuDiagram(self):
@@ -242,35 +267,156 @@ class SimulationTab(QWidget):
     self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def LoadSimulationData(self):
-    # Try to load states.json file
+  def GetMaxCycleNumber(self, directory):
+    """Find the highest cycle number from files in the directory"""
+    maxCycle = 0
+    if os.path.exists(directory):
+      for file in os.listdir(directory):
+        if file.endswith('.json'):
+          try:
+            cycle = int(file.split('.')[0])
+            maxCycle = max(maxCycle, cycle)
+          except ValueError:
+            pass  # Ignore files that don't have a number as filename
+    return maxCycle
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def LoadStateFile(self, cycle):
+    """Load a specific CPU state file"""
     tempDir = self.parent.GetTempDir()
-    statesPath = os.path.join(tempDir, "states.json")
-
-    if os.path.exists(statesPath):
+    stateFilePath = os.path.join(tempDir, "simulation", "cpu_states", f"{cycle}.json")
+    
+    if os.path.exists(stateFilePath):
       try:
-        with open(statesPath, 'r') as file:
-          self.executionStates = json.load(file)
-
-        # Update slider maximum value based on the last cycle
-        if self.executionStates:
-          maxCycle = int(self.executionStates[-1].get("cycle", 1))
-          self.cycleSlider.setMaximum(maxCycle)
-          self.cycleSlider.setValue(1)  # Start at the first cycle
-          self.cycleLabel.setText(str(1))
-          self.UpdateSimulationView()
-          return True
+        with open(stateFilePath, 'r') as file:
+          state = json.load(file)
+          return state
       except Exception as e:
-        QMessageBox.warning(self, "Warning", f"Error loading simulation states: {str(e)}")
-    else:
-      QMessageBox.information(self, "Information", "No simulation states file found. Please make sure 'states.json' exists in the CPU_PV.temp directory.")
+        QMessageBox.warning(self, "Warning", f"Error loading state file {cycle}.json: {str(e)}")
+    
+    return None
 
-    return False
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def LoadMemoryFile(self, cycle):
+    """Load a specific memory state file"""
+    tempDir = self.parent.GetTempDir()
+    memoryFilePath = os.path.join(tempDir, "simulation", "memory", f"{cycle}.json")
+    
+    if os.path.exists(memoryFilePath):
+      try:
+        with open(memoryFilePath, 'r') as file:
+          memory = json.load(file)
+          return memory
+      except Exception as e:
+        QMessageBox.warning(self, "Warning", f"Error loading memory file {cycle}.json: {str(e)}")
+    
+    return None
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def LoadStateRange(self, start, end):
+    """Load CPU states and memory states for a range of cycles"""
+    # Clear old states outside our new window
+    cycles_to_keep = set(range(start, end + 1))
+    cycles_to_remove = [c for c in self.executionStates.keys() if c not in cycles_to_keep]
+    for cycle in cycles_to_remove:
+      self.executionStates.pop(cycle, None)
+    
+    # Load new states
+    for cycle in range(start, end + 1):
+      if cycle not in self.executionStates:
+        state = self.LoadStateFile(cycle)
+        if state:
+          self.executionStates[cycle] = state
+          
+          # Check if we need to update memory state
+          memoryUnchangedSince = state.get("memoryUnchangedSinceCyle", cycle)
+          if memoryUnchangedSince not in self.memoryStates:
+            # Try to load this memory state
+            memory = self.LoadMemoryFile(memoryUnchangedSince)
+            if memory:
+              self.memoryStates[memoryUnchangedSince] = memory
+          
+          # Update memory ranges
+          for memRange in list(self.memoryRanges.keys()):
+            if cycle in memRange:
+              # Remove the old range
+              memState = self.memoryRanges[memRange]
+              self.memoryRanges.pop(memRange)
+              # Determine new ranges
+              newRange = frozenset(range(memoryUnchangedSince, cycle + 1))
+              self.memoryRanges[newRange] = memState
+              break
+          else:
+            # If not in any existing range, create a new one
+            newRange = frozenset(range(memoryUnchangedSince, cycle + 1))
+            if memoryUnchangedSince in self.memoryStates:
+              self.memoryRanges[newRange] = self.memoryStates[memoryUnchangedSince]
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GetMemoryForCycle(self, cycle):
+    """Get the memory state for a specific cycle"""
+    for memRange, memState in self.memoryRanges.items():
+      if cycle in memRange:
+        return memState
+    
+    # If not found in our cached ranges, try to find from which cycle memory is unchanged
+    if cycle in self.executionStates:
+      memoryUnchangedSince = self.executionStates[cycle].get("memoryUnchangedSinceCyle", cycle)
+      memory = self.LoadMemoryFile(memoryUnchangedSince)
+      if memory:
+        # Create a new range
+        newRange = frozenset(range(memoryUnchangedSince, cycle + 1))
+        self.memoryStates[memoryUnchangedSince] = memory
+        self.memoryRanges[newRange] = memory
+        return memory
+    
+    return {}  # Return empty dict if no memory state found
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def LoadSimulationData(self):
+    # Check if simulation directories exist
+    tempDir = self.parent.GetTempDir()
+    cpuStatesDir = self.parent.GetSimulationCpuStatesDir()
+    memoryDir = self.parent.GetSimulationMemoryDir()
+    
+    if not os.path.exists(cpuStatesDir) or not os.path.exists(memoryDir):
+      QMessageBox.information(self, "Information", 
+                              "Simulation directories not found. Please make sure that the directories exist:\n"
+                              f"- {cpuStatesDir}\n"
+                              f"- {memoryDir}")
+      return False
+
+    # Find the total number of simulation cycles
+    self.totalCycles = self.GetMaxCycleNumber(cpuStatesDir)
+    if self.totalCycles == 0:
+      QMessageBox.information(self, "Information", 
+                              "No simulation states found. Please make sure cycle JSON files exist in the directories.")
+      return False
+
+    # Update slider range
+    self.cycleSlider.setMaximum(self.totalCycles)
+    self.cycleSlider.setValue(1)  # Start at the first cycle
+    self.cycleLabel.setText("1")
+    self.currentCycleIndex = 1
+    
+    # Load first 6 states or all states if less than 6
+    self.LoadStateRange(1, min(6, self.totalCycles))
+    
+    # Update the view
+    self.UpdateSimulationView()
+    return True
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def UpdateSimulationView(self):
     currentCycle = self.cycleSlider.value()
     self.cycleLabel.setText(str(currentCycle))
+    
+    # Make sure we have the current state loaded
+    if currentCycle not in self.executionStates:
+      # Need to load this state and potentially surrounding states
+      minCycle = max(1, currentCycle - 5)
+      maxCycle = min(self.totalCycles, currentCycle + 5)
+      self.LoadStateRange(minCycle, maxCycle)
 
     # Reset all component highlighting
     for item in self.componentItems.values():
@@ -278,21 +424,16 @@ class SimulationTab(QWidget):
       item.setBrush(QBrush(QColor(255, 255, 255)))
 
     # If a component is selected, update its highlighting and show details
-    if self.selectedComponent and self.executionStates:
-      # Find the state that matches current cycle
-      state = None
-      for s in self.executionStates:
-        if s.get("cycle", 0) == currentCycle:
-          state = s
-          break
-
-      if state:
-        self.componentItems[self.selectedComponent].setPen(QPen(QColor(0, 0, 255), 3))
-        details = self.GetComponentDetails(self.selectedComponent, state)
-        self.detailsText.setText(details)
+    if self.selectedComponent and currentCycle in self.executionStates:
+      state = self.executionStates[currentCycle]
+      memory = self.GetMemoryForCycle(currentCycle)
+      
+      self.componentItems[self.selectedComponent].setPen(QPen(QColor(0, 0, 255), 3))
+      details = self.GetComponentDetails(self.selectedComponent, state, memory)
+      self.detailsText.setText(details)
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def GetComponentDetails(self, component, state):
+  def GetComponentDetails(self, component, state, memory):
     details = f"Component: {component}\nCycle: {state.get('cycle', 0)}\n\n"
 
     # Extract and format details based on component type
@@ -324,13 +465,15 @@ class SimulationTab(QWidget):
         details += "Stack is empty\n"
 
     elif component == "Memory":
-      memory = state.get("memory", {})
       if memory:
         details += "Memory contents:\n"
-        for addr, val in memory.items():
-          details += f"Address {hex(int(addr))}: {hex(val)}\n"
+        # Sort addresses for a more consistent display
+        sorted_addresses = sorted(memory.keys(), key=lambda x: int(x, 16) if isinstance(x, str) else int(x))
+        for addr in sorted_addresses:
+          val = memory[addr].zfill(4)
+          details += f"#{addr}: {val}\n"
       else:
-        details += "Memory is empty\n"
+        details += "Memory data not available for this cycle\n"
 
     elif component in ["EX", "DE", "LS", "IC"]:
       componentData = state.get(component, {})

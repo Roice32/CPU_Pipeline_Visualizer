@@ -24,8 +24,7 @@ int main(int argc, char** argv)
   cpu.runSimulation();
   
   if (argc >= 4 && argv[3][0] != '\0')
-    recorder->dumpToJSON(argv[3]);
-    //mem->dumpMemoryContents(argv[3]);
+    recorder->dumpSimulationToJSONs(argv[3]);
   
   return 0;
 }
