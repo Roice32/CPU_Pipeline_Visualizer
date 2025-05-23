@@ -1,11 +1,11 @@
 #pragma once
 
 #include "LSLogger.h"
-#include "../../synchronization/MemoryAccessRequest.h"
-#include "../../synchronization/InterThreadCommPipe.h"
-#include "../../cache/KWayAssociativeCache.h"
-#include "../../interfaces/IMemoryHandler.h"
-#include "../../interfaces/IClockBoundModule.h"
+#include "MemoryAccessRequest.h"
+#include "InterThreadCommPipe.h"
+#include "KWayAssociativeCache.h"
+#include "IMemoryHandler.h"
+#include "IClockBoundModule.h"
 
 class LoadStore : public IMemoryHandler, public IClockBoundModule, public LSLogger
 {

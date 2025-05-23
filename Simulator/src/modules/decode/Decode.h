@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../../logging/DELogger.h"
-#include "../../synchronization/InterThreadCommPipe.h"
-#include "../../interfaces/IClockBoundModule.h"
-#include "../../logging/ExecutionRecorder.h"
+#include "DELogger.h"
+#include "InterThreadCommPipe.h"
+#include "IClockBoundModule.h"
+#include "ExecutionRecorder.h"
 #include "WorkTempStorage.h"
 
 class Decode: public IClockBoundModule, public DELogger

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../memory/Memory.h"
+#include "Memory.h"
 
 #include <memory>
 

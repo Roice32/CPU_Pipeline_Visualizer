@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../interfaces/IExecutionStrategy.h"
+#include "IExecutionStrategy.h"
 
 class ExecPush: public IExecutionStrategy
 {

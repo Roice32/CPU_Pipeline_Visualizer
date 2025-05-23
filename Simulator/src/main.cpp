@@ -1,5 +1,5 @@
-#include "cpu/CPU.h"
-#include "logging/ExecutionRecorder.h"
+#include "CPU.h"
+#include "ExecutionRecorder.h"
 
 int main(int argc, char** argv)
 {

@@ -8,12 +8,12 @@
 #include <sstream>
 #include <memory>
 
-#include "../Config.h"
-#include "../Memory/Memory.h"
-#include "../Instruction.h"
-#include "../cache/KWayCacheSet.h"
-#include "../synchronization/SynchronizedDataPackage.h"
-#include "../synchronization/MemoryAccessRequest.h"
+#include "Config.h"
+#include "Memory.h"
+#include "Instruction.h"
+#include "KWayCacheSet.h"
+#include "SynchronizedDataPackage.h"
+#include "MemoryAccessRequest.h"
 
 struct ExecutionState
 {

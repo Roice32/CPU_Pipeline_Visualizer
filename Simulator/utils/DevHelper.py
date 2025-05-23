@@ -213,43 +213,11 @@ class DevHelper:
     return True
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def CreateMingwToolchainFile(self, toolchainPath):
-    """Create a MinGW toolchain file for cross-compiling to Windows"""
-    contents = """
-# Automatically generated MinGW toolchain file
-set(CMAKE_SYSTEM_NAME Windows)
-set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
-set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
-set(CMAKE_RC_COMPILER x86_64-w64-mingw32-windres)
-
-# Avoid Unix-specific linker flags like -rdynamic
-set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
-set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
-set(CMAKE_EXE_LINKER_FLAGS_INIT "")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -lwinpthread")
-"""
-
-    try:
-        with open(toolchainPath, "w") as f:
-            f.write(contents.strip())
-        print(f"Created toolchain file: {toolchainPath}")
-        return True
-    except Exception as e:
-        print(f"Error creating toolchain file: {e}")
-        return False
-
-  # ---------------------------------------------------------------------------------------------------------------------------
   def Release(self):
     releaseDir = os.path.join(self.projectRoot, "release")
 
-    toolchainFile = os.path.join(releaseDir, "mingw_toolchain.cmake")
-    if not self.CreateMingwToolchainFile(toolchainFile):
-        print("Failed to create toolchain file.")
-        return False
-
     print("    > Generating release build files with CMake (Windows target)")
-    status = self.RunCommand("cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE={toolchain_file}",
+    status = self.RunCommand(f"cmake . -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=./mingw-w64-toolchain.cmake",
                              cwd=releaseDir)
     
     if status != 0:
@@ -257,12 +225,21 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -lwinpt
       return False
 
     print("    > Building release executable")
-    status = self.RunCommand("make", cwd=releaseDir)
+    status = self.RunCommand("cmake --build .", cwd=releaseDir)
     if status != 0:
         print(f"Make for Windows release failed with status code {status}")
         return False
 
     print(f"Release executable built in {releaseDir}/bin")
+
+    status = self.RunCommand("cp ./CPU_Pipeline_Simulator.exe ../../GUI/src/dependencies/CPU_Pipeline_Simulator.exe",
+                             cwd=releaseDir)
+    if status != 0:
+        print(f"Copying release executable to GUI failed with status code {status}")
+        return False
+    print("Release executable copied to GUI/src/dependencies/CPU_Pipeline_Simulator.exe")
+
+    print("Release build completed successfully.")
     return True
 
 

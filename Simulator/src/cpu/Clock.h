@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../synchronization/ClockSyncPackage.h"
-#include "../logging/ExecutionRecorder.h"
+#include "ClockSyncPackage.h"
+#include "ExecutionRecorder.h"
 
 class Clock
 {
