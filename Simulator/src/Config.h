@@ -1,12 +1,17 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 #define CLOCK_PERIOD_MILLIS 1
+
+#define IC_CYCLES_PER_OP 3
+#define IC_CYCLES_PER_OP_WITH_CACHE_HIT 2
 
 #define ADDRESS_WIDTH 16
 #define SAVE_STATE_ADDR 0x0010
 #define DUMMY_ADDRESS address (-1)
+#define SIM_START_ADDR 0xfff0
 
 #define REGISTER_COUNT 8
 #define Z_REGISTER_COUNT 4
@@ -126,4 +131,31 @@ inline bool isAddrReg(byte src)
 inline bool isZReg(byte src)
 {
   return src >= Z0 && src <= Z3;
+}
+
+inline std::string convDecToHex(word source)
+{
+  std::string result = "xxxx";
+  byte bytesGroup;
+  for (byte ind = 0; ind < WORD_BYTES * 2; ++ind)
+  {
+    bytesGroup = source & 0xf;
+    result.at(WORD_BYTES * 2 - ind - 1) = (bytesGroup > 9) ? ('a' + bytesGroup - 10) : ('0' + bytesGroup);
+    source >>= 4;
+  }
+  return result;
+}
+
+inline std::string fwToStr(fetch_window source)
+{
+  std::string result = "[";
+  for (byte ind = 0; ind < FETCH_WINDOW_WORDS; ++ind)
+  {
+    result += convDecToHex(source & 0xffff);
+    if (ind != FETCH_WINDOW_WORDS - 1)
+      result += " ";
+    source >>= WORD_BYTES * 8;
+  }
+  result += "]";
+  return result;
 }

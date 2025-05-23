@@ -1,11 +1,12 @@
 #pragma once
 
-#include "string"
-#include "vector"
-#include "stack"
-#include "unordered_map"
-#include "sstream"
-#include "memory"
+#include <string>
+#include <vector>
+#include <vector>
+#include <stack>
+#include <unordered_map>
+#include <sstream>
+#include <memory>
 
 #include "../Config.h"
 #include "../Memory/Memory.h"
@@ -34,14 +35,14 @@ struct ExecutionState
   clock_time memoryUnchangedSinceCycle = 1;
 
   struct {
-    std::vector<SynchronizedDataPackage<address>> ICtoLS = {};
-    std::vector<SynchronizedDataPackage<fetch_window>> LStoIC = {};
-    std::vector<SynchronizedDataPackage<fetch_window>> ICtoDE = {};
-    std::vector<SynchronizedDataPackage<address>> DEtoIC = {};
-    std::vector<SynchronizedDataPackage<Instruction>> DEtoEX = {};
-    std::vector<SynchronizedDataPackage<address>> EXtoDE = {};
-    std::vector<SynchronizedDataPackage<MemoryAccessRequest>> EXtoLS = {};
-    std::vector<SynchronizedDataPackage<std::vector<word>>> LStoEX = {};
+    std::deque<SynchronizedDataPackage<address>> ICtoLS = {};
+    std::deque<SynchronizedDataPackage<fetch_window>> LStoIC = {};
+    std::deque<SynchronizedDataPackage<fetch_window>> ICtoDE = {};
+    std::deque<SynchronizedDataPackage<address>> DEtoIC = {};
+    std::deque<SynchronizedDataPackage<Instruction>> DEtoEX = {};
+    std::deque<SynchronizedDataPackage<address>> EXtoDE = {};
+    std::deque<SynchronizedDataPackage<MemoryAccessRequest>> EXtoLS = {};
+    std::deque<SynchronizedDataPackage<std::vector<word>>> LStoEX = {};
   } pipes;
 
   struct {

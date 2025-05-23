@@ -29,15 +29,12 @@ target_include_directories(CPU_Pipeline_Simulator
     "${SRC_ROOT}/cache"
     "${SRC_ROOT}/synchronization"
     "${SRC_ROOT}/memory"
+    "${SRC_ROOT}/interfaces"
     "${SRC_ROOT}/modules/load_store"
     "${SRC_ROOT}/modules/instruction_cache"
     "${SRC_ROOT}/modules/decode"
     "${SRC_ROOT}/modules/execute"
     "${SRC_ROOT}/modules/execute/execution_strategies")
-
-target_include_directories(CPU_Pipeline_Simulator
-  PUBLIC 
-    "${SRC_ROOT}/interfaces")
 
 target_link_libraries(CPU_Pipeline_Simulator pthread)
 

@@ -2,7 +2,7 @@
 
 #include "../../logging/DELogger.h"
 #include "../../synchronization/InterThreadCommPipe.h"
-#include "../../interfaces/IClockBoundModule.cpp"
+#include "../../interfaces/IClockBoundModule.h"
 #include "../../logging/ExecutionRecorder.h"
 #include "WorkTempStorage.h"
 

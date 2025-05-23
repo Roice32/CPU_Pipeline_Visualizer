@@ -83,4 +83,9 @@ public:
     }
     return false;
   }
+
+  byte getCurrReqIndex() const
+  {
+    return currReqIndex;
+  }
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../interfaces/ILogger.cpp"
+#include "../interfaces/ILogger.h"
 
 class DELogger: public ILogger
 {

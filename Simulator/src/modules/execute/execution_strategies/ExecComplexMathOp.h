@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../interfaces/IExecutionStrategy.cpp"
+#include "../../../interfaces/IExecutionStrategy.h"
 
 class ExecComplexMathOp: public IExecutionStrategy
 {

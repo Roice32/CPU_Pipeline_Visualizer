@@ -2,8 +2,8 @@
 
 #include "CPURegisters.h"
 #include "EXLogger.h"
-#include "IMemoryAccesser.cpp"
-#include "IClockBoundModule.cpp"
+#include "IMemoryAccesser.h"
+#include "IClockBoundModule.h"
 #include <cassert>
 
 class IExecutionStrategy: public IMemoryAccesser, public EXLogger
@@ -52,7 +52,7 @@ protected:
       case Z0 ... Z3:
         return *regs->zRegisters[src - Z0];
       default:
-        assert(0 && "Wrong or unimplemented parameter type");
+        throw std::invalid_argument("Wrong or unimplemented parameter type");
     }
   }
 
@@ -92,7 +92,7 @@ protected:
         *regs->zRegisters[destType - Z0] = result;
       break;
       default:
-        assert(0 && "Wrong or unimplemented parameter type");
+        throw std::invalid_argument("Wrong or unimplemented destination type");
     }
     return 0;
   }

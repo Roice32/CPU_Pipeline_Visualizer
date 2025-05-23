@@ -12,9 +12,6 @@ from PyQt5.QtGui import QPainter, QPen, QColor, QBrush, QIcon
 # -----------------------------------------------------------------------------------------------------------------------------
 class SimulationTab(QWidget):
   parent = None
-  executionStates = None
-  memoryStates = None
-  memoryRanges = None
   totalCycles = None
   currentCycleIndex = None
   selectedComponent = None
@@ -27,18 +24,17 @@ class SimulationTab(QWidget):
   playPauseButton = None
   autoPlayTimer = None
   isPlaying = False
+  memoryMapping = None  # Maps cycle numbers to the last cycle where memory changed
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self, parent):
     super().__init__()
     self.parent = parent
-    self.executionStates = {}    # Dict to store loaded states by cycle number
-    self.memoryStates = {}       # Dict to store memory states
-    self.memoryRanges = {}       # Dict mapping ranges of cycles to memory states
     self.totalCycles = 0
     self.currentCycleIndex = 1
     self.selectedComponent = None
     self.componentItems = {}
+    self.memoryMapping = {}
 
     layout = QVBoxLayout()
 
@@ -127,6 +123,7 @@ class SimulationTab(QWidget):
     detailsLabel.setFont(font)
     detailsLayout.addWidget(detailsLabel)
     self.detailsText = QTextEdit()
+    self.detailsText.setAcceptRichText(True)
     self.detailsText.setStyleSheet("border: 3px solid black; border-radius: 8px; background-color: #f0f0f0;")
     self.detailsText.setReadOnly(True)
     detailsLayout.addWidget(self.detailsText, 1)  # Stretch vertically
@@ -153,8 +150,6 @@ class SimulationTab(QWidget):
   # ---------------------------------------------------------------------------------------------------------------------------
   def GoToFirstCycle(self):
     self.cycleSlider.setValue(self.cycleSlider.minimum())
-    # Load first 6 states or as many as available
-    self.LoadStateRange(1, min(6, self.totalCycles))
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def DecreaseCycle(self):
@@ -162,10 +157,6 @@ class SimulationTab(QWidget):
       newCycle = self.cycleSlider.value() - 1
       self.cycleSlider.setValue(newCycle)
       self.currentCycleIndex = newCycle
-      
-      # Check if we need to load more states (when current is at the lower edge of our window)
-      if newCycle % 11 == 1 and newCycle > 1:
-        self.LoadStateRange(max(1, newCycle - 5), min(newCycle + 5, self.totalCycles))
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def TogglePlayPause(self):
@@ -183,10 +174,6 @@ class SimulationTab(QWidget):
       newCycle = self.cycleSlider.value() + 1
       self.cycleSlider.setValue(newCycle)
       self.currentCycleIndex = newCycle
-      
-      # Check if we need to load more states (when current is at the upper edge of our window)
-      if newCycle % 11 == 0 and newCycle < self.totalCycles:
-        self.LoadStateRange(max(1, newCycle - 5), min(newCycle + 5, self.totalCycles))
     else:
       if self.isPlaying:
         self.TogglePlayPause()  # Stop playing at the end
@@ -194,8 +181,6 @@ class SimulationTab(QWidget):
   # ---------------------------------------------------------------------------------------------------------------------------
   def GoToLastCycle(self):
     self.cycleSlider.setValue(self.cycleSlider.maximum())
-    # Load last 6 states or as many as available
-    self.LoadStateRange(max(1, self.totalCycles - 5), self.totalCycles)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def CreateCpuDiagram(self):
@@ -281,6 +266,50 @@ class SimulationTab(QWidget):
     return maxCycle
 
   # ---------------------------------------------------------------------------------------------------------------------------
+  def BuildMemoryMapping(self):
+    """Build a mapping of cycle numbers to the memory state they should use"""
+    tempDir = self.parent.GetTempDir()
+    cpuStatesDir = os.path.join(tempDir, "simulation", "cpu_states")
+    memoryDir = os.path.join(tempDir, "simulation", "memory")
+    
+    # Reset the memory mapping
+    self.memoryMapping = {}
+    
+    # Get all available memory states
+    memoryStates = set()
+    if os.path.exists(memoryDir):
+      for file in os.listdir(memoryDir):
+        if file.endswith('.json'):
+          try:
+            cycle = int(file.split('.')[0])
+            memoryStates.add(cycle)
+          except ValueError:
+            pass
+    
+    # Now go through each CPU state and determine which memory state to use
+    lastMemoryState = 1  # Default to first cycle if nothing else is found
+    
+    for cycle in range(1, self.totalCycles + 1):
+      # Check if this cycle has a memory state
+      if cycle in memoryStates:
+        lastMemoryState = cycle
+      
+      # Alternative: check if CPU state says memory hasn't changed
+      stateFilePath = os.path.join(cpuStatesDir, f"{cycle}.json")
+      if os.path.exists(stateFilePath):
+        try:
+          with open(stateFilePath, 'r') as file:
+            state = json.load(file)
+            memoryUnchangedSince = state.get("memoryUnchangedSinceCyle", cycle)
+            if memoryUnchangedSince in memoryStates:
+              lastMemoryState = memoryUnchangedSince
+        except Exception:
+          pass  # If there's any error reading the file, just use the last known memory state
+      
+      # Store the mapping
+      self.memoryMapping[cycle] = lastMemoryState
+
+  # ---------------------------------------------------------------------------------------------------------------------------
   def LoadStateFile(self, cycle):
     """Load a specific CPU state file"""
     tempDir = self.parent.GetTempDir()
@@ -313,63 +342,11 @@ class SimulationTab(QWidget):
     return None
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def LoadStateRange(self, start, end):
-    """Load CPU states and memory states for a range of cycles"""
-    # Clear old states outside our new window
-    cycles_to_keep = set(range(start, end + 1))
-    cycles_to_remove = [c for c in self.executionStates.keys() if c not in cycles_to_keep]
-    for cycle in cycles_to_remove:
-      self.executionStates.pop(cycle, None)
-    
-    # Load new states
-    for cycle in range(start, end + 1):
-      if cycle not in self.executionStates:
-        state = self.LoadStateFile(cycle)
-        if state:
-          self.executionStates[cycle] = state
-          
-          # Check if we need to update memory state
-          memoryUnchangedSince = state.get("memoryUnchangedSinceCyle", cycle)
-          if memoryUnchangedSince not in self.memoryStates:
-            # Try to load this memory state
-            memory = self.LoadMemoryFile(memoryUnchangedSince)
-            if memory:
-              self.memoryStates[memoryUnchangedSince] = memory
-          
-          # Update memory ranges
-          for memRange in list(self.memoryRanges.keys()):
-            if cycle in memRange:
-              # Remove the old range
-              memState = self.memoryRanges[memRange]
-              self.memoryRanges.pop(memRange)
-              # Determine new ranges
-              newRange = frozenset(range(memoryUnchangedSince, cycle + 1))
-              self.memoryRanges[newRange] = memState
-              break
-          else:
-            # If not in any existing range, create a new one
-            newRange = frozenset(range(memoryUnchangedSince, cycle + 1))
-            if memoryUnchangedSince in self.memoryStates:
-              self.memoryRanges[newRange] = self.memoryStates[memoryUnchangedSince]
-
-  # ---------------------------------------------------------------------------------------------------------------------------
   def GetMemoryForCycle(self, cycle):
     """Get the memory state for a specific cycle"""
-    for memRange, memState in self.memoryRanges.items():
-      if cycle in memRange:
-        return memState
-    
-    # If not found in our cached ranges, try to find from which cycle memory is unchanged
-    if cycle in self.executionStates:
-      memoryUnchangedSince = self.executionStates[cycle].get("memoryUnchangedSinceCyle", cycle)
-      memory = self.LoadMemoryFile(memoryUnchangedSince)
-      if memory:
-        # Create a new range
-        newRange = frozenset(range(memoryUnchangedSince, cycle + 1))
-        self.memoryStates[memoryUnchangedSince] = memory
-        self.memoryRanges[newRange] = memory
-        return memory
-    
+    if cycle in self.memoryMapping:
+      memoryCycle = self.memoryMapping[cycle]
+      return self.LoadMemoryFile(memoryCycle)
     return {}  # Return empty dict if no memory state found
 
   # ---------------------------------------------------------------------------------------------------------------------------
@@ -399,8 +376,8 @@ class SimulationTab(QWidget):
     self.cycleLabel.setText("1")
     self.currentCycleIndex = 1
     
-    # Load first 6 states or all states if less than 6
-    self.LoadStateRange(1, min(6, self.totalCycles))
+    # Build the memory mapping
+    self.BuildMemoryMapping()
     
     # Update the view
     self.UpdateSimulationView()
@@ -411,12 +388,8 @@ class SimulationTab(QWidget):
     currentCycle = self.cycleSlider.value()
     self.cycleLabel.setText(str(currentCycle))
     
-    # Make sure we have the current state loaded
-    if currentCycle not in self.executionStates:
-      # Need to load this state and potentially surrounding states
-      minCycle = max(1, currentCycle - 5)
-      maxCycle = min(self.totalCycles, currentCycle + 5)
-      self.LoadStateRange(minCycle, maxCycle)
+    # Load the current state
+    state = self.LoadStateFile(currentCycle)
 
     # Reset all component highlighting
     for item in self.componentItems.values():
@@ -424,8 +397,7 @@ class SimulationTab(QWidget):
       item.setBrush(QBrush(QColor(255, 255, 255)))
 
     # If a component is selected, update its highlighting and show details
-    if self.selectedComponent and currentCycle in self.executionStates:
-      state = self.executionStates[currentCycle]
+    if self.selectedComponent and state:
       memory = self.GetMemoryForCycle(currentCycle)
       
       self.componentItems[self.selectedComponent].setPen(QPen(QColor(0, 0, 255), 3))
@@ -482,12 +454,12 @@ class SimulationTab(QWidget):
       if component == "LS" or component == "IC":
         cacheData = componentData.get("cache", {})
         details += f"Cache Size: {cacheData.get('size', 0)}\n"
-        details += f"Current Request Index: {cacheData.get('currReqIndex', 0)}\n"
-        details += f"Current Request Tag: {hex(cacheData.get('currReqTag', 0))}\n"
 
         if component == "LS":
           details += f"Physical Memory Access: {'Yes' if componentData.get('physicalMemoryAccessHappened', False) else 'No'}\n"
           details += f"Found Index: {cacheData.get('foundIndex', 0)}\n"
+        else:
+          details += f"InternalIP: {hex(componentData.get('internalIP', 0))}\n"
 
       elif component == "DE":
         fwStorage = componentData.get("fwTempStorage", {})

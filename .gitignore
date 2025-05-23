@@ -15,6 +15,7 @@ Simulator/tests/outputs/*
 
 # To be kept
 !GUI/src/*
+!GUI/src/dependencies/CPU_Pipeline_Simulator.exe
 !Simulator/build/CMakeLists.txt
 !Simulator/release/CMakeLists.txt
 !Simulator/release/mingw-w64-toolchain.cmake

@@ -4,8 +4,8 @@
 #include "../../synchronization/MemoryAccessRequest.h"
 #include "../../synchronization/InterThreadCommPipe.h"
 #include "../../cache/KWayAssociativeCache.h"
-#include "../../interfaces/IMemoryHandler.cpp"
-#include "../../interfaces/IClockBoundModule.cpp"
+#include "../../interfaces/IMemoryHandler.h"
+#include "../../interfaces/IClockBoundModule.h"
 
 class LoadStore : public IMemoryHandler, public IClockBoundModule, public LSLogger
 {

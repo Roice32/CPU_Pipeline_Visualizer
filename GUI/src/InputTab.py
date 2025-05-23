@@ -294,6 +294,7 @@ class InputTab(QWidget):
     logPath = os.path.join(simulationPath, "sim.log")
     cpuStatesPath = self.parent.GetSimulationCpuStatesDir()
     memoryPath = self.parent.GetSimulationMemoryDir()
+    firstMemoryStatePath = os.path.join(memoryPath, "1.json")
 
     self.parent.SetSimulationTabEnabled(False)
 
@@ -310,7 +311,7 @@ class InputTab(QWidget):
     process = QProcess()
     process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, logPath, simulationPath])
 
-    while not os.path.exists(logPath):
+    while not os.path.exists(firstMemoryStatePath) and process.state() == QProcess.Running:
       sleep(0.1)
     self.SetStatusText("Saving simulation data...", error=False)
 

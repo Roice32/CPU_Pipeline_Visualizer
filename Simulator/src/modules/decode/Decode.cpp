@@ -145,7 +145,7 @@ void Decode::executeModuleLogic()
   if (fromMetoEX->pendingB())
   {
     SynchronizedDataPackage<address> ipChangePckg = fromMetoEX->getB();
-    recorder->modifyModuleState("DE", "Acknowledged IP change from EX");
+    recorder->modifyModuleState(DE, "Acknowledged IP change from EX");
     awaitNextTickToHandle(ipChangePckg);
     clock_time currTick = getCurrTime();
     SynchronizedDataPackage<address> mssgToIC(ipChangePckg.data);
@@ -154,7 +154,7 @@ void Decode::executeModuleLogic()
     discardUntilAddr = ipChangePckg.data;
     if (discardUntilAddr % 2 == 1)
     {
-      recorder->modifyModuleState("DE", "Sending misaligned IP exception to EX");
+      recorder->modifyModuleState(DE, "Sending misaligned IP exception to EX");
       fromMetoEX->sendA(SynchronizedDataPackage<Instruction> (discardUntilAddr,
         MISALIGNED_IP,
         MISALIGNED_IP_HANDL));
