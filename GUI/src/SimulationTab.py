@@ -1,12 +1,14 @@
 import os
 import json
 from PyQt5.QtWidgets import (
-  QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, QSlider,
-  QGraphicsScene, QGraphicsView, QGraphicsRectItem, QGraphicsTextItem, QMessageBox,
-  QPushButton
+  QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider,
+  QGraphicsScene, QGraphicsView, QGraphicsRectItem, QMessageBox,
+  QPushButton, QTableWidget, QTableWidgetItem, QHeaderView, QSplitter,
+  QSpacerItem, QSizePolicy, QScrollArea
 )
-from PyQt5.QtCore import Qt, QEvent, QRectF, QTimer
-from PyQt5.QtGui import QPainter, QPen, QColor, QBrush, QIcon
+from PyQt5.QtCore import Qt, QEvent, QTimer
+from PyQt5.QtGui import QPainter, QIcon, QColor, QFont
+from DiagramComponents import CreateComponent, ComponentColors
 
 
 # -----------------------------------------------------------------------------------------------------------------------------
@@ -20,11 +22,16 @@ class SimulationTab(QWidget):
   cycleLabel = None
   diagramScene = None
   diagramView = None
-  detailsText = None
+  detailsLayout = None
   playPauseButton = None
   autoPlayTimer = None
   isPlaying = False
-  memoryMapping = None  # Maps cycle numbers to the last cycle where memory changed
+  memoryMapping = None
+  currentHoveredComponent = None
+  currentState = None
+  previousState = None
+  currentMemory = None
+  previousMemory = None
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self, parent):
@@ -35,12 +42,13 @@ class SimulationTab(QWidget):
     self.selectedComponent = None
     self.componentItems = {}
     self.memoryMapping = {}
+    self.currentHoveredComponent = None
 
     layout = QVBoxLayout()
 
     # Slider and control buttons layout
     sliderLayout = QVBoxLayout()
-    sliderLayout.setContentsMargins(int(self.width() * 0.2), 0, int(self.width() * 0.2), 0)
+    sliderLayout.setContentsMargins(0, 0, 0, 0)
 
     # Slider
     sliderBarLayout = QHBoxLayout()
@@ -59,19 +67,19 @@ class SimulationTab(QWidget):
     buttonLayout.setAlignment(Qt.AlignCenter)
 
     # Button icons
-    toStartIcon  = QIcon("resources/icons/toStart.png")
+    toStartIcon = QIcon("resources/icons/toStart.png")
     previousIcon = QIcon("resources/icons/previous.png")
-    playIcon     = QIcon("resources/icons/play.png")
-    pauseIcon    = QIcon("resources/icons/pause.png")
-    nextIcon     = QIcon("resources/icons/next.png")
-    toEndIcon    = QIcon("resources/icons/toEnd.png")
+    playIcon = QIcon("resources/icons/play.png")
+    pauseIcon = QIcon("resources/icons/pause.png")
+    nextIcon = QIcon("resources/icons/next.png")
+    toEndIcon = QIcon("resources/icons/toEnd.png")
 
     # Create buttons
-    toStartButton        = QPushButton(toStartIcon, "")
-    previousButton       = QPushButton(previousIcon, "")
-    self.playPauseButton = QPushButton(playIcon, "")  # Initially play icon
-    nextButton           = QPushButton(nextIcon, "")
-    toEndButton          = QPushButton(toEndIcon, "")
+    toStartButton = QPushButton(toStartIcon, "")
+    previousButton = QPushButton(previousIcon, "")
+    self.playPauseButton = QPushButton(playIcon, "")
+    nextButton = QPushButton(nextIcon, "")
+    toEndButton = QPushButton(toEndIcon, "")
 
     # Connect buttons to functions
     toStartButton.clicked.connect(self.GoToFirstCycle)
@@ -90,12 +98,13 @@ class SimulationTab(QWidget):
     sliderLayout.addLayout(buttonLayout)
     layout.addLayout(sliderLayout)
 
-    # Diagram and Details Layout
-    diagramDetailsLayout = QHBoxLayout()
-    diagramDetailsLayout.setContentsMargins(0, 10, 0, 0)  # Add some top margin
+    # Create splitter for diagram and details
+    splitter = QSplitter(Qt.Horizontal)
+    splitter.setContentsMargins(0, 10, 0, 0)
 
     # CPU diagram view
-    diagramLayout = QVBoxLayout()
+    diagramWidget = QWidget()
+    diagramLayout = QVBoxLayout(diagramWidget)
     label = QLabel("CPU Diagram:")
     label.setAlignment(Qt.AlignCenter)
     font = label.font()
@@ -107,29 +116,41 @@ class SimulationTab(QWidget):
     self.diagramView.setStyleSheet("border: 3px solid black; border-radius: 8px; background-color: #f0f0f0;")
     self.diagramView.setRenderHint(QPainter.Antialiasing)
     self.diagramView.setMinimumHeight(300)
-    self.diagramView.setMinimumWidth(300)  # Ensure it has some width
+    self.diagramView.setMinimumWidth(300)
     self.diagramView.viewport().installEventFilter(self)
-    self.diagramView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff) # Remove horizontal scrollbar
-    self.diagramView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)   # Remove vertical scrollbar
-    diagramLayout.addWidget(self.diagramView, 1)  # Stretch vertically
-    diagramDetailsLayout.addLayout(diagramLayout, 1)  # Stretch horizontally
+    self.diagramView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    self.diagramView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    diagramLayout.addWidget(self.diagramView, 1)
+    splitter.addWidget(diagramWidget)
 
-    # Details text box
-    detailsLayout = QVBoxLayout()
+    # Details widget
+    detailsContainerWidget = QWidget()
+    detailsContainerLayout = QVBoxLayout(detailsContainerWidget)
     detailsLabel = QLabel("Component Details:")
     detailsLabel.setAlignment(Qt.AlignCenter)
     font = detailsLabel.font()
     font.setBold(True)
     detailsLabel.setFont(font)
-    detailsLayout.addWidget(detailsLabel)
-    self.detailsText = QTextEdit()
-    self.detailsText.setAcceptRichText(True)
-    self.detailsText.setStyleSheet("border: 3px solid black; border-radius: 8px; background-color: #f0f0f0;")
-    self.detailsText.setReadOnly(True)
-    detailsLayout.addWidget(self.detailsText, 1)  # Stretch vertically
-    diagramDetailsLayout.addLayout(detailsLayout, 1)  # Stretch horizontally
+    detailsContainerLayout.addWidget(detailsLabel)
 
-    layout.addLayout(diagramDetailsLayout, 1)  # Use all available space
+    # Create a scroll area for the details content
+    self.detailsScrollArea = QScrollArea()
+    self.detailsScrollArea.setWidgetResizable(True)
+    self.detailsScrollArea.setStyleSheet("QScrollArea { border: 3px solid black; border-radius: 8px; background-color: #f0f0f0; }")
+    
+    detailsContentWidget = QWidget()
+    self.detailsLayout = QVBoxLayout(detailsContentWidget)
+    self.detailsLayout.setContentsMargins(10, 10, 10, 10)
+    self.detailsLayout.addStretch(1)
+
+    self.detailsScrollArea.setWidget(detailsContentWidget)
+    detailsContainerLayout.addWidget(self.detailsScrollArea)
+    
+    splitter.addWidget(detailsContainerWidget)
+
+    # Set splitter proportions (1:1)
+    splitter.setSizes([400, 400])
+    layout.addWidget(splitter, 1)
 
     # Create the CPU diagram components
     self.CreateCpuDiagram()
@@ -139,12 +160,13 @@ class SimulationTab(QWidget):
     # Timer for auto-play
     self.autoPlayTimer = QTimer(self)
     self.autoPlayTimer.timeout.connect(self.IncreaseCycle)
-    self.autoPlayTimer.setInterval(1000)  # 1 second
+    self.autoPlayTimer.setInterval(1000)
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def resizeEvent(self, event):
-    # Fit the scene into the view, keeping aspect ratio
+  def ResizeEvent(self, event):
     self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+    marginH = int(self.width() * 0.2)
+    self.layout().itemAt(0).setContentsMargins(marginH, 0, marginH, 0)
     super().resizeEvent(event)
 
   # ---------------------------------------------------------------------------------------------------------------------------
@@ -176,7 +198,7 @@ class SimulationTab(QWidget):
       self.currentCycleIndex = newCycle
     else:
       if self.isPlaying:
-        self.TogglePlayPause()  # Stop playing at the end
+        self.TogglePlayPause()
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GoToLastCycle(self):
@@ -184,13 +206,8 @@ class SimulationTab(QWidget):
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def CreateCpuDiagram(self):
-    # Clear previous scene
     self.diagramScene.clear()
     self.componentItems = {}
-
-    # Define colors
-    borderColor = QColor(0, 0, 0)
-    fillColor = QColor(255, 255, 255)
 
     MODULE_SIDE = 120
     PIPE_WIDTH = 40
@@ -199,61 +216,40 @@ class SimulationTab(QWidget):
     MODULES_X_OFFSET = MEM_COMP_WIDTH + SPACING
     MODULES_Y_OFFSET = MODULE_SIDE
 
-    EX_X, EX_Y = MODULES_X_OFFSET,           MODULES_Y_OFFSET
-    DE_X, DE_Y = MODULES_X_OFFSET + 2 * MODULE_SIDE, MODULES_Y_OFFSET
-    IC_X, IC_Y = MODULES_X_OFFSET + 2 * MODULE_SIDE, MODULES_Y_OFFSET + 2 * MODULE_SIDE
-    LS_X, LS_Y = MODULES_X_OFFSET,           MODULES_Y_OFFSET + 2 * MODULE_SIDE
+    exX, exY = MODULES_X_OFFSET, MODULES_Y_OFFSET
+    deX, deY = MODULES_X_OFFSET + 2 * MODULE_SIDE, MODULES_Y_OFFSET
+    icX, icY = MODULES_X_OFFSET + 2 * MODULE_SIDE, MODULES_Y_OFFSET + 2 * MODULE_SIDE
+    lsX, lsY = MODULES_X_OFFSET, MODULES_Y_OFFSET + 2 * MODULE_SIDE
 
-    # Define component geometries (x, y, width, height)
     components = {
-      "Registers": (int(EX_X + MODULE_SIDE / 2),   0,                 2 * MODULE_SIDE, MEM_COMP_WIDTH),
-      "Stack":   (0,                 0,                 MEM_COMP_WIDTH,  2 * MODULE_SIDE),
-      "EX":    (EX_X,              EX_Y,              MODULE_SIDE,   MODULE_SIDE),
-      "DE":    (DE_X,              DE_Y,              MODULE_SIDE,   MODULE_SIDE),
-      "IC":    (IC_X,              IC_Y,              MODULE_SIDE,   MODULE_SIDE),
-      "LS":    (LS_X,              LS_Y,              MODULE_SIDE,   MODULE_SIDE),
-      "LS_Cache":  (LS_X - MEM_COMP_WIDTH,       LS_Y,              MEM_COMP_WIDTH,  MODULE_SIDE),
-      "IC_Cache":  (IC_X + MODULE_SIDE,        IC_Y,              MEM_COMP_WIDTH,  MODULE_SIDE),
-      "Memory":  (EX_X,              LS_Y + MODULE_SIDE + SPACING,  3 * MODULE_SIDE, MEM_COMP_WIDTH),
-      "EX_to_DE":  (EX_X + MODULE_SIDE,        EX_Y + SPACING,          MODULE_SIDE,   PIPE_WIDTH),
-      "DE_to_EX":  (EX_X + MODULE_SIDE,        EX_Y + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE,   PIPE_WIDTH),
-      "DE_to_IC":  (DE_X + SPACING,          DE_Y + MODULE_SIDE,        PIPE_WIDTH,    MODULE_SIDE),
-      "IC_to_DE":  (DE_X + 2 * SPACING + PIPE_WIDTH, DE_Y + MODULE_SIDE,        PIPE_WIDTH,    MODULE_SIDE),
-      "IC_to_LS":  (LS_X + MODULE_SIDE,        LS_Y + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE,   PIPE_WIDTH),
-      "LS_to_IC":  (LS_X + MODULE_SIDE,        LS_Y + SPACING,          MODULE_SIDE,   PIPE_WIDTH),
-      "LS_to_EX":  (EX_X + SPACING,          EX_Y + MODULE_SIDE,        PIPE_WIDTH,    MODULE_SIDE),
-      "EX_to_LS":  (EX_X + 2 * SPACING + PIPE_WIDTH, EX_Y + MODULE_SIDE,        PIPE_WIDTH,    MODULE_SIDE)
+      "Registers": (int(exX + MODULE_SIDE / 2), 0, 2 * MODULE_SIDE, MEM_COMP_WIDTH),
+      "Stack":     (0, 0, MEM_COMP_WIDTH, 2 * MODULE_SIDE),
+      "EX":        (exX, exY, MODULE_SIDE, MODULE_SIDE),
+      "DE":        (deX, deY, MODULE_SIDE, MODULE_SIDE),
+      "IC":        (icX, icY, MODULE_SIDE, MODULE_SIDE),
+      "LS":        (lsX, lsY, MODULE_SIDE, MODULE_SIDE),
+      "LS_Cache":  (lsX - MEM_COMP_WIDTH, lsY, MEM_COMP_WIDTH, MODULE_SIDE),
+      "IC_Cache":  (icX + MODULE_SIDE, icY, MEM_COMP_WIDTH, MODULE_SIDE),
+      "Memory":    (exX, lsY + MODULE_SIDE + SPACING, 3 * MODULE_SIDE, MEM_COMP_WIDTH),
+      "EX_to_DE":  (exX + MODULE_SIDE, exY + SPACING, MODULE_SIDE, PIPE_WIDTH),
+      "DE_to_EX":  (exX + MODULE_SIDE, exY + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE, PIPE_WIDTH),
+      "DE_to_IC":  (deX + SPACING, deY + MODULE_SIDE, PIPE_WIDTH, MODULE_SIDE),
+      "IC_to_DE":  (deX + 2 * SPACING + PIPE_WIDTH, deY + MODULE_SIDE, PIPE_WIDTH, MODULE_SIDE),
+      "IC_to_LS":  (lsX + MODULE_SIDE, lsY + 2 * SPACING + PIPE_WIDTH, MODULE_SIDE, PIPE_WIDTH),
+      "LS_to_IC":  (lsX + MODULE_SIDE, lsY + SPACING, MODULE_SIDE, PIPE_WIDTH),
+      "LS_to_EX":  (exX + SPACING, exY + MODULE_SIDE, PIPE_WIDTH, MODULE_SIDE),
+      "EX_to_LS":  (exX + 2 * SPACING + PIPE_WIDTH, exY + MODULE_SIDE, PIPE_WIDTH, MODULE_SIDE)
     }
 
-    # Create rectangular components with labels
     for name, (x, y, w, h) in components.items():
-      rect = QGraphicsRectItem(x, y, w, h)
-      rect.setPen(QPen(borderColor, 2))
-      rect.setBrush(QBrush(fillColor))
-      rect.setData(0, name)  # Store the component name
+      component = CreateComponent(name, x, y, w, h, self.diagramScene)
+      self.componentItems[name] = component
 
-      # Add text label
-      text = QGraphicsTextItem(name.replace("_", " " if w > h else "\n"))
-      scale = 1.25
-      text.setScale(scale)
-      text.setPos(x + w / 2 - text.boundingRect().width() / 2 * scale, y + h / 2 - text.boundingRect().height() / 2 * scale)
-
-      # Store the reference to the rectangle
-      self.componentItems[name] = rect
-
-      # Add to scene
-      self.diagramScene.addItem(rect)
-      self.diagramScene.addItem(text)
-
-    # Set the scene rect to fit all components
     self.diagramScene.setSceneRect(self.diagramScene.itemsBoundingRect())
-
-    # Fit the view to the scene
     self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GetMaxCycleNumber(self, directory):
-    """Find the highest cycle number from files in the directory"""
     maxCycle = 0
     if os.path.exists(directory):
       for file in os.listdir(directory):
@@ -262,20 +258,17 @@ class SimulationTab(QWidget):
             cycle = int(file.split('.')[0])
             maxCycle = max(maxCycle, cycle)
           except ValueError:
-            pass  # Ignore files that don't have a number as filename
+            pass
     return maxCycle
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def BuildMemoryMapping(self):
-    """Build a mapping of cycle numbers to the memory state they should use"""
     tempDir = self.parent.GetTempDir()
     cpuStatesDir = os.path.join(tempDir, "simulation", "cpu_states")
     memoryDir = os.path.join(tempDir, "simulation", "memory")
-    
-    # Reset the memory mapping
+
     self.memoryMapping = {}
-    
-    # Get all available memory states
+
     memoryStates = set()
     if os.path.exists(memoryDir):
       for file in os.listdir(memoryDir):
@@ -285,16 +278,13 @@ class SimulationTab(QWidget):
             memoryStates.add(cycle)
           except ValueError:
             pass
-    
-    # Now go through each CPU state and determine which memory state to use
-    lastMemoryState = 1  # Default to first cycle if nothing else is found
-    
+
+    lastMemoryState = 1
+
     for cycle in range(1, self.totalCycles + 1):
-      # Check if this cycle has a memory state
       if cycle in memoryStates:
         lastMemoryState = cycle
-      
-      # Alternative: check if CPU state says memory hasn't changed
+
       stateFilePath = os.path.join(cpuStatesDir, f"{cycle}.json")
       if os.path.exists(stateFilePath):
         try:
@@ -304,17 +294,15 @@ class SimulationTab(QWidget):
             if memoryUnchangedSince in memoryStates:
               lastMemoryState = memoryUnchangedSince
         except Exception:
-          pass  # If there's any error reading the file, just use the last known memory state
-      
-      # Store the mapping
+          pass
+
       self.memoryMapping[cycle] = lastMemoryState
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def LoadStateFile(self, cycle):
-    """Load a specific CPU state file"""
     tempDir = self.parent.GetTempDir()
     stateFilePath = os.path.join(tempDir, "simulation", "cpu_states", f"{cycle}.json")
-    
+
     if os.path.exists(stateFilePath):
       try:
         with open(stateFilePath, 'r') as file:
@@ -322,15 +310,14 @@ class SimulationTab(QWidget):
           return state
       except Exception as e:
         QMessageBox.warning(self, "Warning", f"Error loading state file {cycle}.json: {str(e)}")
-    
+
     return None
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def LoadMemoryFile(self, cycle):
-    """Load a specific memory state file"""
     tempDir = self.parent.GetTempDir()
     memoryFilePath = os.path.join(tempDir, "simulation", "memory", f"{cycle}.json")
-    
+
     if os.path.exists(memoryFilePath):
       try:
         with open(memoryFilePath, 'r') as file:
@@ -338,48 +325,41 @@ class SimulationTab(QWidget):
           return memory
       except Exception as e:
         QMessageBox.warning(self, "Warning", f"Error loading memory file {cycle}.json: {str(e)}")
-    
+
     return None
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GetMemoryForCycle(self, cycle):
-    """Get the memory state for a specific cycle"""
     if cycle in self.memoryMapping:
       memoryCycle = self.memoryMapping[cycle]
       return self.LoadMemoryFile(memoryCycle)
-    return {}  # Return empty dict if no memory state found
+    return {}
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def LoadSimulationData(self):
-    # Check if simulation directories exist
     tempDir = self.parent.GetTempDir()
     cpuStatesDir = self.parent.GetSimulationCpuStatesDir()
     memoryDir = self.parent.GetSimulationMemoryDir()
-    
+
     if not os.path.exists(cpuStatesDir) or not os.path.exists(memoryDir):
-      QMessageBox.information(self, "Information", 
+      QMessageBox.information(self, "Information",
                               "Simulation directories not found. Please make sure that the directories exist:\n"
                               f"- {cpuStatesDir}\n"
                               f"- {memoryDir}")
       return False
 
-    # Find the total number of simulation cycles
     self.totalCycles = self.GetMaxCycleNumber(cpuStatesDir)
     if self.totalCycles == 0:
-      QMessageBox.information(self, "Information", 
+      QMessageBox.information(self, "Information",
                               "No simulation states found. Please make sure cycle JSON files exist in the directories.")
       return False
 
-    # Update slider range
     self.cycleSlider.setMaximum(self.totalCycles)
-    self.cycleSlider.setValue(1)  # Start at the first cycle
+    self.cycleSlider.setValue(1)
     self.cycleLabel.setText("1")
     self.currentCycleIndex = 1
-    
-    # Build the memory mapping
+
     self.BuildMemoryMapping()
-    
-    # Update the view
     self.UpdateSimulationView()
     return True
 
@@ -387,118 +367,162 @@ class SimulationTab(QWidget):
   def UpdateSimulationView(self):
     currentCycle = self.cycleSlider.value()
     self.cycleLabel.setText(str(currentCycle))
-    
-    # Load the current state
-    state = self.LoadStateFile(currentCycle)
 
-    # Reset all component highlighting
-    for item in self.componentItems.values():
-      item.setPen(QPen(QColor(0, 0, 0), 2))
-      item.setBrush(QBrush(QColor(255, 255, 255)))
+    self.currentState = self.LoadStateFile(currentCycle)
+    self.previousState = self.LoadStateFile(currentCycle - 1) if currentCycle > 1 else None
+    self.currentMemory = self.GetMemoryForCycle(currentCycle)
+    self.previousMemory = self.GetMemoryForCycle(currentCycle - 1) if currentCycle > 1 else None
 
-    # If a component is selected, update its highlighting and show details
-    if self.selectedComponent and state:
-      memory = self.GetMemoryForCycle(currentCycle)
-      
-      self.componentItems[self.selectedComponent].setPen(QPen(QColor(0, 0, 255), 3))
-      details = self.GetComponentDetails(self.selectedComponent, state, memory)
-      self.detailsText.setText(details)
+    self.UpdateComponentStates()
+
+    if self.selectedComponent and self.currentState:
+      self.UpdateDetailsDisplay()
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def GetComponentDetails(self, component, state, memory):
-    details = f"Component: {component}\nCycle: {state.get('cycle', 0)}\n\n"
+  def UpdateComponentStates(self):
+    for name, component in self.componentItems.items():
+      component.SetSelected(name == self.selectedComponent)
 
-    # Extract and format details based on component type
-    if component == "Registers":
-      regData = state.get("registers", {})
-      details += f"IP: {hex(regData.get('IP', 0))}\n"
-      details += f"Flags: {hex(regData.get('flags', 0))}\n"
-      details += f"Stack Base: {hex(regData.get('stackBase', 0))}\n"
-      details += f"Stack Size: {regData.get('stackSize', 0)}\n"
-      details += f"Stack Pointer: {regData.get('stackPointer', 0)}\n\n"
-
-      # Add R registers
-      rRegs = regData.get("R", [])
-      for i, val in enumerate(rRegs):
-        details += f"R{i}: {hex(val)}\n"
-
-      # Add Z registers if available
-      zRegs = regData.get("Z", [])
-      for i, zReg in enumerate(zRegs):
-        details += f"Z{i}: {[hex(v) for v in zReg]}\n"
-
-    elif component == "Stack":
-      stack = state.get("stack", [])
-      if stack:
-        details += "Stack contents (top to bottom):\n"
-        for i, val in enumerate(stack):
-          details += f"{i}: {hex(val)}\n"
-      else:
-        details += "Stack is empty\n"
-
-    elif component == "Memory":
-      if memory:
-        details += "Memory contents:\n"
-        # Sort addresses for a more consistent display
-        sorted_addresses = sorted(memory.keys(), key=lambda x: int(x, 16) if isinstance(x, str) else int(x))
-        for addr in sorted_addresses:
-          val = memory[addr].zfill(4)
-          details += f"#{addr}: {val}\n"
-      else:
-        details += "Memory data not available for this cycle\n"
-
-    elif component in ["EX", "DE", "LS", "IC"]:
-      componentData = state.get(component, {})
-      details += f"State: {componentData.get('state', 'Unknown')}\n\n"
-
-      if component == "LS" or component == "IC":
-        cacheData = componentData.get("cache", {})
-        details += f"Cache Size: {cacheData.get('size', 0)}\n"
-
-        if component == "LS":
-          details += f"Physical Memory Access: {'Yes' if componentData.get('physicalMemoryAccessHappened', False) else 'No'}\n"
-          details += f"Found Index: {cacheData.get('foundIndex', 0)}\n"
+      hasChanged = False
+      if self.currentCycleIndex == 1:
+        hasChanged = name in ["IC", "Memory"]
+      elif self.previousState:
+        if name == "Memory":
+          currentMemoryCycle = self.memoryMapping.get(self.currentCycleIndex, self.currentCycleIndex)
+          previousMemoryCycle = self.memoryMapping.get(self.currentCycleIndex - 1, self.currentCycleIndex - 1)
+          hasChanged = currentMemoryCycle != previousMemoryCycle
         else:
-          details += f"InternalIP: {hex(componentData.get('internalIP', 0))}\n"
+          hasChanged = component.CompareStates(self.currentState, self.previousState,
+                                               self.currentMemory, self.previousMemory)
 
-      elif component == "DE":
-        fwStorage = componentData.get("fwTempStorage", {})
-        details += f"Cache Start Address: {hex(fwStorage.get('cacheStartAddr', 0))}\n"
-        details += f"Stored Words Count: {fwStorage.get('storedWordsCount', 0)}\n"
+      component.SetChanged(hasChanged)
+      component.SetHovered(name == self.currentHoveredComponent)
 
-        storedFWs = fwStorage.get("storedFWs", [])
-        for i, fw in enumerate(storedFWs):
-          details += f"FW {i}: {fw}\n"
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def UpdateDetailsDisplay(self):
+    while self.detailsLayout.count() > 0:
+      item = self.detailsLayout.takeAt(0)
+      if item.widget():
+        item.widget().deleteLater()
+      elif item.layout():
+        self.ClearLayout(item.layout())
+        item.layout().deleteLater()
 
-    elif component.endswith("Cache"):
-      if component == "LS_Cache":
-        cacheData = state.get("LS", {}).get("cache", {})
-      else:
-        cacheData = state.get("IC", {}).get("cache", {})
+    if not self.selectedComponent or not self.currentState:
+      self.detailsLayout.addStretch(1)
+      return
 
-      details += f"Cache Size: {cacheData.get('size', 0)}\n"
+    component = self.componentItems[self.selectedComponent]
+    detailsData = component.GetDetailsText(self.currentState, self.currentMemory,
+                                           self.previousState, self.previousMemory)
 
-      storage = cacheData.get("storage", [])
-      if storage:
-        details += f"Storage entries: {len(storage)}\n"
-        for i, entry in enumerate(storage[:5]):
-          details += f"Entry {i}: {entry}\n"
-        if len(storage) > 5:
-          details += "...\n"
+    if detailsData:
+      detailsFont = QFont()
+      detailsFont.setPointSize(12)
 
-    elif "to" in component:
-      pipes = state.get("pipes", {})
-      pipeName = component.replace("_", "")
-      pipeData = pipes.get(pipeName, [])
+      for itemData in detailsData:
+        if itemData.get("type") == "text":
+          textLabel = QLabel(itemData.get("content"))
+          textLabel.setWordWrap(True)
+          textLabel.setFont(detailsFont)
 
-      if pipeData:
-        details += f"Pipeline entries: {len(pipeData)}\n"
-        for i, entry in enumerate(pipeData):
-          details += f"Entry {i}: {entry}\n"
-      else:
-        details += "Pipeline is empty\n"
+          if itemData.get("changed", False):
+            changedColor = ComponentColors.FILL_CHANGED.name()
+            textLabel.setStyleSheet(f"QLabel {{ background-color: {changedColor}; padding: 2px; border-radius: 3px; }}")
+          else:
+            textLabel.setStyleSheet("QLabel { background-color: transparent; }")
+          
+          self.detailsLayout.addWidget(textLabel)
+        elif itemData.get("type") == "table":
+          tableWidget = QTableWidget()
+          headers = itemData.get("headers", [])
+          rows = itemData.get("rows", [])
 
-    return details
+          if "Changed" in headers:
+            changedColIdx = headers.index("Changed")
+            headers.pop(changedColIdx)
+            processedRows = []
+            for rowData in rows:
+              rowChanged = False
+              if changedColIdx < len(rowData) and str(rowData[changedColIdx]).lower() == "yes":
+                rowChanged = True
+              newRow = rowData[:changedColIdx] + rowData[changedColIdx+1:]
+              processedRows.append({"data": newRow, "changed": rowChanged})
+            rows = processedRows
+          else:
+            rows = [{"data": rowData, "changed": False} for rowData in rows]
+
+          tableWidget.setColumnCount(len(headers))
+          tableWidget.setHorizontalHeaderLabels(headers)
+          tableWidget.setRowCount(len(rows))
+
+          headerFont = QFont()
+          headerFont.setPointSize(12)
+          for i in range(tableWidget.columnCount()):
+            headerItem = tableWidget.horizontalHeaderItem(i)
+            if headerItem:
+              headerItem.setFont(headerFont)
+
+          for rIdx, rowItem in enumerate(rows):
+            rowData = rowItem["data"]
+            rowChanged = rowItem["changed"]
+            for cIdx, cellData in enumerate(rowData):
+              tableItem = QTableWidgetItem(str(cellData))
+              tableItem.setFlags(Qt.ItemIsEnabled)
+              tableItem.setFont(detailsFont)
+              tableItem.setTextAlignment(Qt.AlignCenter)
+              if rowChanged:
+                changedColor = ComponentColors.FILL_CHANGED.name()
+                tableItem.setBackground(QColor(changedColor))
+              tableWidget.setItem(rIdx, cIdx, tableItem)
+
+          tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+          tableWidget.verticalHeader().setVisible(False)
+          tableWidget.setStyleSheet(
+            "QTableWidget {"
+            "   border: 1px solid black;"
+            "   background-color: white;"
+            "}"
+            "QTableWidget::item {"
+            "   padding: 3px;"
+            "   border: none;"
+            "}"
+            "QTableWidget::item:alternate { background-color: #f8f8f8; }"
+            "QHeaderView::section {"
+            "   background-color: #dcdcdc;"
+            "   color: black;"
+            "   padding: 4px;"
+            "   border: 1px solid black;"
+            "   border-bottom-color: black;"
+            "   font-weight: bold;"
+            "}"
+            "QTableWidget::horizontalHeader { border-bottom: 1px solid black; }"
+          )
+          tableWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+          tableWidget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+          tableWidget.resizeRowsToContents()
+          tableWidget.resizeColumnsToContents()
+          tableHeight = tableWidget.horizontalHeader().height()
+          for r in range(tableWidget.rowCount()):
+            tableHeight += tableWidget.rowHeight(r)
+          tableWidget.setMinimumHeight(tableHeight)
+          tableWidget.setMaximumHeight(tableHeight)
+
+          self.detailsLayout.addWidget(tableWidget)
+      self.detailsLayout.addStretch(1)
+    else:
+      self.detailsLayout.addStretch(1)
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def ClearLayout(self, layout):
+    if layout is not None:
+      while layout.count():
+        item = layout.takeAt(0)
+        if item.widget():
+          item.widget().deleteLater()
+        elif item.layout():
+          self.ClearLayout(item.layout())
+          item.layout().deleteLater()
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def eventFilter(self, obj, event):
@@ -507,15 +531,18 @@ class SimulationTab(QWidget):
         pos = self.diagramView.mapToScene(event.pos())
         item = self.diagramScene.itemAt(pos, self.diagramView.transform())
 
+        newHoveredComponent = None
         if isinstance(item, QGraphicsRectItem):
           componentName = item.data(0)
-          if componentName:
-            for name, rect in self.componentItems.items():
-              if name != self.selectedComponent:
-                if name == componentName:
-                  rect.setBrush(QBrush(QColor(220, 220, 220)))
-                else:
-                  rect.setBrush(QBrush(QColor(255, 255, 255)))
+          if componentName and componentName in self.componentItems:
+            newHoveredComponent = componentName
+
+        if newHoveredComponent != self.currentHoveredComponent:
+          if self.currentHoveredComponent and self.currentHoveredComponent in self.componentItems:
+            self.componentItems[self.currentHoveredComponent].SetHovered(False)
+          self.currentHoveredComponent = newHoveredComponent
+          if self.currentHoveredComponent:
+            self.componentItems[self.currentHoveredComponent].SetHovered(True)
 
       elif event.type() == QEvent.MouseButtonPress:
         pos = self.diagramView.mapToScene(event.pos())
@@ -523,10 +550,17 @@ class SimulationTab(QWidget):
 
         if isinstance(item, QGraphicsRectItem):
           componentName = item.data(0)
-
-          if componentName:
+          if componentName and componentName in self.componentItems:
+            if self.selectedComponent:
+              self.componentItems[self.selectedComponent].SetSelected(False)
             self.selectedComponent = componentName
-            self.UpdateSimulationView()
+            self.componentItems[self.selectedComponent].SetSelected(True)
+            self.UpdateDetailsDisplay()
+
+      elif event.type() == QEvent.Leave:
+        if self.currentHoveredComponent and self.currentHoveredComponent in self.componentItems:
+          self.componentItems[self.currentHoveredComponent].SetHovered(False)
+        self.currentHoveredComponent = None
 
     return super().eventFilter(obj, event)
 

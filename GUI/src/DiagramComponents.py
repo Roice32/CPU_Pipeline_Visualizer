@@ -1,0 +1,467 @@
+from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsTextItem
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPen, QColor, QBrush
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class ComponentColors:
+  """Color definitions for components"""
+  BORDER_DEFAULT = QColor(0, 0, 0)
+  BORDER_SELECTED = QColor(0, 0, 255)
+  FILL_DEFAULT = QColor(255, 255, 255)
+  FILL_HOVER = QColor(220, 220, 220)
+  FILL_CHANGED = QColor(144, 238, 144)  # Light green
+  FILL_CHANGED_HOVER = QColor(102, 205, 102)  # Darker green
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class DiagramComponent:
+  """Base class for all CPU diagram components"""
+  
+  def __init__(self, name, x, y, width, height, scene):
+    self.name = name
+    self.x = x
+    self.y = y
+    self.width = width
+    self.height = height
+    self.scene = scene
+    self.isSelected = False
+    self.isHovered = False
+    self.hasChanged = False
+    
+    # Create graphics items
+    self.rect = QGraphicsRectItem(x, y, width, height)
+    self.rect.setPen(QPen(ComponentColors.BORDER_DEFAULT, 2))
+    self.rect.setBrush(QBrush(ComponentColors.FILL_DEFAULT))
+    self.rect.setData(0, name)  # Store the component name
+    
+    # Create text label
+    displayName = name.replace("_", " " if width > height else "\n")
+    self.text = QGraphicsTextItem(displayName)
+    scale = 1.25
+    self.text.setScale(scale)
+    textX = x + width / 2 - self.text.boundingRect().width() / 2 * scale
+    textY = y + height / 2 - self.text.boundingRect().height() / 2 * scale
+    self.text.setPos(textX, textY)
+    
+    # Add to scene
+    scene.addItem(self.rect)
+    scene.addItem(self.text)
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def SetSelected(self, selected):
+    """Set the selection state of the component"""
+    self.isSelected = selected
+    self.UpdateVisualState()
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def SetHovered(self, hovered):
+    """Set the hover state of the component"""
+    self.isHovered = hovered
+    self.UpdateVisualState()
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def SetChanged(self, changed):
+    """Set whether the component has changed from previous cycle"""
+    self.hasChanged = changed
+    self.UpdateVisualState()
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def UpdateVisualState(self):
+    """Update the visual appearance based on current state"""
+    # Border color
+    if self.isSelected:
+      borderColor = ComponentColors.BORDER_SELECTED
+      borderWidth = 3
+    else:
+      borderColor = ComponentColors.BORDER_DEFAULT
+      borderWidth = 2
+    
+    # Fill color
+    if self.hasChanged:
+      if self.isHovered and not self.isSelected:
+        fillColor = ComponentColors.FILL_CHANGED_HOVER
+      else:
+        fillColor = ComponentColors.FILL_CHANGED
+    else:
+      if self.isHovered and not self.isSelected:
+        fillColor = ComponentColors.FILL_HOVER
+      else:
+        fillColor = ComponentColors.FILL_DEFAULT
+    
+    self.rect.setPen(QPen(borderColor, borderWidth))
+    self.rect.setBrush(QBrush(fillColor))
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+    """Get detailed text for this component. Override in subclasses.
+    Returns a list of dicts:
+    - {"type": "text", "content": "...", "changed": False}
+    - {"type": "table", "headers": [...], "rows": [[...], ...]}
+    """
+    # Remove "Component:" and "Cycle:"
+    return []
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CompareStates(self, state, previous_state, memory, previous_memory):
+    """Compare current state with previous state. Override in subclasses."""
+    return False
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class RegistersComponent(DiagramComponent):
+  """Registers component"""
+  
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+    details = []
+    regData = state.get("registers", {})
+    prevRegData = previous_state.get("registers", {}) if previous_state else {}
+    
+    details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
+
+    details.append({"type": "text", "content": f"IP: {hex(regData.get('IP', 0))}", 
+                    "changed": previous_state and regData.get('IP', 0) != prevRegData.get('IP', 0)})
+    
+    details.append({"type": "text", "content": f"Flags: {hex(regData.get('flags', 0))}", 
+                    "changed": previous_state and regData.get('flags', 0) != prevRegData.get('flags', 0)})
+    
+    details.append({"type": "text", "content": f"Stack Base: {hex(regData.get('stackBase', 0))}", 
+                    "changed": previous_state and regData.get('stackBase', 0) != prevRegData.get('stackBase', 0)})
+    
+    details.append({"type": "text", "content": f"Stack Size: {regData.get('stackSize', 0)}", 
+                    "changed": previous_state and regData.get('stackSize', 0) != prevRegData.get('stackSize', 0)})
+    
+    details.append({"type": "text", "content": f"Stack Pointer: {regData.get('stackPointer', 0)}", 
+                    "changed": previous_state and regData.get('stackPointer', 0) != prevRegData.get('stackPointer', 0)})
+    details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
+
+    # Add R registers as a table
+    rRegs = regData.get("R", [])
+    prevRRegs = prevRegData.get("R", []) if previous_state else []
+    
+    r_table_headers = ["Register", "Value", "Changed"] # Keep "Changed" for internal logic
+    r_table_rows = []
+    for i, val in enumerate(rRegs):
+      changed = "Yes" if (previous_state and (i >= len(prevRRegs) or val != prevRRegs[i])) else "No"
+      r_table_rows.append([f"R{i}", hex(val), changed])
+    
+    if r_table_rows:
+        details.append({"type": "table", "headers": r_table_headers, "rows": r_table_rows})
+        details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
+
+    # Add Z registers if available as a table
+    zRegs = regData.get("Z", [])
+    prevZRegs = prevRegData.get("Z", []) if previous_state else []
+    
+    z_table_headers = ["Register", "Value", "Changed"] # Keep "Changed" for internal logic
+    z_table_rows = []
+    for i, zReg in enumerate(zRegs):
+      changed = "Yes" if (previous_state and (i >= len(prevZRegs) or zReg != prevZRegs[i])) else "No"
+      z_table_rows.append([f"Z{i}", str([hex(v) for v in zReg]), changed])
+
+    if z_table_rows:
+        details.append({"type": "table", "headers": z_table_headers, "rows": z_table_rows})
+    
+    return details
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CompareStates(self, state, previous_state, memory, previous_memory):
+    if not previous_state:
+      return False
+    
+    regData = state.get("registers", {})
+    prevRegData = previous_state.get("registers", {})
+    
+    return regData != prevRegData
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class StackComponent(DiagramComponent):
+  """Stack component"""
+  
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+    details = []
+    stack = state.get("stack", [])
+    prevStack = previous_state.get("stack", []) if previous_state else []
+    
+    details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
+
+    if stack:
+      details.append({"type": "text", "content": "Stack contents (top to bottom):", "changed": False})
+      stack_table_headers = ["Index", "Value", "Changed"] # Keep "Changed" for internal logic
+      stack_table_rows = []
+      for i, val in enumerate(stack):
+        changed = "Yes" if (previous_state and (i >= len(prevStack) or val != prevStack[i])) else "No"
+        stack_table_rows.append([str(i), hex(val), changed])
+      details.append({"type": "table", "headers": stack_table_headers, "rows": stack_table_rows})
+
+      # Check if stack size changed
+      if previous_state and len(stack) != len(prevStack):
+        details.append({"type": "text", "content": f"Stack size changed from {len(prevStack)} to {len(stack)}", "changed": True})
+    else:
+      details.append({"type": "text", "content": "Stack is empty", "changed": False})
+      if previous_state and prevStack:
+        details.append({"type": "text", "content": "Previously had content", "changed": True})
+    
+    return details
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CompareStates(self, state, previous_state, memory, previous_memory):
+    if not previous_state:
+      return False
+    
+    stack = state.get("stack", [])
+    prevStack = previous_state.get("stack", [])
+    
+    return stack != prevStack
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class MemoryComponent(DiagramComponent):
+  """Memory component"""
+  
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+    details = []
+    
+    details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
+    
+    if memory:
+      details.append({"type": "text", "content": "Memory contents:", "changed": False})
+      memory_table_headers = ["Address", "Value", "Changed"] # Keep "Changed" for internal logic
+      memory_table_rows = []
+      # Sort addresses for a more consistent display
+      sorted_addresses = sorted(memory.keys(), key=lambda x: int(x, 16) if isinstance(x, str) else int(x))
+      for addr in sorted_addresses:
+        val = memory[addr].zfill(4)
+        changed = "Yes" if (previous_memory and (addr not in previous_memory or memory[addr] != previous_memory[addr])) else "No"
+        memory_table_rows.append([f"#{addr}", val, changed])
+      
+      # Check for removed addresses
+      if previous_memory:
+        for addr in previous_memory:
+          if addr not in memory:
+            memory_table_rows.append([f"#{addr}", "(REMOVED)", "Yes"])
+
+      if memory_table_rows:
+          details.append({"type": "table", "headers": memory_table_headers, "rows": memory_table_rows})
+    else:
+      details.append({"type": "text", "content": "Memory data not available for this cycle", "changed": False})
+    
+    return details
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CompareStates(self, state, previous_state, memory, previous_memory):
+    return memory != previous_memory
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class ModuleComponent(DiagramComponent):
+  """Generic module component (EX, DE, LS, IC)"""
+  
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+    details = []
+    componentData = state.get(self.name, {})
+    prevComponentData = previous_state.get(self.name, {}) if previous_state else {}
+    
+    details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
+
+    details.append({"type": "text", "content": f"State: {componentData.get('state', 'Unknown')}", 
+                    "changed": previous_state and componentData.get('state') != prevComponentData.get('state')})
+    details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
+    
+    if self.name == "LS" or self.name == "IC":
+      cacheData = componentData.get("cache", {})
+      prevCacheData = prevComponentData.get("cache", {})
+      
+      details.append({"type": "text", "content": f"Cache Size: {cacheData.get('size', 0)}", 
+                      "changed": previous_state and cacheData.get('size', 0) != prevCacheData.get('size', 0)})
+      
+      if self.name == "LS":
+        physAccess = componentData.get('physicalMemoryAccessHappened', False)
+        prevPhysAccess = prevComponentData.get('physicalMemoryAccessHappened', False)
+        details.append({"type": "text", "content": f"Physical Memory Access: {'Yes' if physAccess else 'No'}", 
+                        "changed": previous_state and physAccess != prevPhysAccess})
+        
+        foundIndex = cacheData.get('foundIndex', 0)
+        prevFoundIndex = prevCacheData.get('foundIndex', 0)
+        details.append({"type": "text", "content": f"Found Index: {foundIndex}", 
+                        "changed": previous_state and foundIndex != prevFoundIndex})
+      else:  # IC
+        internalIP = componentData.get('internalIP', 0)
+        prevInternalIP = prevComponentData.get('internalIP', 0)
+        details.append({"type": "text", "content": f"InternalIP: {hex(internalIP)}", 
+                        "changed": previous_state and internalIP != prevInternalIP})
+    
+    elif self.name == "DE":
+      fwStorage = componentData.get("fwTempStorage", {})
+      prevFwStorage = prevComponentData.get("fwTempStorage", {})
+      
+      details.append({"type": "text", "content": f"Cache Start Address: {hex(fwStorage.get('cacheStartAddr', 0))}", 
+                      "changed": previous_state and fwStorage.get('cacheStartAddr', 0) != prevFwStorage.get('cacheStartAddr', 0)})
+      
+      details.append({"type": "text", "content": f"Stored Words Count: {fwStorage.get('storedWordsCount', 0)}", 
+                      "changed": previous_state and fwStorage.get('storedWordsCount', 0) != prevFwStorage.get('storedWordsCount', 0)})
+      
+      storedFWs = fwStorage.get("storedFWs", [])
+      prevStoredFWs = prevFwStorage.get("storedFWs", [])
+      
+      if storedFWs:
+          fw_table_headers = ["FW Index", "Value", "Changed"] # Keep "Changed" for internal logic
+          fw_table_rows = []
+          for i, fw in enumerate(storedFWs):
+              changed = "Yes" if (previous_state and (i >= len(prevStoredFWs) or fw != prevStoredFWs[i])) else "No"
+              fw_table_rows.append([str(i), str(fw), changed])
+          details.append({"type": "table", "headers": fw_table_headers, "rows": fw_table_rows})
+    
+    return details
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CompareStates(self, state, previous_state, memory, previous_memory):
+    if not previous_state:
+      return False
+    
+    componentData = state.get(self.name, {})
+    prevComponentData = previous_state.get(self.name, {})
+    
+    return componentData != prevComponentData
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class CacheComponent(DiagramComponent):
+  """Cache component (LS_Cache, IC_Cache)"""
+  
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+    details = []
+    
+    if self.name == "LS_Cache":
+      cacheData = state.get("LS", {}).get("cache", {})
+      prevCacheData = previous_state.get("LS", {}).get("cache", {}) if previous_state else {}
+    else:  # IC_Cache
+      cacheData = state.get("IC", {}).get("cache", {})
+      prevCacheData = previous_state.get("IC", {}).get("cache", {}) if previous_state else {}
+    
+    details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
+
+    cacheSize = cacheData.get('size', 0)
+    prevCacheSize = prevCacheData.get('size', 0)
+    details.append({"type": "text", "content": f"Cache Size: {cacheSize}", 
+                    "changed": previous_state and cacheSize != prevCacheSize})
+    
+    storage = cacheData.get("storage", [])
+    prevStorage = prevCacheData.get("storage", [])
+    if storage:
+      details.append({"type": "text", "content": f"Storage entries: {len(storage)}", 
+                      "changed": previous_state and len(storage) != len(prevStorage)})
+      
+      # Display all entries in a table, not limited to 5
+      storage_table_headers = ["Entry Index", "Value", "Changed"] # Keep "Changed" for internal logic
+      storage_table_rows = []
+      for i, entry in enumerate(storage):
+        changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry != prevStorage[i])) else "No"
+        storage_table_rows.append([str(i), str(entry), changed])
+      
+      if storage_table_rows:
+          details.append({"type": "table", "headers": storage_table_headers, "rows": storage_table_rows})
+
+    else:
+      details.append({"type": "text", "content": "Cache is empty", "changed": False})
+      if previous_state and prevStorage:
+        details.append({"type": "text", "content": "Previously had content", "changed": True})
+    
+    return details
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CompareStates(self, state, previous_state, memory, previous_memory):
+    if not previous_state:
+      return False
+    
+    if self.name == "LS_Cache":
+      cacheData = state.get("LS", {}).get("cache", {})
+      prevCacheData = previous_state.get("LS", {}).get("cache", {})
+    else:  # IC_Cache
+      cacheData = state.get("IC", {}).get("cache", {})
+      prevCacheData = previous_state.get("IC", {}).get("cache", {})
+    
+    return cacheData != prevCacheData
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class PipelineComponent(DiagramComponent):
+  """Pipeline component (EX_to_DE, DE_to_EX, etc.)"""
+  
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+    details = []
+    
+    pipes = state.get("pipes", {})
+    prevPipes = previous_state.get("pipes", {}) if previous_state else {}
+    pipeName = self.name.replace("_", "")
+    pipeData = pipes.get(pipeName, [])
+    prevPipeData = prevPipes.get(pipeName, [])
+    
+    details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
+
+    if pipeData:
+      details.append({"type": "text", "content": f"Pipeline entries: {len(pipeData)}", 
+                      "changed": previous_state and len(pipeData) != len(prevPipeData)})
+      
+      pipeline_table_headers = ["Data", "Sent At Cycle", "Associated IP", "Exception Triggered", "Changed"] # Keep "Changed" for internal logic
+      pipeline_table_rows = []
+      
+      for i, entry in enumerate(pipeData):
+          changed = "No"
+          if previous_state and (i >= len(prevPipeData) or entry != prevPipeData[i]):
+              changed = "Yes"
+          
+          # Assuming the entry dictionary has these keys
+          data_val = entry.get("data", "N/A")
+          sent_at = entry.get("sentAt", "N/A")
+          associated_ip = entry.get("associatedIP", "N/A")
+          exception_triggered = entry.get("exceptionTriggered", "N/A")
+          
+          pipeline_table_rows.append([str(data_val), str(sent_at), str(associated_ip), str(exception_triggered), changed])
+      
+      if pipeline_table_rows:
+          details.append({"type": "table", "headers": pipeline_table_headers, "rows": pipeline_table_rows})
+    else:
+      details.append({"type": "text", "content": "Pipeline is empty", "changed": False})
+      if previous_state and prevPipeData:
+        details.append({"type": "text", "content": "Previously had content", "changed": True})
+    
+    return details
+  
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CompareStates(self, state, previous_state, memory, previous_memory):
+    if not previous_state:
+      return False
+    
+    pipes = state.get("pipes", {})
+    prevPipes = previous_state.get("pipes", {})
+    pipeName = self.name.replace("_", "")
+    pipeData = pipes.get(pipeName, [])
+    prevPipeData = prevPipes.get(pipeName, [])
+    
+    return pipeData != prevPipeData
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+def CreateComponent(name, x, y, width, height, scene):
+  """Factory function to create the appropriate component type"""
+  if name == "Registers":
+    return RegistersComponent(name, x, y, width, height, scene)
+  elif name == "Stack":
+    return StackComponent(name, x, y, width, height, scene)
+  elif name == "Memory":
+    return MemoryComponent(name, x, y, width, height, scene)
+  elif name.endswith("Cache"):
+    return CacheComponent(name, x, y, width, height, scene)
+  elif "to" in name:
+    return PipelineComponent(name, x, y, width, height, scene)
+  elif name in ["EX", "DE", "LS", "IC"]:
+    return ModuleComponent(name, x, y, width, height, scene)
+  else:
+    return DiagramComponent(name, x, y, width, height, scene)
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+if __name__ == "__main__":
+  raise Exception("This module is not meant to be run directly.")
