@@ -1,3 +1,4 @@
+import json
 from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsTextItem
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPen, QColor, QBrush
@@ -122,9 +123,6 @@ class RegistersComponent(DiagramComponent):
     details.append({"type": "text", "content": f"IP: {hex(regData.get('IP', 0))}", 
                     "changed": previous_state and regData.get('IP', 0) != prevRegData.get('IP', 0)})
     
-    details.append({"type": "text", "content": f"Flags: {hex(regData.get('flags', 0))}", 
-                    "changed": previous_state and regData.get('flags', 0) != prevRegData.get('flags', 0)})
-    
     details.append({"type": "text", "content": f"Stack Base: {hex(regData.get('stackBase', 0))}", 
                     "changed": previous_state and regData.get('stackBase', 0) != prevRegData.get('stackBase', 0)})
     
@@ -135,6 +133,20 @@ class RegistersComponent(DiagramComponent):
                     "changed": previous_state and regData.get('stackPointer', 0) != prevRegData.get('stackPointer', 0)})
     details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
 
+    # Add flags as a table
+    flags = ["ZERO", "EQUAL", "CARRY", "EXCEPTION"]
+    allFlagsValue = regData.get('flags', 0)
+    flagValues = [allFlagsValue & 0x8000, allFlagsValue & 0x4000, allFlagsValue & 0x2000, allFlagsValue & 0x0800]
+    prevAllFlagsValue = prevRegData.get('flags', 0) if previous_state else 0
+    flagTableHeaders = ["Flag", "Value", "Changed"] # Keep "Changed" for internal logic
+    flagTableRows = []
+    changed = "Yes" if previous_state and allFlagsValue != prevAllFlagsValue else "No"
+    for i, flag in enumerate(flags):
+      flagTableRows.append([flag, "1" if flagValues[i] else "0", changed])
+    
+    details.append({"type": "text", "content": "Flags table:", "changed": False})
+    details.append({"type": "table", "headers": flagTableHeaders, "rows": flagTableRows})
+
     # Add R registers as a table
     rRegs = regData.get("R", [])
     prevRRegs = prevRegData.get("R", []) if previous_state else []
@@ -143,7 +155,7 @@ class RegistersComponent(DiagramComponent):
     r_table_rows = []
     for i, val in enumerate(rRegs):
       changed = "Yes" if (previous_state and (i >= len(prevRRegs) or val != prevRRegs[i])) else "No"
-      r_table_rows.append([f"R{i}", hex(val), changed])
+      r_table_rows.append([f"R{i}", val, changed])
     
     if r_table_rows:
         details.append({"type": "table", "headers": r_table_headers, "rows": r_table_rows})
@@ -157,7 +169,7 @@ class RegistersComponent(DiagramComponent):
     z_table_rows = []
     for i, zReg in enumerate(zRegs):
       changed = "Yes" if (previous_state and (i >= len(prevZRegs) or zReg != prevZRegs[i])) else "No"
-      z_table_rows.append([f"Z{i}", str([hex(v) for v in zReg]), changed])
+      z_table_rows.append([f"Z{i}", str([v for v in zReg]), changed])
 
     if z_table_rows:
         details.append({"type": "table", "headers": z_table_headers, "rows": z_table_rows})
@@ -227,23 +239,24 @@ class MemoryComponent(DiagramComponent):
     
     if memory:
       details.append({"type": "text", "content": "Memory contents:", "changed": False})
-      memory_table_headers = ["Address", "Value", "Changed"] # Keep "Changed" for internal logic
-      memory_table_rows = []
-      # Sort addresses for a more consistent display
-      sorted_addresses = sorted(memory.keys(), key=lambda x: int(x, 16) if isinstance(x, str) else int(x))
-      for addr in sorted_addresses:
-        val = memory[addr].zfill(4)
-        changed = "Yes" if (previous_memory and (addr not in previous_memory or memory[addr] != previous_memory[addr])) else "No"
-        memory_table_rows.append([f"#{addr}", val, changed])
-      
-      # Check for removed addresses
-      if previous_memory:
-        for addr in previous_memory:
-          if addr not in memory:
-            memory_table_rows.append([f"#{addr}", "(REMOVED)", "Yes"])
+      memoryTableHeaders = ["Address", "Value", "Changed"] # Keep "Changed" for internal logic
+      memoryTableRows = []
 
-      if memory_table_rows:
-          details.append({"type": "table", "headers": memory_table_headers, "rows": memory_table_rows})
+      prevAddr = 0
+
+      for addr in memory.keys():
+        if int(addr, base=16) != prevAddr + 1:
+          memoryTableRows.append(["...", "00", "No"])
+        prevAddr = int(addr, base=16)
+
+        changed = "Yes" if (previous_memory and (addr not in previous_memory or memory[addr] != previous_memory[addr])) else "No"
+        memoryTableRows.append([f"#{addr}", memory[addr].zfill(2), changed])
+
+      if prevAddr < 0xFFFF:
+        memoryTableRows.append(["...", "00", "No"])
+
+      if memoryTableRows:
+          details.append({"type": "table", "headers": memoryTableHeaders, "rows": memoryTableRows})
     else:
       details.append({"type": "text", "content": "Memory data not available for this cycle", "changed": False})
     
@@ -296,6 +309,8 @@ class ModuleComponent(DiagramComponent):
       fwStorage = componentData.get("fwTempStorage", {})
       prevFwStorage = prevComponentData.get("fwTempStorage", {})
       
+      details.append({"type": "text", "content": f"Last Decoded Instruction: {fwStorage.get('lastDecodedInstr', 'N/A')}",
+                      "changed": previous_state and fwStorage.get('lastDecodedInstr') != prevFwStorage.get('lastDecodedInstr')})
       details.append({"type": "text", "content": f"Cache Start Address: {hex(fwStorage.get('cacheStartAddr', 0))}", 
                       "changed": previous_state and fwStorage.get('cacheStartAddr', 0) != prevFwStorage.get('cacheStartAddr', 0)})
       
@@ -313,6 +328,10 @@ class ModuleComponent(DiagramComponent):
               fw_table_rows.append([str(i), str(fw), changed])
           details.append({"type": "table", "headers": fw_table_headers, "rows": fw_table_rows})
     
+    if componentData.get('extra') != "":
+      details.append({"type": "text", "content": f"Extra info: {componentData.get('extra', 'N/A')}",
+                    "changed": previous_state and componentData.get('extra') != prevComponentData.get('extra')})
+
     return details
   
   # ---------------------------------------------------------------------------------------------------------------------------
@@ -341,32 +360,49 @@ class CacheComponent(DiagramComponent):
       prevCacheData = previous_state.get("IC", {}).get("cache", {}) if previous_state else {}
     
     details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
-
-    cacheSize = cacheData.get('size', 0)
-    prevCacheSize = prevCacheData.get('size', 0)
-    details.append({"type": "text", "content": f"Cache Size: {cacheSize}", 
-                    "changed": previous_state and cacheSize != prevCacheSize})
     
     storage = cacheData.get("storage", [])
     prevStorage = prevCacheData.get("storage", [])
     if storage:
-      details.append({"type": "text", "content": f"Storage entries: {len(storage)}", 
-                      "changed": previous_state and len(storage) != len(prevStorage)})
-      
-      # Display all entries in a table, not limited to 5
-      storage_table_headers = ["Entry Index", "Value", "Changed"] # Keep "Changed" for internal logic
-      storage_table_rows = []
-      for i, entry in enumerate(storage):
-        changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry != prevStorage[i])) else "No"
-        storage_table_rows.append([str(i), str(entry), changed])
-      
-      if storage_table_rows:
-          details.append({"type": "table", "headers": storage_table_headers, "rows": storage_table_rows})
+      storageTableHeaders = ["Entry Index", "Data", "Tag", "Valid"]
+      storageTableRows = []
 
-    else:
-      details.append({"type": "text", "content": "Cache is empty", "changed": False})
-      if previous_state and prevStorage:
-        details.append({"type": "text", "content": "Previously had content", "changed": True})
+      if self.name == "LS_Cache":
+        storageTableHeaders.extend(["Last Hit Time", "Modified"])
+
+        for i, entry in enumerate(storage):
+          changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry != prevStorage[i])) else "No"
+          storageTableRows.append([
+            str(i) + ".0",
+            str(entry[0].get("data", "N/A")),
+            str(entry[0].get("tag", "N/A")),
+            str(entry[0].get("valid", False)),
+            str(entry[0].get("lastHitTime", "N/A")),
+            str(entry[0].get("modified", False)),
+            changed
+          ])
+          storageTableRows.append([
+            str(i) + ".1",
+            str(entry[1].get("data", "N/A")),
+            str(entry[1].get("tag", "N/A")),
+            str(entry[1].get("valid", False)),
+            str(entry[1].get("lastHitTime", "N/A")),
+            str(entry[1].get("modified", False)),
+            changed
+          ])
+      else: # IC_Cache
+        for i, entry in enumerate(storage):
+          changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry != prevStorage[i])) else "No"
+          storageTableRows.append([
+              str(i),
+              str(entry.get("data", "N/A")),
+              str(entry.get("tag", "N/A")),
+              str(entry.get("valid", False)),
+              changed
+          ])
+
+      storageTableHeaders.append("Changed")  # Keep "Changed" for internal logic
+      details.append({"type": "table", "headers": storageTableHeaders, "rows": storageTableRows})
     
     return details
   

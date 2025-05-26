@@ -88,4 +88,9 @@ public:
   {
     return currReqIndex;
   }
+
+  const CacheLine<DataType>& getCurrReqLine() const
+  {
+    return storage[currReqIndex];
+  }
 };

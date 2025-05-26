@@ -18,7 +18,11 @@ CPU::CPU(std::shared_ptr<Memory> memory, std::shared_ptr<ExecutionRecorder> reco
                                                 clock->clockSyncVars,
                                                 registers->IP,
                                                 recorder);
-  DEModule = std::make_shared<Decode>(fromICtoDE, fromDEtoEX, clock->clockSyncVars, registers->flags, recorder);
+  DEModule = std::make_shared<Decode>(fromICtoDE,
+                                      fromDEtoEX,
+                                      clock->clockSyncVars,
+                                      registers->flags,
+                                      recorder);
   EXModule = std::make_shared<Execute>(fromEXtoLS, fromDEtoEX, registers, clock->clockSyncVars);
 }
 

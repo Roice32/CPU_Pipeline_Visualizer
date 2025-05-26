@@ -6,7 +6,7 @@ Decode::Decode(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch
                std::shared_ptr<ClockSyncPackage> clockSyncVars,
                std::shared_ptr<register_16b> flags,
                std::shared_ptr<ExecutionRecorder> recorder):
-    IClockBoundModule(clockSyncVars, 2),
+    IClockBoundModule(clockSyncVars, DE_CYCLES_PER_OP),
     fromICtoMe(commPipeWithIC),
     fromMetoEX(commPipeWithEX),
     flags(flags),
@@ -132,11 +132,16 @@ bool Decode::processFetchWindow(fetch_window newBatch)
     }
   }
   fwTempStorage.shiftUsedWords(paramsCount + 1);
+  recorder->rewriteDEWorkTempStorage(fwTempStorage.storedFWs,
+                                     fwTempStorage.cacheStartAddr,
+                                     fwTempStorage.storedWordsCount);
   waitTillLastTick();
   syncResponse.sentAt = clockSyncVars->cycleCount;
   fromMetoEX->sendA(syncResponse);
+  recorder->pushDEtoEXData(syncResponse);
   if (instr.opCode != UNINITIALIZED_MEM && !syncResponse.exceptionTriggered && clockSyncVars->running)
-    logComplete(getCurrTime(), log(LoggablePackage(syncResponse.associatedIP, syncResponse.data)));
+    recorder->lastDecodedInstruction("#" + convDecToHex(fwTempStorage.getAssociatedInstrAddr()) + ": "
+                                     + instr.toString());                                      
   return true;
 }
 
@@ -145,41 +150,58 @@ void Decode::executeModuleLogic()
   if (fromMetoEX->pendingB())
   {
     SynchronizedDataPackage<address> ipChangePckg = fromMetoEX->getB();
-    recorder->modifyModuleState(DE, "Acknowledged IP change from EX");
+    recorder->popPipeData(EXtoDE);
     awaitNextTickToHandle(ipChangePckg);
+    recorder->modifyModuleState(DE, "Acknowledged IP change from EX to #" + convDecToHex(ipChangePckg.data));
     clock_time currTick = getCurrTime();
     SynchronizedDataPackage<address> mssgToIC(ipChangePckg.data);
     mssgToIC.sentAt = currTick;
     fromICtoMe->sendB(mssgToIC);
+    recorder->pushDEtoICData(mssgToIC);
     discardUntilAddr = ipChangePckg.data;
     if (discardUntilAddr % 2 == 1)
     {
-      recorder->modifyModuleState(DE, "Sending misaligned IP exception to EX");
-      fromMetoEX->sendA(SynchronizedDataPackage<Instruction> (discardUntilAddr,
-        MISALIGNED_IP,
-        MISALIGNED_IP_HANDL));
+      recorder->modifyModuleState(DE,
+        "Sending misaligned IP #" + convDecToHex(discardUntilAddr) + " exception to EX");
+      SynchronizedDataPackage<Instruction> misalignedIPInstr(discardUntilAddr,
+                                                             MISALIGNED_IP,
+                                                             MISALIGNED_IP_HANDL);
+      fromMetoEX->sendA(misalignedIPInstr);
+      recorder->pushDEtoEXData(misalignedIPInstr);
       discardUntilAddr = DUMMY_ADDRESS;
+
       return;
     }
 
     fwTempStorage.discardCurrent();
-    logComplete(getCurrTime(), logJump(discardUntilAddr));
+    recorder->rewriteDEWorkTempStorage(fwTempStorage.storedFWs,
+                                       fwTempStorage.cacheStartAddr,
+                                       fwTempStorage.storedWordsCount);
+    recorder->addExtraInfo(DE,
+      "Discarded work temp storage due to IP change to #" + convDecToHex(ipChangePckg.data));
     while (fromICtoMe->pendingA() && clockSyncVars->running)
-      logComplete(getCurrTime(), logDiscard(fromICtoMe->getA().associatedIP, discardUntilAddr));
+      recorder->addExtraInfo(DE,
+        "Discarded fetch window at address #" + convDecToHex(fromICtoMe->getA().associatedIP) + " from IC");
+      recorder->popPipeData(ICtoDE);
   }
 
   while (fromICtoMe->pendingA() && discardUntilAddr != DUMMY_ADDRESS && clockSyncVars->running)
   {
     SynchronizedDataPackage<fetch_window> nextBatch = fromICtoMe->getA();
+    recorder->popPipeData(ICtoDE);
     awaitNextTickToHandle(nextBatch);
     if (nextBatch.associatedIP == discardUntilAddr / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES)
     {
       fwTempStorage.overwriteCache(nextBatch.data, nextBatch.associatedIP);
       fwTempStorage.shiftUsedWords((discardUntilAddr - nextBatch.associatedIP) / WORD_BYTES);
       discardUntilAddr = DUMMY_ADDRESS;
+      recorder->rewriteDEWorkTempStorage(fwTempStorage.storedFWs,
+                                         fwTempStorage.cacheStartAddr,
+                                         fwTempStorage.storedWordsCount);
     }
     else
-      logComplete(getCurrTime(), logDiscard(nextBatch.associatedIP, discardUntilAddr));
+      recorder->addExtraInfo(DE,
+        "Discarded fetch window at address #" + convDecToHex(nextBatch.associatedIP) + " from IC");
   }
 
   if (discardUntilAddr != DUMMY_ADDRESS)
@@ -187,6 +209,8 @@ void Decode::executeModuleLogic()
 
   if (fwTempStorage.canProvideFullInstruction())
   {
+    recorder->modifyModuleState(DE,
+      "Decoding instruction at address #" + convDecToHex(fwTempStorage.getAssociatedInstrAddr()));
     processFetchWindow(fwTempStorage.getFullInstrFetchWindow());
     return;
   }
@@ -194,11 +218,17 @@ void Decode::executeModuleLogic()
   if (fromICtoMe->pendingA())
   {
     SynchronizedDataPackage<fetch_window> receivedFW = fromICtoMe->getA();
+    recorder->popPipeData(ICtoDE);
     awaitNextTickToHandle(receivedFW);
     if (fwTempStorage.getStoredWordsCount() == 0)
       fwTempStorage.overwriteCache(receivedFW.data, receivedFW.associatedIP);
     else
       fwTempStorage.concatNewFW(receivedFW.data);
+    recorder->rewriteDEWorkTempStorage(fwTempStorage.storedFWs,
+                                       fwTempStorage.cacheStartAddr,
+                                       fwTempStorage.storedWordsCount);
+    recorder->modifyModuleState(DE,
+      "Decoding instruction at address #" + convDecToHex(fwTempStorage.getAssociatedInstrAddr()));
     processFetchWindow(fwTempStorage.getFullInstrFetchWindow());
   }
 }

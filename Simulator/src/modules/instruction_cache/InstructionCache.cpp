@@ -41,7 +41,8 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     
     address invalidatedFW = receivedPckg.data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
     cache.prepareForOps(invalidatedFW);
-    cache.invalidate();
+    if (cache.invalidate())
+      recorder->invalidateICCacheLine(cache.getCurrReqIndex());
   }
   
   awaitNextTickToHandle(receivedPckg);
@@ -88,8 +89,7 @@ void InstructionCache::executeModuleLogic()
   {
     currBatch = getFetchWindowFromLS(internalIP);
     address removedElement = cache.store(currBatch);
-    if (removedElement != DUMMY_ADDRESS)
-      recorder->swapICCacheLine(cache.getCurrReqIndex(), currBatch);
+    recorder->swapICCacheLine(cache.getCurrReqLine(), cache.getCurrReqIndex());
   }
   SynchronizedDataPackage<fetch_window> syncResponse(currBatch, internalIP);
   internalIP += FETCH_WINDOW_BYTES;
@@ -101,9 +101,8 @@ void InstructionCache::executeModuleLogic()
   {
     fromMetoDE->sendA(syncResponse);
     recorder->pushICtoDEData(syncResponse);
-    // TO DO: "extra" field in ExecutionState for IC
-    //if (fwAlreadyInCache)
-    //  logAdditional("\t(From IC's cache)\n");
+    if (fwAlreadyInCache)
+      recorder->addExtraInfo(IC, "Cache hit for fetch window at " + convDecToHex(syncResponse.associatedIP));
   }
 }
 

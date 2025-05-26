@@ -21,4 +21,6 @@ public:
   byte getStoredWordsCount();
   void shiftUsedWords(byte usedWordsCount);
   void discardCurrent();
+
+friend class Decode;
 };

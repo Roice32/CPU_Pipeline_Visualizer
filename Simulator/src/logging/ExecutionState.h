@@ -56,6 +56,7 @@ struct ExecutionState
       address currReqTag = 0;
       byte foundIndex = 0;
     } cache;
+    std::string extra = "";
   } LS;
 
   struct {
@@ -67,6 +68,7 @@ struct ExecutionState
       byte currReqIndex = 0;
       byte currReqTag = 0;
     } cache;
+    std::string extra = "";
   } IC;
 
   struct {
@@ -76,10 +78,13 @@ struct ExecutionState
       address cacheStartAddr = 0;
       byte storedWordsCount = 0;
     } fwTempStorage;
+    std::string lastDecodedInstr = "None";
+    std::string extra = "";
   } DE;
 
   struct {
     std::string state = "Idle";
+    std::string extra = "";
   } EX;
 
   std::string toJSON() const;

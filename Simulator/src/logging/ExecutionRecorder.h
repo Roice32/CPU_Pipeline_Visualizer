@@ -40,6 +40,7 @@ public:
   ExecutionRecorder(std::shared_ptr<Memory> mem);
   void goToNextState();
   void modifyModuleState(const Modules& moduleName, const std::string& state);
+  void addExtraInfo(const Modules& moduleName, const std::string& extraInfo);
 
   inline void pushICtoLSData(const SynchronizedDataPackage<address>& data)
     { states.back().pipes.ICtoLS.push_back(data); }
@@ -60,8 +61,15 @@ public:
 
   void popPipeData(const Pipes& pipeName);
   void invalidateICCacheLine(const byte& index);
-  void swapICCacheLine(const byte& index, const fetch_window& newValue);
+  void swapICCacheLine(const CacheLine<fetch_window>& newLine, const byte& index);
   void modifICInternalIP(const address& newIP)
     { states.back().IC.internalIP = newIP; }
+  
+  void lastDecodedInstruction(const std::string& instr)
+    { states.back().DE.lastDecodedInstr = instr; }
+  void rewriteDEWorkTempStorage(const fetch_window* fws,
+                                const address& cacheStartAddr,
+                                const byte& storedWordsCount);
+
   void dumpSimulationToJSONs(const std::string& outputDirPath);
 };

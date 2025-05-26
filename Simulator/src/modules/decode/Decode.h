@@ -1,12 +1,11 @@
 #pragma once
 
-#include "DELogger.h"
 #include "InterThreadCommPipe.h"
 #include "IClockBoundModule.h"
 #include "ExecutionRecorder.h"
 #include "WorkTempStorage.h"
 
-class Decode: public IClockBoundModule, public DELogger
+class Decode: public IClockBoundModule
 {
 private:
   std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<fetch_window>, SynchronizedDataPackage<address>>> fromICtoMe;

@@ -5,7 +5,7 @@ LoadStore::LoadStore(std::shared_ptr<Memory> simulatedMemory,
   std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithIC,
   std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithEX,
   std::shared_ptr<ClockSyncPackage> clockSyncVars):
-    IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, 15), LSLogger(),
+    IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, LS_CYCLES_PER_OP), LSLogger(),
     fromICtoMe(commPipeWithIC), fromEXtoMe(commPipeWithEX), cache(KWayAssociativeCache<word>()) {};
 
 byte LoadStore::loadFrom(address addr)
@@ -128,7 +128,7 @@ void LoadStore::executeModuleLogic()
     }
 
     if (!physicalMemoryAccessHappened)
-      shortenThisCycleBy(8);
+      shortenThisCycleBy(LS_CYCLES_PER_OP - LS_CYCLES_PER_OP_WITH_CACHE_HIT);
     
     clock_time lastTick = waitTillLastTick();
     syncResponse.sentAt = lastTick;

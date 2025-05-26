@@ -21,6 +21,10 @@ void ExecutionRecorder::goToNextState()
   newState.cycle++;
   states.push_back(newState);
   states.back().memoryChanges = {};
+  states.back().LS.extra = "";
+  states.back().IC.extra = "";
+  states.back().DE.extra = "";
+  states.back().EX.extra = "";
 }
 
 void ExecutionRecorder::modifyModuleState(const Modules& moduleName, const std::string& state)
@@ -38,6 +42,28 @@ void ExecutionRecorder::modifyModuleState(const Modules& moduleName, const std::
       break;
     case EX:
       states.back().EX.state = state;
+      break;
+    default:
+      std::cerr << "Error: Unknown module name " << moduleName << std::endl;
+      break;
+  }
+}
+
+void ExecutionRecorder::addExtraInfo(const Modules &moduleName, const std::string &extraInfo)
+{
+  switch (moduleName)
+  {
+    case IC:
+      states.back().IC.extra += extraInfo + "\\n";
+      break;
+    case LS:
+      states.back().LS.extra += extraInfo + "\\n";
+      break;
+    case DE:
+      states.back().DE.extra += extraInfo + "\\n";
+      break;
+    case EX:
+      states.back().EX.extra += extraInfo + "\\n";
       break;
     default:
       std::cerr << "Error: Unknown module name " << moduleName << std::endl;
@@ -102,10 +128,24 @@ void ExecutionRecorder::invalidateICCacheLine(const byte &index)
   states.back().IC.cache.storage[index].valid = false;
 }
 
-void ExecutionRecorder::swapICCacheLine(const byte &index, const fetch_window &newValue)
+void ExecutionRecorder::swapICCacheLine(const CacheLine<fetch_window> &newLine, const byte &index)
 {
-  states.back().IC.cache.storage[index].data = newValue;
-  states.back().IC.cache.storage[index].valid = true;
+  states.back().IC.cache.storage[index].data = newLine.data;
+  states.back().IC.cache.storage[index].tag = newLine.tag;
+  states.back().IC.cache.storage[index].lastHitTime = newLine.lastHitTime; 
+  states.back().IC.cache.storage[index].valid = newLine.valid;
+}
+
+void ExecutionRecorder::rewriteDEWorkTempStorage(const fetch_window* fws,
+                                                 const address& cacheStartAddr,
+                                                 const byte& storedWordsCount)
+{
+  for (size_t i = 0; i < DE_WORK_MEMORY_FW_SIZE; ++i)
+  {
+    states.back().DE.fwTempStorage.storedFWs[i] = fws[i];
+  }
+  states.back().DE.fwTempStorage.cacheStartAddr = cacheStartAddr;
+  states.back().DE.fwTempStorage.storedWordsCount = storedWordsCount;
 }
 
 void ExecutionRecorder::dumpSimulationToJSONs(const std::string &outputDirPath)
