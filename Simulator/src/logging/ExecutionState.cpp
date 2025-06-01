@@ -1,9 +1,62 @@
+#include <sstream>
+#include <iomanip>
+
 #include "ExecutionState.h"
 
-std::string ExecutionState::toJSON() const
+inline std::string ExecutionState::hexW(const word &value,
+                                        const std::string &prefix,
+                                        const byte &padToLen,
+                                        const bool& quotes) const
 {
-  std::stringstream ss;
+  static std::stringstream ss = std::stringstream();
+  static std::string result;
+
+  ss.str(""); // Clear the stringstream
+  ss << std::setfill('0') << std::setw(padToLen) << std::hex << value;
   
+  result = prefix + ss.str();
+  if (quotes)
+  {
+    return "\"" + result + "\"";
+  }
+  return result;
+}
+
+inline std::string ExecutionState::hexFW(const fetch_window &value,
+                                         const std::string &divider,
+                                         const std::vector<std::string> &margins,
+                                         const bool &quotes,
+                                         const byte &padToLen,
+                                         const std::string &prefix) const
+{
+  static std::stringstream ss = std::stringstream();
+
+  ss.str(""); // Clear the stringstream
+  if (quotes)
+    ss << "\"";
+  ss << margins[0];
+  for (byte i = 0; i < FETCH_WINDOW_WORDS; ++i)
+  {
+    ss << hexW((value >> ((FETCH_WINDOW_BYTES - 1 - i) * 8)), prefix, padToLen, false);
+    if (i < FETCH_WINDOW_WORDS - 1)
+    {
+      ss << divider;
+    }
+  }
+  ss << margins[1];
+  if (quotes)
+    ss << "\"";
+  return ss.str();
+}
+
+std::string ExecutionState::toJSON()
+{
+  static const byte ADDR_NIBBLES = ADDRESS_WIDTH / 4;
+  static const byte WORD_NIBBLES = WORD_BYTES * 2;
+  static std::stringstream ss = std::stringstream();
+
+  ss.str(""); // Clear the stringstream
+
   // Start of JSON object
   ss << "{";
   
@@ -16,8 +69,9 @@ std::string ExecutionState::toJSON() const
   // Regular registers (R0-R7)
   ss << "\"R\":[";
   for (int i = 0; i < REGISTER_COUNT; ++i) {
-    ss << "\"0x" + convDecToHex(registers.R[i]) + "\"";
-    if (i < REGISTER_COUNT - 1) ss << ",";
+    ss << hexW(registers.R[i]);
+    if (i < REGISTER_COUNT - 1)
+      ss << ",";
   }
   ss << "],";
   
@@ -26,35 +80,32 @@ std::string ExecutionState::toJSON() const
   for (int i = 0; i < Z_REGISTER_COUNT; ++i) {
     ss << "[";
     for (int j = 0; j < WORDS_PER_Z_REGISTER; ++j) {
-        ss << "\"0x" + convDecToHex(registers.Z[i][j]) + "\"";
-        if (j < WORDS_PER_Z_REGISTER - 1) ss << ",";
+        ss << hexW(registers.Z[i][j]);
+        if (j < WORDS_PER_Z_REGISTER - 1)
+          ss << ",";
     }
     ss << "]";
-    if (i < Z_REGISTER_COUNT - 1) ss << ",";
+    if (i < Z_REGISTER_COUNT - 1)
+      ss << ",";
   }
   ss << "],";
   
   // Special registers
-  ss << "\"IP\":" << registers.IP << ",";
-  ss << "\"flags\":" << registers.flags << ",";
-  ss << "\"stackBase\":" << registers.stackBase << ",";
-  ss << "\"stackSize\":" << registers.stackSize << ",";
-  ss << "\"stackPointer\":" << registers.stackPointer;
+  ss << "\"IP\":" << hexW(registers.IP, "#") << ",";
+  ss << "\"flags\":" << hexW(registers.flags) << ",";
+  ss << "\"stackBase\":" << hexW(registers.stackBase, "#") << ",";
+  ss << "\"stackPointer\":" << hexW(registers.stackPointer, "#") << ",";
+  ss << "\"stackSize\":\"" << registers.stackSize << "\"";
   
   ss << "},"; // End of registers section
   
   // Stack section
   ss << "\"stack\":[";
-  std::stack<word> stackCopy = stack;
-  std::vector<word> stackItems;
-  while (!stackCopy.empty()) {
-    stackItems.push_back(stackCopy.top());
-    stackCopy.pop();
-  }
-  // We need to reverse the order to match the actual stack order
-  for (int i = stackItems.size() - 1; i >= 0; --i) {
-    ss << stackItems[i];
-    if (i > 0) ss << ",";
+  while (!stack.empty()) {
+    ss << hexW(stack.top());
+    if (stack.size() > 1)
+      ss << ",";
+    stack.pop();
   }
   ss << "],";
   
@@ -68,16 +119,18 @@ std::string ExecutionState::toJSON() const
   ss << "\"ICtoLS\":[";
   for (size_t i = 0; i < pipes.ICtoLS.size(); ++i) {
     ss << "{";
-    ss << "\"data\": \"#" << convDecToHex(pipes.ICtoLS[i].data) << "\",";
+    ss << "\"data\":" << hexW(pipes.ICtoLS[i].data, "#") << ",";
     ss << "\"sentAt\":" << pipes.ICtoLS[i].sentAt << ",";
-    ss << "\"associatedIP\": \"#" << convDecToHex(pipes.ICtoLS[i].associatedIP) << "\",";
+    ss << "\"associatedIP\":" << hexW(pipes.ICtoLS[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.ICtoLS[i].exceptionTriggered ? "true" : "false");
-    if (pipes.ICtoLS[i].exceptionTriggered) {
-      ss << ",\"excpData\":" << pipes.ICtoLS[i].excpData << ",";
-      ss << "\"handlerAddr\":" << pipes.ICtoLS[i].handlerAddr;
+    if (pipes.ICtoLS[i].exceptionTriggered)
+    {
+      ss << ",\"excpData\":" << hexW(pipes.ICtoLS[i].excpData) << ",";
+      ss << "\"handlerAddr\":" << hexW(pipes.ICtoLS[i].handlerAddr, "#");
     }
     ss << "}";
-    if (i < pipes.ICtoLS.size() - 1) ss << ",";
+    if (i < pipes.ICtoLS.size() - 1)
+      ss << ",";
   }
   ss << "],";
   
@@ -85,16 +138,17 @@ std::string ExecutionState::toJSON() const
   ss << "\"LStoIC\":[";
   for (size_t i = 0; i < pipes.LStoIC.size(); ++i) {
     ss << "{";
-    ss << "\"data\":" << pipes.LStoIC[i].data << ",";
+    ss << "\"data\":" << hexFW(pipes.LStoIC[i].data) << ",";
     ss << "\"sentAt\":" << pipes.LStoIC[i].sentAt << ",";
-    ss << "\"associatedIP\":" << pipes.LStoIC[i].associatedIP << ",";
+    ss << "\"associatedIP\":" << hexW(pipes.LStoIC[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.LStoIC[i].exceptionTriggered ? "true" : "false");
     if (pipes.LStoIC[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << pipes.LStoIC[i].excpData << ",";
-        ss << "\"handlerAddr\":" << pipes.LStoIC[i].handlerAddr;
+        ss << ",\"excpData\":" << hexW(pipes.LStoIC[i].excpData) << ",";
+        ss << "\"handlerAddr\":" << hexW(pipes.LStoIC[i].handlerAddr, "#");
     }
     ss << "}";
-    if (i < pipes.LStoIC.size() - 1) ss << ",";
+    if (i < pipes.LStoIC.size() - 1)
+      ss << ",";
   }
   ss << "],";
   
@@ -102,16 +156,17 @@ std::string ExecutionState::toJSON() const
   ss << "\"ICtoDE\":[";
   for (size_t i = 0; i < pipes.ICtoDE.size(); ++i) {
     ss << "{";
-    ss << "\"data\": \"" << fwToStr(pipes.ICtoDE[i].data) << "\",";
+    ss << "\"data\":" << hexFW(pipes.ICtoDE[i].data) << ",";
     ss << "\"sentAt\":" << pipes.ICtoDE[i].sentAt << ",";
-    ss << "\"associatedIP\": \"#" << convDecToHex(pipes.ICtoDE[i].associatedIP) << "\",";
+    ss << "\"associatedIP\":" << hexW(pipes.ICtoDE[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.ICtoDE[i].exceptionTriggered ? "true" : "false");
     if (pipes.ICtoDE[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << pipes.ICtoDE[i].excpData << ",";
-        ss << "\"handlerAddr\":" << pipes.ICtoDE[i].handlerAddr;
+        ss << ",\"excpData\":" << hexW(pipes.ICtoDE[i].excpData) << ",";
+        ss << "\"handlerAddr\":" << hexW(pipes.ICtoDE[i].handlerAddr, "#");
     }
     ss << "}";
-    if (i < pipes.ICtoDE.size() - 1) ss << ",";
+    if (i < pipes.ICtoDE.size() - 1)
+      ss << ",";
   }
   ss << "],";
   
@@ -119,16 +174,17 @@ std::string ExecutionState::toJSON() const
   ss << "\"DEtoIC\":[";
   for (size_t i = 0; i < pipes.DEtoIC.size(); ++i) {
     ss << "{";
-    ss << "\"data\": \"#" << convDecToHex(pipes.DEtoIC[i].data) << "\",";
+    ss << "\"data\":" << hexW(pipes.DEtoIC[i].data, "#") << ",";
     ss << "\"sentAt\":" << pipes.DEtoIC[i].sentAt << ",";
-    ss << "\"associatedIP\": \"#" << convDecToHex(pipes.DEtoIC[i].associatedIP) << "\",";
+    ss << "\"associatedIP\":" << hexW(pipes.DEtoIC[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.DEtoIC[i].exceptionTriggered ? "true" : "false");
     if (pipes.DEtoIC[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << pipes.DEtoIC[i].excpData << ",";
-        ss << "\"handlerAddr\":" << pipes.DEtoIC[i].handlerAddr;
+        ss << ",\"excpData\":" << hexW(pipes.DEtoIC[i].excpData) << ",";
+        ss << "\"handlerAddr\":" << hexW(pipes.DEtoIC[i].handlerAddr, "#");
     }
     ss << "}";
-    if (i < pipes.DEtoIC.size() - 1) ss << ",";
+    if (i < pipes.DEtoIC.size() - 1)
+      ss << ",";
   }
   ss << "],";
   
@@ -137,21 +193,22 @@ std::string ExecutionState::toJSON() const
   for (size_t i = 0; i < pipes.DEtoEX.size(); ++i) {
     ss << "{";
     ss << "\"data\":{";
-    ss << "\"opCode\":" << static_cast<int>(pipes.DEtoEX[i].data.opCode) << ",";
-    ss << "\"src1\":" << static_cast<int>(pipes.DEtoEX[i].data.src1) << ",";
-    ss << "\"src2\":" << static_cast<int>(pipes.DEtoEX[i].data.src2) << ",";
-    ss << "\"param1\":" << pipes.DEtoEX[i].data.param1 << ",";
-    ss << "\"param2\":" << pipes.DEtoEX[i].data.param2;
+    ss << "\"opCode\":" << hexW(pipes.DEtoEX[i].data.opCode, "", 2) << ",";
+    ss << "\"src1\":" << hexW(pipes.DEtoEX[i].data.src1, "", 2) << ",";
+    ss << "\"src2\":" << hexW(pipes.DEtoEX[i].data.src2, "", 2) << ",";
+    ss << "\"param1\":" << hexW(pipes.DEtoEX[i].data.param1, "") << ",";
+    ss << "\"param2\":" << hexW(pipes.DEtoEX[i].data.param2, "");
     ss << "},";
     ss << "\"sentAt\":" << pipes.DEtoEX[i].sentAt << ",";
-    ss << "\"associatedIP\":" << pipes.DEtoEX[i].associatedIP << ",";
+    ss << "\"associatedIP\":" << hexW(pipes.DEtoEX[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.DEtoEX[i].exceptionTriggered ? "true" : "false");
     if (pipes.DEtoEX[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << pipes.DEtoEX[i].excpData << ",";
-        ss << "\"handlerAddr\":" << pipes.DEtoEX[i].handlerAddr;
+        ss << ",\"excpData\":" << hexW(pipes.DEtoEX[i].excpData) << ",";
+        ss << "\"handlerAddr\":" << hexW(pipes.DEtoEX[i].handlerAddr, "#");
     }
     ss << "}";
-    if (i < pipes.DEtoEX.size() - 1) ss << ",";
+    if (i < pipes.DEtoEX.size() - 1)
+      ss << ",";
   }
   ss << "],";
   
@@ -159,16 +216,17 @@ std::string ExecutionState::toJSON() const
   ss << "\"EXtoDE\":[";
   for (size_t i = 0; i < pipes.EXtoDE.size(); ++i) {
     ss << "{";
-    ss << "\"data\":" << pipes.EXtoDE[i].data << ",";
+    ss << "\"data\":" << hexW(pipes.EXtoDE[i].data, "#") << ",";
     ss << "\"sentAt\":" << pipes.EXtoDE[i].sentAt << ",";
-    ss << "\"associatedIP\":" << pipes.EXtoDE[i].associatedIP << ",";
+    ss << "\"associatedIP\":" << hexW(pipes.EXtoDE[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.EXtoDE[i].exceptionTriggered ? "true" : "false");
     if (pipes.EXtoDE[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << pipes.EXtoDE[i].excpData << ",";
-        ss << "\"handlerAddr\":" << pipes.EXtoDE[i].handlerAddr;
+        ss << ",\"excpData\":" << hexW(pipes.EXtoDE[i].excpData) << ",";
+        ss << "\"handlerAddr\":" << hexW(pipes.EXtoDE[i].handlerAddr, "#");
     }
     ss << "}";
-    if (i < pipes.EXtoDE.size() - 1) ss << ",";
+    if (i < pipes.EXtoDE.size() - 1)
+      ss << ",";
   }
   ss << "],";
   
@@ -177,25 +235,27 @@ std::string ExecutionState::toJSON() const
   for (size_t i = 0; i < pipes.EXtoLS.size(); ++i) {
     ss << "{";
     ss << "\"data\":{";
-    ss << "\"reqAddr\":" << pipes.EXtoLS[i].data.reqAddr << ",";
-    ss << "\"wordsSizeOfReq\":" << static_cast<int>(pipes.EXtoLS[i].data.wordsSizeOfReq) << ",";
+    ss << "\"reqAddr\":" << hexW(pipes.EXtoLS[i].data.reqAddr, "#") << ",";
+    ss << "\"wordsSizeOfReq\":" << pipes.EXtoLS[i].data.wordsSizeOfReq << ",";
     ss << "\"isStoreOperation\":" << (pipes.EXtoLS[i].data.isStoreOperation ? "true" : "false") << ",";
     ss << "\"reqData\":[";
     for (size_t j = 0; j < pipes.EXtoLS[i].data.reqData.size(); ++j) {
-        ss << pipes.EXtoLS[i].data.reqData[j];
-        if (j < pipes.EXtoLS[i].data.reqData.size() - 1) ss << ",";
+        ss << hexW(pipes.EXtoLS[i].data.reqData[j]);
+        if (j < pipes.EXtoLS[i].data.reqData.size() - 1)
+          ss << ",";
     }
     ss << "]";
     ss << "},";
     ss << "\"sentAt\":" << pipes.EXtoLS[i].sentAt << ",";
-    ss << "\"associatedIP\":" << pipes.EXtoLS[i].associatedIP << ",";
+    ss << "\"associatedIP\":" << hexW(pipes.EXtoLS[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.EXtoLS[i].exceptionTriggered ? "true" : "false");
     if (pipes.EXtoLS[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << pipes.EXtoLS[i].excpData << ",";
-        ss << "\"handlerAddr\":" << pipes.EXtoLS[i].handlerAddr;
+        ss << ",\"excpData\":" << hexW(pipes.EXtoLS[i].excpData) << ",";
+        ss << "\"handlerAddr\":" << hexW(pipes.EXtoLS[i].handlerAddr, "#");
     }
     ss << "}";
-    if (i < pipes.EXtoLS.size() - 1) ss << ",";
+    if (i < pipes.EXtoLS.size() - 1)
+      ss << ",";
   }
   ss << "],";
   
@@ -205,19 +265,21 @@ std::string ExecutionState::toJSON() const
     ss << "{";
     ss << "\"data\":[";
     for (size_t j = 0; j < pipes.LStoEX[i].data.size(); ++j) {
-        ss << pipes.LStoEX[i].data[j];
-        if (j < pipes.LStoEX[i].data.size() - 1) ss << ",";
+        ss << hexW(pipes.LStoEX[i].data[j]);
+        if (j < pipes.LStoEX[i].data.size() - 1)
+          ss << ",";
     }
     ss << "],";
     ss << "\"sentAt\":" << pipes.LStoEX[i].sentAt << ",";
-    ss << "\"associatedIP\":" << pipes.LStoEX[i].associatedIP << ",";
+    ss << "\"associatedIP\":" << hexW(pipes.LStoEX[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.LStoEX[i].exceptionTriggered ? "true" : "false");
     if (pipes.LStoEX[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << pipes.LStoEX[i].excpData << ",";
-        ss << "\"handlerAddr\":" << pipes.LStoEX[i].handlerAddr;
+        ss << ",\"excpData\":" << hexW(pipes.LStoEX[i].excpData) << ",";
+        ss << "\"handlerAddr\":" << hexW(pipes.LStoEX[i].handlerAddr, "#");
     }
     ss << "}";
-    if (i < pipes.LStoEX.size() - 1) ss << ",";
+    if (i < pipes.LStoEX.size() - 1)
+      ss << ",";
   }
   ss << "]";
   
@@ -236,21 +298,20 @@ std::string ExecutionState::toJSON() const
     ss << "["; // Start of a cache set
     for (size_t j = 0; j < LS.cache.storage[i].storedLines.size(); ++j) {
         ss << "{";
-        ss << "\"data\": \"0x" << convDecToHex(LS.cache.storage[i].storedLines[j].data) << "\",";
-        ss << "\"tag\": \"" << convDecToHex(LS.cache.storage[i].storedLines[j].tag) << "\",";
+        ss << "\"data\":" << hexW(LS.cache.storage[i].storedLines[j].data) << ",";
+        ss << "\"tag\":" << hexW(LS.cache.storage[i].storedLines[j].tag, "#") << ",";
         ss << "\"lastHitTime\":" << LS.cache.storage[i].storedLines[j].lastHitTime << ",";
         ss << "\"valid\":" << (LS.cache.storage[i].storedLines[j].valid ? "true" : "false") << ",";
         ss << "\"modified\":" << (LS.cache.storage[i].storedLines[j].modified ? "true" : "false");
         ss << "}";
-        if (j < LS.cache.storage[i].storedLines.size() - 1) ss << ",";
+        if (j < LS.cache.storage[i].storedLines.size() - 1)
+          ss << ",";
     }
     ss << "]"; // End of a cache set
-    if (i < LS.cache.size - 1) ss << ",";
+    if (i < LS.cache.size - 1)
+      ss << ",";
   }
-  ss << "],";
-  ss << "\"currReqIndex\":" << static_cast<int>(LS.cache.currReqIndex) << ",";
-  ss << "\"currReqTag\":" << LS.cache.currReqTag << ",";
-  ss << "\"foundIndex\":" << static_cast<int>(LS.cache.foundIndex);
+  ss << "]"; // End of LS cache storage
   ss << "}"; // End of LS cache
   
   ss << ",\"extra\":\"" << LS.extra << "\""; // Extra information for LS stage
@@ -259,7 +320,7 @@ std::string ExecutionState::toJSON() const
   // IC stage
   ss << "\"IC\":{";
   ss << "\"state\":\"" << IC.state << "\",";
-  ss << "\"internalIP\":" << IC.internalIP << ",";
+  ss << "\"internalIP\":" << hexW(IC.internalIP, "#") << ",";
   
   // IC cache
   ss << "\"cache\":{";
@@ -267,15 +328,14 @@ std::string ExecutionState::toJSON() const
   ss << "\"storage\":[";
   for (unsigned int i = 0; i < IC.cache.size; ++i) {
     ss << "{";
-    ss << "\"data\": \"" << fwToStr(IC.cache.storage[i].data) << "\",";
+    ss << "\"data\":" << hexFW(IC.cache.storage[i].data) << ",";
     ss << "\"tag\": \"" << convDecToHex(IC.cache.storage[i].tag) << "\",";
     ss << "\"valid\":" << (IC.cache.storage[i].valid ? "true" : "false");
     ss << "}";
-    if (i < IC.cache.size - 1) ss << ",";
+    if (i < IC.cache.size - 1)
+      ss << ",";
   }
-  ss << "],";
-  ss << "\"currReqIndex\":" << static_cast<int>(IC.cache.currReqIndex) << ",";
-  ss << "\"currReqTag\":" << static_cast<int>(IC.cache.currReqTag);
+  ss << "]"; // End of IC cache storage
   ss << "}"; // End of IC cache
   
   ss << ",\"extra\":\"" << IC.extra << "\""; // Extra information for IC stage
@@ -287,25 +347,26 @@ std::string ExecutionState::toJSON() const
   
   // DE fw temp storage
   ss << "\"fwTempStorage\":{";
-  ss << "\"storedFWs\":[";
+  ss << "\"storedFWs\":\"[";
   for (int i = 0; i < DE_WORK_MEMORY_FW_SIZE; ++i) {
-    ss << "\"" << fwToStr(DE.fwTempStorage.storedFWs[i]) << "\"";
-    if (i < DE_WORK_MEMORY_FW_SIZE - 1) ss << ",";
+    ss << hexFW(DE.fwTempStorage.storedFWs[i], "_", {"", ""}, false);
+    if (i < DE_WORK_MEMORY_FW_SIZE - 1)
+      ss << "_";
   }
-  ss << "],";
-  ss << "\"cacheStartAddr\":" << DE.fwTempStorage.cacheStartAddr << ",";
-  ss << "\"storedWordsCount\":" << static_cast<int>(DE.fwTempStorage.storedWordsCount);
+  ss << "]\",";
+  ss << "\"cacheStartAddr\":" << hexW(DE.fwTempStorage.cacheStartAddr, "#") << ",";
+  ss << "\"storedWordsCount\":" << std::to_string(DE.fwTempStorage.storedWordsCount);
   ss << "}"; // End of DE fw temp storage
   
   ss << ",\"lastDecodedInstr\":\"" << DE.lastDecodedInstr << "\"";
   ss << ",\"extra\":\"" << DE.extra << "\""; // Extra information for DE stage
   ss << "},"; // End of DE stage
-  
+
   // EX stage
   ss << "\"EX\":{";
   ss << "\"state\":\"" << EX.state << "\"";
-  ss << "}"; // End of EX stage
   ss << ",\"extra\":\"" << EX.extra << "\""; // Extra information for EX stage
+  ss << "}"; // End of EX stage
   ss << "}"; // End of JSON object
   
   return ss.str();

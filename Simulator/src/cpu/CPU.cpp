@@ -12,7 +12,11 @@ CPU::CPU(std::shared_ptr<Memory> memory, std::shared_ptr<ExecutionRecorder> reco
 
   clock = std::make_shared<Clock>(recorder);
   
-  LSModule = std::make_shared<LoadStore>(memory, fromICtoLS, fromEXtoLS, clock->clockSyncVars);
+  LSModule = std::make_shared<LoadStore>(memory,
+                                         fromICtoLS,
+                                         fromEXtoLS,
+                                         clock->clockSyncVars,
+                                         recorder);
   ICModule = std::make_shared<InstructionCache>(fromICtoLS,
                                                 fromICtoDE,
                                                 clock->clockSyncVars,

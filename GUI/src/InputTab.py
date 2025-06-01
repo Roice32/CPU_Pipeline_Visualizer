@@ -311,10 +311,6 @@ class InputTab(QWidget):
     process = QProcess()
     process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, logPath, simulationPath])
 
-    while not os.path.exists(firstMemoryStatePath) and process.state() == QProcess.Running:
-      sleep(0.1)
-    self.SetStatusText("Saving simulation data...", error=False)
-
     process.waitForFinished()
     # Check if the execution was successful
     if process.exitCode() != 0:

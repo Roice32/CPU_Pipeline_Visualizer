@@ -19,6 +19,7 @@ private:
   byte currReqIndex;
   address currReqTag;
   byte foundIndex;
+  byte elimCandidate;
 
 public:
   KWayAssociativeCache<DataType>()
@@ -96,7 +97,7 @@ public:
       return DiscardedCacheElement<DataType>();
     }
 
-    byte elimCandidate = 0;
+    elimCandidate = 0;
     std::vector<CacheLine<DataType>>& targetSet = storage[currReqIndex].storedLines;
     for (byte ind = 0; ind < LS_CACHE_SET_SIZE; ++ind)
     {
@@ -141,5 +142,17 @@ public:
         }
       }
     return modifiedMem;
+  }
+
+  byte getCurrReqTag() {
+    return currReqTag;
+  }
+
+  byte getCurrReqIndex() {
+    return currReqIndex;
+  }
+
+  byte getCurrReqInnerIndex() {
+    return foundIndex != LS_CACHE_SET_SIZE ? foundIndex : elimCandidate;
   }
 };

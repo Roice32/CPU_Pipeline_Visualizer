@@ -52,9 +52,6 @@ struct ExecutionState
     struct {
       unsigned int size = LS_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(word);
       KWayCacheSet<word> storage[LS_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(word)];
-      byte currReqIndex = 0;
-      address currReqTag = 0;
-      byte foundIndex = 0;
     } cache;
     std::string extra = "";
   } LS;
@@ -65,8 +62,6 @@ struct ExecutionState
     struct {
       unsigned int size = IC_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(fetch_window);
       CacheLine<fetch_window> storage[IC_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(fetch_window)];
-      byte currReqIndex = 0;
-      byte currReqTag = 0;
     } cache;
     std::string extra = "";
   } IC;
@@ -87,5 +82,15 @@ struct ExecutionState
     std::string extra = "";
   } EX;
 
-  std::string toJSON() const;
+  inline std::string hexW(const word&        value,
+                          const std::string& prefix = "0x",
+                          const byte&        padToLen = 4,
+                          const bool&        quotes = true) const;
+  inline std::string hexFW(const fetch_window&             value,
+                           const std::string&              divider = "_",
+                           const std::vector<std::string>& margins = {"[ ", " ]"},
+                           const bool&                    quotes = true,
+                           const byte&                     padToLen = 4,
+                           const std::string&              prefix = "") const;
+  std::string toJSON();
 };

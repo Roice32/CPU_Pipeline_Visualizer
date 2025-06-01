@@ -120,10 +120,10 @@ class RegistersComponent(DiagramComponent):
     
     details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
 
-    details.append({"type": "text", "content": f"IP: {hex(regData.get('IP', 0))}", 
+    details.append({"type": "text", "content": f"IP: {regData.get('IP', 0)}", 
                     "changed": previous_state and regData.get('IP', 0) != prevRegData.get('IP', 0)})
     
-    details.append({"type": "text", "content": f"Stack Base: {hex(regData.get('stackBase', 0))}", 
+    details.append({"type": "text", "content": f"Stack Base: {regData.get('stackBase', 0)}", 
                     "changed": previous_state and regData.get('stackBase', 0) != prevRegData.get('stackBase', 0)})
     
     details.append({"type": "text", "content": f"Stack Size: {regData.get('stackSize', 0)}", 
@@ -134,14 +134,15 @@ class RegistersComponent(DiagramComponent):
     details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
 
     # Add flags as a table
-    flags = ["ZERO", "EQUAL", "CARRY", "EXCEPTION"]
-    allFlagsValue = regData.get('flags', 0)
+    flagsNames = ["ZERO", "EQUAL", "CARRY", "EXCEPTION"]
+    flags = regData.get('flags', 0)
+    allFlagsValue = int(flags, base=16)
     flagValues = [allFlagsValue & 0x8000, allFlagsValue & 0x4000, allFlagsValue & 0x2000, allFlagsValue & 0x0800]
     prevAllFlagsValue = prevRegData.get('flags', 0) if previous_state else 0
     flagTableHeaders = ["Flag", "Value", "Changed"] # Keep "Changed" for internal logic
     flagTableRows = []
-    changed = "Yes" if previous_state and allFlagsValue != prevAllFlagsValue else "No"
-    for i, flag in enumerate(flags):
+    changed = "Yes" if previous_state and flags != prevAllFlagsValue else "No"
+    for i, flag in enumerate(flagsNames):
       flagTableRows.append([flag, "1" if flagValues[i] else "0", changed])
     
     details.append({"type": "text", "content": "Flags table:", "changed": False})
@@ -165,11 +166,11 @@ class RegistersComponent(DiagramComponent):
     zRegs = regData.get("Z", [])
     prevZRegs = prevRegData.get("Z", []) if previous_state else []
     
-    z_table_headers = ["Register", "Value", "Changed"] # Keep "Changed" for internal logic
+    z_table_headers = ["Register"] + [f"Word 0x{i}" for i in range(4)] + ["Changed"] # Keep "Changed" for internal logic
     z_table_rows = []
     for i, zReg in enumerate(zRegs):
       changed = "Yes" if (previous_state and (i >= len(prevZRegs) or zReg != prevZRegs[i])) else "No"
-      z_table_rows.append([f"Z{i}", str([v for v in zReg]), changed])
+      z_table_rows.append([f"Z{i}"] + [zReg[i] for i in range(4)] + [changed])
 
     if z_table_rows:
         details.append({"type": "table", "headers": z_table_headers, "rows": z_table_rows})
@@ -204,7 +205,7 @@ class StackComponent(DiagramComponent):
       stack_table_rows = []
       for i, val in enumerate(stack):
         changed = "Yes" if (previous_state and (i >= len(prevStack) or val != prevStack[i])) else "No"
-        stack_table_rows.append([str(i), hex(val), changed])
+        stack_table_rows.append([str(i), val, changed])
       details.append({"type": "table", "headers": stack_table_headers, "rows": stack_table_rows})
 
       # Check if stack size changed
@@ -302,7 +303,7 @@ class ModuleComponent(DiagramComponent):
       else:  # IC
         internalIP = componentData.get('internalIP', 0)
         prevInternalIP = prevComponentData.get('internalIP', 0)
-        details.append({"type": "text", "content": f"InternalIP: {hex(internalIP)}", 
+        details.append({"type": "text", "content": f"InternalIP: {internalIP}", 
                         "changed": previous_state and internalIP != prevInternalIP})
     
     elif self.name == "DE":
@@ -311,7 +312,7 @@ class ModuleComponent(DiagramComponent):
       
       details.append({"type": "text", "content": f"Last Decoded Instruction: {fwStorage.get('lastDecodedInstr', 'N/A')}",
                       "changed": previous_state and fwStorage.get('lastDecodedInstr') != prevFwStorage.get('lastDecodedInstr')})
-      details.append({"type": "text", "content": f"Cache Start Address: {hex(fwStorage.get('cacheStartAddr', 0))}", 
+      details.append({"type": "text", "content": f"Cache Start Address: {fwStorage.get('cacheStartAddr', 0)}", 
                       "changed": previous_state and fwStorage.get('cacheStartAddr', 0) != prevFwStorage.get('cacheStartAddr', 0)})
       
       details.append({"type": "text", "content": f"Stored Words Count: {fwStorage.get('storedWordsCount', 0)}", 
@@ -321,12 +322,10 @@ class ModuleComponent(DiagramComponent):
       prevStoredFWs = prevFwStorage.get("storedFWs", [])
       
       if storedFWs:
-          fw_table_headers = ["FW Index", "Value", "Changed"] # Keep "Changed" for internal logic
-          fw_table_rows = []
-          for i, fw in enumerate(storedFWs):
-              changed = "Yes" if (previous_state and (i >= len(prevStoredFWs) or fw != prevStoredFWs[i])) else "No"
-              fw_table_rows.append([str(i), str(fw), changed])
-          details.append({"type": "table", "headers": fw_table_headers, "rows": fw_table_rows})
+          changed = "Yes" if previous_state and storedFWs != prevStoredFWs else "No"
+          details.append({"type": "table",
+                          "headers": ["Fetch Windows Temp Storage", "Changed"],
+                          "rows": [[storedFWs, changed]]})
     
     if componentData.get('extra') != "":
       details.append({"type": "text", "content": f"Extra info: {componentData.get('extra', 'N/A')}",
@@ -374,20 +373,20 @@ class CacheComponent(DiagramComponent):
           changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry != prevStorage[i])) else "No"
           storageTableRows.append([
             str(i) + ".0",
-            str(entry[0].get("data", "N/A")),
-            str(entry[0].get("tag", "N/A")),
-            str(entry[0].get("valid", False)),
-            str(entry[0].get("lastHitTime", "N/A")),
-            str(entry[0].get("modified", False)),
+            entry[0].get("data", "N/A"),
+            entry[0].get("tag", "N/A"),
+            entry[0].get("valid", False),
+            entry[0].get("lastHitTime", "N/A"),
+            entry[0].get("modified", False),
             changed
           ])
           storageTableRows.append([
             str(i) + ".1",
-            str(entry[1].get("data", "N/A")),
-            str(entry[1].get("tag", "N/A")),
-            str(entry[1].get("valid", False)),
-            str(entry[1].get("lastHitTime", "N/A")),
-            str(entry[1].get("modified", False)),
+            entry[1].get("data", "N/A"),
+            entry[1].get("tag", "N/A"),
+            entry[1].get("valid", False),
+            entry[1].get("lastHitTime", "N/A"),
+            entry[1].get("modified", False),
             changed
           ])
       else: # IC_Cache
@@ -395,9 +394,9 @@ class CacheComponent(DiagramComponent):
           changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry != prevStorage[i])) else "No"
           storageTableRows.append([
               str(i),
-              str(entry.get("data", "N/A")),
-              str(entry.get("tag", "N/A")),
-              str(entry.get("valid", False)),
+              entry.get("data", "N/A"),
+              entry.get("tag", "N/A"),
+              entry.get("valid", False),
               changed
           ])
 
@@ -454,7 +453,7 @@ class PipelineComponent(DiagramComponent):
           associated_ip = entry.get("associatedIP", "N/A")
           exception_triggered = entry.get("exceptionTriggered", "N/A")
           
-          pipeline_table_rows.append([str(data_val), str(sent_at), str(associated_ip), str(exception_triggered), changed])
+          pipeline_table_rows.append([data_val, sent_at, associated_ip, exception_triggered, changed])
       
       if pipeline_table_rows:
           details.append({"type": "table", "headers": pipeline_table_headers, "rows": pipeline_table_rows})

@@ -123,6 +123,35 @@ void ExecutionRecorder::popPipeData(const Pipes &pipeName)
   }
 }
 
+void ExecutionRecorder::recordMemoryChanges(const std::vector<address>& addr, const std::vector<word>& value)
+{
+  auto& lastState = states.back();
+  if (lastState.memoryUnchangedSinceCycle != lastState.cycle)
+  {
+    lastState.memoryUnchangedSinceCycle = lastState.cycle;
+  }
+
+  for (size_t i = 0; i < addr.size(); ++i)
+  {
+    lastState.memoryChanges[addr[i]] = value[i] >> 8;
+    lastState.memoryChanges[addr[i] + 1] = value[i] & 0xFF;
+  }
+}
+
+void ExecutionRecorder::storeLSCacheLine(const byte& tag,
+                                         const byte &index,
+                                         const byte &innerIndex,
+                                         const word &data,
+                                         const clock_time &time)
+{
+  auto& cacheLine = states.back().LS.cache.storage[index].storedLines[innerIndex];
+  cacheLine.data = data;
+  cacheLine.lastHitTime = time;
+  cacheLine.valid = true;
+  cacheLine.modified = false;
+  cacheLine.tag = tag;
+}
+
 void ExecutionRecorder::invalidateICCacheLine(const byte &index)
 {
   states.back().IC.cache.storage[index].valid = false;
@@ -162,7 +191,7 @@ void ExecutionRecorder::dumpSimulationToJSONs(const std::string &outputDirPath)
   }
 }
 
-void ExecutionRecorder::dumpStateToJSON(const ExecutionState& state, const std::string& outputDirPath)
+void ExecutionRecorder::dumpStateToJSON(ExecutionState& state, const std::string& outputDirPath)
 {
   std::string stateJsonFilePath = outputDirPath + std::to_string(state.cycle) + ".json";
   std::ofstream file(stateJsonFilePath);

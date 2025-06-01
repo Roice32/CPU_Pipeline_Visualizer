@@ -4,9 +4,14 @@
 LoadStore::LoadStore(std::shared_ptr<Memory> simulatedMemory,
   std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<address>, SynchronizedDataPackage<fetch_window>>> commPipeWithIC,
   std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithEX,
-  std::shared_ptr<ClockSyncPackage> clockSyncVars):
-    IMemoryHandler(simulatedMemory), IClockBoundModule(clockSyncVars, LS_CYCLES_PER_OP), LSLogger(),
-    fromICtoMe(commPipeWithIC), fromEXtoMe(commPipeWithEX), cache(KWayAssociativeCache<word>()) {};
+  std::shared_ptr<ClockSyncPackage> clockSyncVars,
+  std::shared_ptr<ExecutionRecorder> recorder):
+    IMemoryHandler(simulatedMemory),
+    IClockBoundModule(clockSyncVars, LS_CYCLES_PER_OP),
+    fromICtoMe(commPipeWithIC),
+    fromEXtoMe(commPipeWithEX),
+    cache(KWayAssociativeCache<word>()),
+    recorder(recorder) {};
 
 byte LoadStore::loadFrom(address addr)
 {
@@ -32,31 +37,41 @@ void LoadStore::storeAt(address addr, byte value)
 
 std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
 {
+  recorder->modifyModuleState(LS,
+                              "Handling request from EX for "
+                                + std::string(req.isStoreOperation ? "store at #" : "load from #")
+                                + convDecToHex(req.reqAddr) + " with "
+                                + std::to_string(req.wordsSizeOfReq) + " words.");
   physicalMemoryAccessHappened = false;
+  address currAddr;
+
   if (req.isStoreOperation)
   {
-    address currAddr;
     for (byte ind = 0; ind < req.wordsSizeOfReq; ++ind)
     {
       currAddr = req.reqAddr + WORD_BYTES * ind;
       cache.prepareForOps(currAddr);
       DiscardedCacheElement<word> removedElem = cache.store(req.reqData[ind], getCurrTime());
+      recorder->storeLSCacheLine(cache.getCurrReqTag(),
+                                 cache.getCurrReqIndex(),
+                                 cache.getCurrReqInnerIndex(),
+                                 req.reqData[ind],
+                                 getCurrTime());
       if (removedElem.discardHappened)
       {
         storeAt(removedElem.addr, removedElem.data >> 8);
         storeAt(removedElem.addr + 1, removedElem.data);
-        logAdditional("\tSwapping word at #" +
-          convDecToHex(removedElem.addr) + 
-          " from cache with word at #" +
-          convDecToHex(req.reqAddr) +
-          " from physical memory.\n");
+        recorder->recordMemoryChanges({removedElem.addr}, {removedElem.data});
         physicalMemoryAccessHappened = true;
       }
-      
+      else
+        recorder->addExtraInfo(LS, "Cache hit for word at #" + convDecToHex(currAddr));
+
       SynchronizedDataPackage<fetch_window> fwInvalidationPckg;
       fwInvalidationPckg.data = currAddr;
       fwInvalidationPckg.exceptionTriggered = true;
       fromICtoMe->sendB(fwInvalidationPckg);
+      recorder->pushLStoICData(fwInvalidationPckg);
     }
     return std::vector<word> {};
   }
@@ -65,30 +80,33 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
   word currWord;
   for (byte ind = 0; ind < req.wordsSizeOfReq; ++ind)
   {
-    cache.prepareForOps(req.reqAddr + WORD_BYTES * ind);
+    currAddr = req.reqAddr + WORD_BYTES * ind;
+    cache.prepareForOps(currAddr);
     if (cache.isAHit())
     {
+      recorder->addExtraInfo(DE, "Cache hit for word at #" + convDecToHex(currAddr));
       currWord = cache.get(getCurrTime());
       response.push_back(currWord);
       continue;
     }
 
     currWord = 0;
-    currWord |= loadFrom(req.reqAddr + WORD_BYTES * ind);
+    currWord |= loadFrom(currAddr);
     currWord <<= 8;
-    currWord |= loadFrom(req.reqAddr + WORD_BYTES * ind + 1);
+    currWord |= loadFrom(currAddr + 1);
     response.push_back(currWord);
     
     DiscardedCacheElement<word> removedElem = cache.store(currWord, getCurrTime(), true);
+    recorder->storeLSCacheLine(cache.getCurrReqTag(),
+                               cache.getCurrReqIndex(),
+                               cache.getCurrReqInnerIndex(),
+                               currWord,
+                               getCurrTime());
     if (removedElem.discardHappened)
     {
       storeAt(removedElem.addr, removedElem.data >> 8);
       storeAt(removedElem.addr + 1, removedElem.data);
-      logAdditional("\tSwapping word at #" +
-        convDecToHex(removedElem.addr) + 
-        " from cache with word at #" +
-        convDecToHex(req.reqAddr) +
-        " from physical memory\n");
+      recorder->recordMemoryChanges({removedElem.addr}, {removedElem.data});
     }
 
     physicalMemoryAccessHappened = true;
@@ -111,6 +129,7 @@ void LoadStore::executeModuleLogic()
   if (EXMadeARequest && EXShouldHavePriority)
   {
     SynchronizedDataPackage<MemoryAccessRequest> exReq = fromEXtoMe->getA();
+    recorder->popPipeData(EXtoLS);
     awaitNextTickToHandle(exReq);
     std::vector<word> responseForEX;
     SynchronizedDataPackage<std::vector<word>> syncResponse{};
@@ -122,7 +141,6 @@ void LoadStore::executeModuleLogic()
     }
     else
     {
-      logComplete(getCurrTime(), logAccept(exReq.data.reqAddr, true));
       responseForEX = handleRequestFromEX(exReq.data);
       syncResponse.data = responseForEX;
     }
@@ -133,19 +151,24 @@ void LoadStore::executeModuleLogic()
     clock_time lastTick = waitTillLastTick();
     syncResponse.sentAt = lastTick;
     fromEXtoMe->sendB(syncResponse);
-    if (exReq.data.isStoreOperation && !syncResponse.exceptionTriggered)
-      logComplete(lastTick, log(LoggablePackage(exReq.data.reqData, exReq.data.reqAddr, true, true)));
-    else
-      logComplete(lastTick, log(LoggablePackage(responseForEX, exReq.data.reqAddr, false, true)));
-    if (!physicalMemoryAccessHappened)
-      logAdditional("\t(Entirely using LS's cache)\n");
+    
+    recorder->pushLStoEXData(syncResponse);
+    recorder->modifyModuleState(LS,
+                                "Finished handling request from EX from cycle "
+                                + std::to_string(exReq.sentAt)
+                                + " regarding #" + convDecToHex(exReq.data.reqAddr)
+                                + " with "
+                                + std::string(physicalMemoryAccessHappened ? "no" : "")
+                                + " physical memory access.");
     return;
   }
   
   SynchronizedDataPackage<address> lsReq = fromICtoMe->getA();
+  recorder->popPipeData(Pipes::ICtoLS);
   awaitNextTickToHandle(lsReq);
   if (clockSyncVars->running)
-    logComplete(getCurrTime(), logAccept(lsReq.data, false));
+    recorder->modifyModuleState(LS,
+                                "Handling request from IC for fetch window at #" + convDecToHex(lsReq.data));
 
   fetch_window responseForIC = bufferedLoadFrom(lsReq.data);
   fetch_window updatedResponseForIC = 0;
@@ -163,8 +186,11 @@ void LoadStore::executeModuleLogic()
   clock_time lastTick = waitTillLastTick();
   syncResponse.sentAt = lastTick;
   fromICtoMe->sendB(syncResponse);
-  if (clockSyncVars->running)
-    logComplete(lastTick, log(LoggablePackage(responseForIC, lsReq.data)));
+  recorder->pushLStoICData(syncResponse);
+  recorder->modifyModuleState(LS,
+                              "Finished handling request from IC from cycle "
+                              + std::to_string(lsReq.sentAt)
+                              + " regarding #" + convDecToHex(lsReq.data));
   return;
 }
 
@@ -175,7 +201,9 @@ void LoadStore::emptyCacheIntoMemory()
   {
     storeAt(entry.first, entry.second >> 8);
     storeAt(entry.first + 1, entry.second);
+    recorder->recordMemoryChanges({entry.first}, {entry.second});
   }
+  recorder->addExtraInfo(LS, "Emptied cache contents into physical memory.");
 }
 
 void LoadStore::run()

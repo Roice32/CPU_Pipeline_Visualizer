@@ -32,7 +32,7 @@ private:
   std::map<address, word> memory = {};
 
   std::vector<ExecutionState> states = {};
-  void dumpStateToJSON(const ExecutionState& state, const std::string& outputDirPath);
+  void dumpStateToJSON(ExecutionState& state, const std::string& outputDirPath);
   void updateMemory(const std::unordered_map<address, word>& memoryChanges);
   void dumpMemoryToJSON(const clock_time cycle, const std::string& outputDirPath);
 
@@ -58,8 +58,15 @@ public:
     { states.back().pipes.EXtoLS.push_back(data); }
   inline void pushLStoEXData(const SynchronizedDataPackage<std::vector<word>>& data)
     { states.back().pipes.LStoEX.push_back(data); }
-
   void popPipeData(const Pipes& pipeName);
+
+  void recordMemoryChanges(const std::vector<address>& addr, const std::vector<word>& value);
+  void storeLSCacheLine(const byte& tag,
+                        const byte& index,
+                        const byte& innerIndex,
+                        const word& data,
+                        const clock_time& time);
+
   void invalidateICCacheLine(const byte& index);
   void swapICCacheLine(const CacheLine<fetch_window>& newLine, const byte& index);
   void modifICInternalIP(const address& newIP)
