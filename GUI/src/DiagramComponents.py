@@ -448,10 +448,13 @@ class PipelineComponent(DiagramComponent):
               changed = "Yes"
           
           # Assuming the entry dictionary has these keys
-          data_val = entry.get("data", "N/A")
+          exception_triggered = entry.get("exceptionTriggered", "N/A")
+          if not exception_triggered:
+            data_val = entry.get("data", "N/A")
+          else:
+            data_val = f"Exception:\n{entry.get('excpData', 'Unknown')}\nHandler addr:\n{entry.get('handlerAddr', 'N/A')}"
           sent_at = entry.get("sentAt", "N/A")
           associated_ip = entry.get("associatedIP", "N/A")
-          exception_triggered = entry.get("exceptionTriggered", "N/A")
           
           pipeline_table_rows.append([data_val, sent_at, associated_ip, exception_triggered, changed])
       

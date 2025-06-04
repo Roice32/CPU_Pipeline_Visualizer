@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import (
   QSpacerItem, QSizePolicy, QScrollArea
 )
 from PyQt5.QtCore import Qt, QEvent, QTimer
-from PyQt5.QtGui import QPainter, QIcon, QColor, QFont
+from PyQt5.QtGui import QPainter, QIcon, QColor, QFont, QKeySequence
+from PyQt5.QtWidgets import QShortcut
 from DiagramComponents import CreateComponent, ComponentColors
 
 
@@ -76,23 +77,23 @@ class SimulationTab(QWidget):
 
     # Create buttons
     toStartButton = QPushButton(toStartIcon, "")
-    previousButton = QPushButton(previousIcon, "")
+    self.previousButton = QPushButton(previousIcon, "")
     self.playPauseButton = QPushButton(playIcon, "")
-    nextButton = QPushButton(nextIcon, "")
+    self.nextButton = QPushButton(nextIcon, "")
     toEndButton = QPushButton(toEndIcon, "")
 
     # Connect buttons to functions
     toStartButton.clicked.connect(self.GoToFirstCycle)
-    previousButton.clicked.connect(self.DecreaseCycle)
+    self.previousButton.clicked.connect(self.DecreaseCycle)
     self.playPauseButton.clicked.connect(self.TogglePlayPause)
-    nextButton.clicked.connect(self.IncreaseCycle)
+    self.nextButton.clicked.connect(self.IncreaseCycle)
     toEndButton.clicked.connect(self.GoToLastCycle)
 
     # Add buttons to layout
     buttonLayout.addWidget(toStartButton)
-    buttonLayout.addWidget(previousButton)
+    buttonLayout.addWidget(self.previousButton)
     buttonLayout.addWidget(self.playPauseButton)
-    buttonLayout.addWidget(nextButton)
+    buttonLayout.addWidget(self.nextButton)
     buttonLayout.addWidget(toEndButton)
 
     sliderLayout.addLayout(buttonLayout)
@@ -161,6 +162,23 @@ class SimulationTab(QWidget):
     self.autoPlayTimer = QTimer(self)
     self.autoPlayTimer.timeout.connect(self.IncreaseCycle)
     self.autoPlayTimer.setInterval(1000)
+
+    # Setup keyboard shortcuts
+    self.SetupKeyboardShortcuts()
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def SetupKeyboardShortcuts(self):
+    # Left arrow for previous cycle
+    leftShortcut = QShortcut(QKeySequence(Qt.Key_Left), self)
+    leftShortcut.activated.connect(self.DecreaseCycle)
+    
+    # Right arrow for next cycle
+    rightShortcut = QShortcut(QKeySequence(Qt.Key_Right), self)
+    rightShortcut.activated.connect(self.IncreaseCycle)
+    
+    # Space bar for play/pause toggle
+    spaceShortcut = QShortcut(QKeySequence(Qt.Key_Space), self)
+    spaceShortcut.activated.connect(self.TogglePlayPause)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def ResizeEvent(self, event):
@@ -438,23 +456,24 @@ class SimulationTab(QWidget):
           headers = itemData.get("headers", [])
           rows = itemData.get("rows", [])
 
+          # Process the Changed column
+          changedColIdx = -1
           if "Changed" in headers:
             changedColIdx = headers.index("Changed")
-            headers.pop(changedColIdx)
-            processedRows = []
-            for rowData in rows:
-              rowChanged = False
-              if changedColIdx < len(rowData) and str(rowData[changedColIdx]).lower() == "yes":
-                rowChanged = True
-              newRow = rowData[:changedColIdx] + rowData[changedColIdx+1:]
-              processedRows.append({"data": newRow, "changed": rowChanged})
-            rows = processedRows
-          else:
-            rows = [{"data": rowData, "changed": False} for rowData in rows]
-
+            headers.pop(changedColIdx)  # Remove Changed column from headers
+            
+          processedRows = []
+          for rowData in rows:
+            rowChanged = rowData[changedColIdx]=="Yes" if changedColIdx != -1 else False
+            if changedColIdx != -1:
+              newRow = rowData[:changedColIdx]
+            else:
+              newRow = rowData
+            processedRows.append({"data": newRow, "changed": rowChanged})
+          
           tableWidget.setColumnCount(len(headers))
           tableWidget.setHorizontalHeaderLabels(headers)
-          tableWidget.setRowCount(len(rows))
+          tableWidget.setRowCount(len(processedRows))
 
           headerFont = QFont()
           headerFont.setPointSize(12)
@@ -463,17 +482,15 @@ class SimulationTab(QWidget):
             if headerItem:
               headerItem.setFont(headerFont)
 
-          for rIdx, rowItem in enumerate(rows):
+          for rIdx, rowItem in enumerate(processedRows):
             rowData = rowItem["data"]
-            rowChanged = rowItem["changed"]
             for cIdx, cellData in enumerate(rowData):
               tableItem = QTableWidgetItem(str(cellData))
               tableItem.setFlags(Qt.ItemIsEnabled)
               tableItem.setFont(detailsFont)
               tableItem.setTextAlignment(Qt.AlignCenter)
-              if rowChanged:
-                changedColor = ComponentColors.FILL_CHANGED.name()
-                tableItem.setBackground(QColor(changedColor))
+              if rowItem["changed"]:
+                tableItem.setBackground(ComponentColors.FILL_CHANGED)
               tableWidget.setItem(rIdx, cIdx, tableItem)
 
           tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
@@ -483,11 +500,6 @@ class SimulationTab(QWidget):
             "   border: 1px solid black;"
             "   background-color: white;"
             "}"
-            "QTableWidget::item {"
-            "   padding: 3px;"
-            "   border: none;"
-            "}"
-            "QTableWidget::item:alternate { background-color: #f8f8f8; }"
             "QHeaderView::section {"
             "   background-color: #dcdcdc;"
             "   color: black;"
