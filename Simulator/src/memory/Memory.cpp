@@ -3,7 +3,7 @@
 #include "Memory.h"
 #include "Config.h"
 
-#include <cassert>
+#include <iostream>
 
 byte Memory::hexCharToDec(const char digit)
 {
@@ -31,20 +31,23 @@ void Memory::storeData(address& currAddr, const char* instr)
 
 bool Memory::isValidInputLine(std::string inLine)
 {
-  if (inLine.size() > 5)
-    return false;
+  std::cout << "Line: " << inLine << "\n";
   byte ind = 0;
-  if (inLine.size() == 5)
+  int lineDataSize = ADDRESS_WIDTH / WORD_BYTES / 2;
+
+  if (inLine.size() >= 5)
   {
     if (inLine[0] != '#')
       return false;
     ind = 1;
   }
-  while (ind < inLine.size())
+
+  while (lineDataSize > 0)
   {
     if (!(inLine[ind] >= '0' && inLine[ind] <= '9' || inLine[ind] >= 'a' && inLine[ind] <= 'f'))
       return false;
     ++ind;
+    --lineDataSize;
   }
 
   return true;
@@ -57,15 +60,19 @@ Memory::Memory(const char* hexSourceFilePath)
   
   std::ifstream sourceCodeFile(hexSourceFilePath);
 
-  assert(sourceCodeFile.is_open() && "Unable to open specified input file");
+  if (!sourceCodeFile)
+  {
+    std::cout << "Failed to open file: " << hexSourceFilePath << "\n";
+    throw "INVALID_INPUT_FILE";
+  }
 
-  while(sourceCodeFile >> instrString)
+  while(std::getline(sourceCodeFile, instrString))
   {
     if (!isValidInputLine(instrString))
       throw "INVALID_INPUT_FILE";
 
     if (char (instrString.c_str()[0]) == '#')
-      jumpToNewAddr(currAddr, instrString.c_str() + 1);
+      jumpToNewAddr(currAddr, instrString.substr(1, ADDRESS_WIDTH / WORD_BYTES / 2).c_str());
     else
       storeData(currAddr, instrString.c_str());
   }

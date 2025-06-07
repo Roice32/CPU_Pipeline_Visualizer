@@ -134,7 +134,7 @@ class RegistersComponent(DiagramComponent):
     details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
 
     # Add flags as a table
-    flagsNames = ["ZERO", "EQUAL", "CARRY", "EXCEPTION"]
+    flagsNames = ["ZERO", "EQUAL", "GREATER", "EXCEPTION"]
     flags = regData.get('flags', 0)
     allFlagsValue = int(flags, base=16)
     flagValues = [allFlagsValue & 0x8000, allFlagsValue & 0x4000, allFlagsValue & 0x2000, allFlagsValue & 0x0800]

@@ -258,7 +258,7 @@ void ExecutionRecorder::setEXException(const SynchronizedDataPackage<Instruction
       exceptionMsg << "Unknown exception handler address";
   }
   
-  exceptionMsg << " at #" + convDecToHex(faultyInstr.associatedIP) + "\n";
+  exceptionMsg << " at #" + convDecToHex(faultyInstr.associatedIP);
   states.back().EX.activeException = exceptionMsg.str();
 }
 

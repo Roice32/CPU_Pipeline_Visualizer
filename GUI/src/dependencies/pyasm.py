@@ -167,19 +167,23 @@ class Assembler:
       encoding = self.instrEncodings[mnemonic]
       #Check if the instruction is valid
       if src1Type not in encoding.src1:
-        raise Exception(f"src1 can't be of type {src1Type} for \"{mnemonic.upper()}\"\nValid types are: {list(encoding.src1.keys())}")
+        raise Exception(f"src1 can't be of type {src1Type} for \"{mnemonic.upper()}\"\n"
+                        + f"Valid types are: {list(encoding.src1.keys())}")
       if src2Type not in encoding.src2:
-        raise Exception(f"src2 can't be of type {src2Type} for \"{mnemonic.upper()}\"\nValid types are: {list(encoding.src2.keys())}")
+        raise Exception(f"src2 can't be of type {src2Type} for \"{mnemonic.upper()}\"\n"
+                        + f"Valid types are: {list(encoding.src2.keys())}")
 
       if encoding.src1[src1Type] is not None:
         exclusiveSrcs:list[SrcType] = encoding.src1[src1Type] #type:ignore
         if src2Type not in exclusiveSrcs:
-          raise Exception(f"src2 can't be of type {src2Type} for \"{mnemonic.upper()}\" when src1 is of type {src1Type}\nValid types for src2 are: {list(exclusiveSrcs)}")
+          raise Exception(f"src2 can't be of type {src2Type} for \"{mnemonic.upper()}\" when src1 is of type {src1Type}\n"
+                          + f"Valid types for src2 are: {[src.name for src in exclusiveSrcs]}")
 
       if encoding.src2[src2Type] is not None:
         exclusiveSrcs:list[SrcType] = encoding.src2[src2Type] #type:ignore
         if src1Type not in exclusiveSrcs:
-          raise Exception(f"src1 can't be of type {src1Type} for \"{mnemonic.upper()}\" when src2 is of type {src2Type}\nValid types for src1 are: {list(exclusiveSrcs)}")
+          raise Exception(f"src1 can't be of type {src1Type} for \"{mnemonic.upper()}\" when src2 is of type {src2Type}\n"
+                          + f"Valid types for src1 are: {[src.name for src in exclusiveSrcs]}")
 
       instrLen = 2 #bytes
       if encoding.opcode is None:
@@ -355,17 +359,17 @@ class Assembler:
 
     with open(outFile, "w") as output:
       for label in self.bootInstructions:
-        output.write(f"#{self.bootStartAddr:04x}\n")
+        output.write(f"#{self.bootStartAddr:04x} (boot_{label}):\n")
         for instr in self.bootInstructions[label]:
           self._handleInstr(output, instr)
 
       for addr in self.excpVectors:
-        output.write(f"#{addr:04x}\n")
+        output.write(f"#{addr:04x} (.vector_{addr}):\n")
         for instr in self.excpVectors[addr]:
           self._handleInstr(output, instr)
 
       for label in self.midInstrDict:
-        output.write(f"#{self.labelDict[label]:04x}\n")
+        output.write(f"#{self.labelDict[label]:04x} ({label}):\n")
         for instr in self.midInstrDict[label]:
           self._handleInstr(output, instr)
 

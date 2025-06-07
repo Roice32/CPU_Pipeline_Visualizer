@@ -272,15 +272,19 @@ class InputTab(QWidget):
       process.start("python.exe", [parseScript, "--config-file", configFile, "--in-file", asmPath, "--out-file", hexPath])
       process.waitForFinished()
 
+      processOutput = process.readAllStandardOutput().data().decode()
+      if processOutput != "":
+        raise Exception(processOutput)
+
       # Load the generated hex file
       if os.path.exists(hexPath):
         with open(hexPath, 'r') as file:
           self.hexText.setText(file.read())
         self.SetStatusText(".asm to .hex conversion successful.", error=False)
-      else:
-        self.SetStatusText("Conversion did not produce .hex file.", error=True)
+
     except Exception as e:
-      self.SetStatusText(f"Error converting .asm to .hex: {str(e)}", error=True)
+      self.SetStatusText(f"Error converting .asm to .hex", error=True)
+      QMessageBox.critical(self, "Error", str(e))
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def ExecuteSimulation(self):
@@ -304,7 +308,6 @@ class InputTab(QWidget):
           if os.path.isfile(file_path):
             os.remove(file_path)
 
-    # Run parsing script
     self.SetStatusText("Executing simulation...", error=False)
     process = QProcess()
     process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, simulationPath])
@@ -312,9 +315,9 @@ class InputTab(QWidget):
     process.waitForFinished()
     # Check if the execution was successful
     if process.exitCode() != 0:
-      processError = process.readAllStandardError().data().decode()
+      processOutput = process.readAllStandardOutput().data().decode()
       self.SetStatusText(f"Simulation failed", error=True)
-      QMessageBox.critical(self, "Error", f"{processError}")
+      QMessageBox.critical(self, "Error", f"{processOutput}")
       return
 
     # Notify simulation tab to load data

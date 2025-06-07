@@ -8,7 +8,7 @@ void ExecGather::executeInstruction(SynchronizedDataPackage<Instruction> instrPa
   for (byte wordInd = 0; wordInd < WORDS_PER_Z_REGISTER; ++wordInd)
   {
     targetAddr = (*regs->zRegisters[instrPackage.data.src2 - Z0])[wordInd];
-    retrievedWordPckg = requestDataAt( targetAddr, 1);
+    retrievedWordPckg = requestDataAt(targetAddr, 1);
     if (retrievedWordPckg.exceptionTriggered)
     {
       handleException(SynchronizedDataPackage<Instruction>(instrPackage.associatedIP,

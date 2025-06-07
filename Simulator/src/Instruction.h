@@ -72,7 +72,7 @@ private:
     if (mustDisplayParamValue(src))
     {
       if (src == IMM)
-        result += convDecToHex(param);
+        result += "0x" + convDecToHex(param);
       else
         result += "[" + convDecToHex(param) + "]";
     }
