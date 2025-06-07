@@ -1,14 +1,9 @@
 #include "ExecJumpOp.h"
 
-ExecJumpOp::ExecJumpOp(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-  std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithDE,
-  IClockBoundModule* refToEX,
-  std::shared_ptr<CPURegisters> registers):
-    IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
-
 void ExecJumpOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
   Instruction instr = instrPackage.data;
+  recorder->modifyModuleState(EX, "Executing " + instr.toString());
   SynchronizedDataPackage<std::vector<word>> jumpAddressPckg = getFinalArgValue(instr.src1, instr.param1);
 
   if (jumpAddressPckg.exceptionTriggered)
@@ -26,25 +21,17 @@ void ExecJumpOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPa
   bool zeroJump = (instr.opCode == JZ && (*regs->flags & ZERO));
   SynchronizedDataPackage<address> mssgToDE(jumpAddressPckg.data[0]);
   clock_time lastTick = refToEX->waitTillLastTick();
-  logComplete(lastTick, log(LoggablePackage(instr, jumpAddressPckg.data[0], 0, false)));
   if (plainJump || equalJump || lessJump || greaterJump || zeroJump)
   {
-    logAdditional(" (yes)\n");
-    *regs->IP = jumpAddressPckg.data[0];
+    recorder->addExtraInfo(EX, "Jump taken to #" + convDecToHex(jumpAddressPckg.data[0]));
+    jumpIP(jumpAddressPckg.data[0]);
     mssgToDE.sentAt = lastTick;
     fromDEtoMe->sendB(mssgToDE);
+    recorder->pushEXtoDEData(mssgToDE);
   }
   else
   {
-    logAdditional(" (no)\n");
+    recorder->addExtraInfo(EX, "Jump not taken");
     moveIP(instr);
   }
-}
-
-std::string ExecJumpOp::log(LoggablePackage toLog)
-{
-  std::string result = "Finished executing: ";
-  result += opNames.at((OpCode) toLog.instr.opCode);
-  result += " #" + convDecToHex(toLog.actualParam1);
-  return result;
 }

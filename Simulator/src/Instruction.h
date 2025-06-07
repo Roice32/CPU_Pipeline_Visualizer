@@ -72,7 +72,7 @@ private:
     if (mustDisplayParamValue(src))
     {
       if (src == IMM)
-        result += std::to_string(param);
+        result += convDecToHex(param);
       else
         result += "[" + convDecToHex(param) + "]";
     }

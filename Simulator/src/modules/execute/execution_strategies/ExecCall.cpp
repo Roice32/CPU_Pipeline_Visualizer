@@ -1,14 +1,9 @@
 #include "ExecCall.h"
 
-ExecCall::ExecCall(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-  std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithDE,
-  IClockBoundModule* refToEX,
-  std::shared_ptr<CPURegisters> registers):
-    IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
-
 void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
   Instruction instr = instrPackage.data;
+  recorder->modifyModuleState(EX, "Executing " + instr.toString());
 
   if (*regs->stackSize < *regs->stackPointer || *regs->stackPointer < (REGISTER_COUNT + 2) * WORD_BYTES)
   {
@@ -33,7 +28,15 @@ void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
   savedState.push_back(*regs->flags);
   savedState.push_back(*regs->IP + 2 * WORD_BYTES);
   *regs->stackPointer -= (REGISTER_COUNT + 2) * WORD_BYTES;
-  SynchronizedDataPackage<std::vector<word>> storeResultPckg = storeDataAt(*regs->stackBase + *regs->stackPointer, REGISTER_COUNT + 2, savedState);
+
+  std::vector<address> savedStateAddrs;
+  for (int ind = 0; ind < savedState.size(); ++ind)
+    savedStateAddrs.push_back(*regs->stackBase + *regs->stackPointer + ind * WORD_BYTES);
+
+  SynchronizedDataPackage<std::vector<word>> storeResultPckg = storeDataAt(*regs->stackBase + *regs->stackPointer,
+                                                                           REGISTER_COUNT + 2,
+                                                                           savedState);
+  recorder->pushToStack(savedState, true);
   SynchronizedDataPackage<address> mssgToDE(methodAddressPckg.data[0]);
   clock_time lastTick = refToEX->waitTillLastTick();
   if (storeResultPckg.exceptionTriggered)
@@ -43,24 +46,17 @@ void ExecCall::executeInstruction(SynchronizedDataPackage<Instruction> instrPack
       MISALIGNED_ACCESS_HANDL));
     return;
   }
-  logComplete(lastTick, log(LoggablePackage(instr, methodAddressPckg.data[0])));
-  *regs->IP = methodAddressPckg.data[0];
+  else
+  {
+    recorder->addExtraInfo(EX, "Saved {R7-0, FLAGS, NextIP} at memory range [#"
+                                + convDecToHex(*regs->stackBase + *regs->stackPointer)
+                                + " - #"
+                                + convDecToHex(*regs->stackBase + *regs->stackPointer + (REGISTER_COUNT + 2) * WORD_BYTES - 1)
+                                + "]");
+    recorder->modifyStackPointer(*regs->stackPointer);
+  }
+  jumpIP(methodAddressPckg.data[0]);
   mssgToDE.sentAt = lastTick;
   fromDEtoMe->sendB(mssgToDE);
-}
-
-std::string ExecCall::log(LoggablePackage toLog)
-{
-  std::string result = "Finished executing: " + plainInstructionToString(toLog.instr) + "\nSaved state:\n";
-  result += "\tIP = #" + convDecToHex(*regs->IP + 2 * WORD_BYTES) + "\n\t";
-  result += printFlagsChange(~*regs->flags, *regs->flags, false);
-  result += "\n\tRegisters:";
-  for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
-  {
-    result += " ";
-    result += typeNames.at(TypeCode (R0 + reg));
-    result += "=" + std::to_string(*regs->registers[reg]);
-  }
-  result += "\n";
-  return result;
+  recorder->pushEXtoDEData(mssgToDE);
 }

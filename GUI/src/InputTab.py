@@ -291,10 +291,8 @@ class InputTab(QWidget):
       file.write(self.hexText.toPlainText())
 
     simulationPath = self.parent.GetSimulationDir()
-    logPath = os.path.join(simulationPath, "sim.log")
     cpuStatesPath = self.parent.GetSimulationCpuStatesDir()
     memoryPath = self.parent.GetSimulationMemoryDir()
-    firstMemoryStatePath = os.path.join(memoryPath, "1.json")
 
     self.parent.SetSimulationTabEnabled(False)
 
@@ -309,13 +307,14 @@ class InputTab(QWidget):
     # Run parsing script
     self.SetStatusText("Executing simulation...", error=False)
     process = QProcess()
-    process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, logPath, simulationPath])
+    process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, simulationPath])
 
     process.waitForFinished()
     # Check if the execution was successful
     if process.exitCode() != 0:
       processError = process.readAllStandardError().data().decode()
-      self.SetStatusText(f"Simulation failed: {processError}", error=True)
+      self.SetStatusText(f"Simulation failed", error=True)
+      QMessageBox.critical(self, "Error", f"{processError}")
       return
 
     # Notify simulation tab to load data

@@ -2,9 +2,9 @@
 
 #include <string>
 #include <vector>
-#include <vector>
-#include <stack>
+#include <deque>
 #include <unordered_map>
+#include <map>
 #include <sstream>
 #include <memory>
 
@@ -29,7 +29,7 @@ struct ExecutionState
     word stackPointer = 4096;
   } registers;
 
-  std::stack<word> stack = {};
+  std::deque<word> stack = {};
 
   std::unordered_map<address, word> memoryChanges = {};
   clock_time memoryUnchangedSinceCycle = 1;
@@ -79,6 +79,7 @@ struct ExecutionState
 
   struct {
     std::string state = "Idle";
+    std::string activeException = "";
     std::string extra = "";
   } EX;
 
@@ -92,5 +93,6 @@ struct ExecutionState
                            const bool&                    quotes = true,
                            const byte&                     padToLen = 4,
                            const std::string&              prefix = "") const;
+  
   std::string toJSON();
 };

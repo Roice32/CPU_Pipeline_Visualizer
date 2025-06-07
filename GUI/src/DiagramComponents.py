@@ -126,7 +126,7 @@ class RegistersComponent(DiagramComponent):
     details.append({"type": "text", "content": f"Stack Base: {regData.get('stackBase', 0)}", 
                     "changed": previous_state and regData.get('stackBase', 0) != prevRegData.get('stackBase', 0)})
     
-    details.append({"type": "text", "content": f"Stack Size: {regData.get('stackSize', 0)}", 
+    details.append({"type": "text", "content": f"Stack Size: {regData.get('stackSize', 0)} bytes",
                     "changed": previous_state and regData.get('stackSize', 0) != prevRegData.get('stackSize', 0)})
     
     details.append({"type": "text", "content": f"Stack Pointer: {regData.get('stackPointer', 0)}", 
@@ -201,16 +201,18 @@ class StackComponent(DiagramComponent):
 
     if stack:
       details.append({"type": "text", "content": "Stack contents (top to bottom):", "changed": False})
-      stack_table_headers = ["Index", "Value", "Changed"] # Keep "Changed" for internal logic
+      # Check if stack size changed
+      if previous_state and len(stack) != len(prevStack):
+        details.append({"type": "text", "content": f"Stack contents count changed from {len(prevStack)} to {len(stack)}", "changed": True})
+      
+      stack_table_headers = ["Value", "Changed"] # Keep "Changed" for internal logic
       stack_table_rows = []
       for i, val in enumerate(stack):
         changed = "Yes" if (previous_state and (i >= len(prevStack) or val != prevStack[i])) else "No"
-        stack_table_rows.append([str(i), val, changed])
+        stack_table_rows.append([val, changed])
+      stack_table_rows.reverse()
       details.append({"type": "table", "headers": stack_table_headers, "rows": stack_table_rows})
 
-      # Check if stack size changed
-      if previous_state and len(stack) != len(prevStack):
-        details.append({"type": "text", "content": f"Stack size changed from {len(prevStack)} to {len(stack)}", "changed": True})
     else:
       details.append({"type": "text", "content": "Stack is empty", "changed": False})
       if previous_state and prevStack:

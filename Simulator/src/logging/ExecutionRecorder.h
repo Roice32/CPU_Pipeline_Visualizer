@@ -30,8 +30,9 @@ class ExecutionRecorder
 {
 private:
   std::map<address, word> memory = {};
-
   std::vector<ExecutionState> states = {};
+  std::string cachedExState = "";
+
   void dumpStateToJSON(ExecutionState& state, const std::string& outputDirPath);
   void updateMemory(const std::unordered_map<address, word>& memoryChanges);
   void dumpMemoryToJSON(const clock_time cycle, const std::string& outputDirPath);
@@ -41,6 +42,9 @@ public:
   void goToNextState();
   void modifyModuleState(const Modules& moduleName, const std::string& state);
   void addExtraInfo(const Modules& moduleName, const std::string& extraInfo);
+
+  void pushToStack(const std::vector<word>& values, bool reverse = false);
+  void popFromStack(byte count = 1);
 
   inline void pushICtoLSData(const SynchronizedDataPackage<address>& data)
     { states.back().pipes.ICtoLS.push_back(data); }
@@ -77,6 +81,29 @@ public:
   void rewriteDEWorkTempStorage(const fetch_window* fws,
                                 const address& cacheStartAddr,
                                 const byte& storedWordsCount);
+
+  void modifyRRegister(const byte ind, const word& value)
+    { states.back().registers.R[ind] = value; }
+  void modifyZRegister(const byte ind, const word& value, const byte wordInd = 0)
+    { states.back().registers.Z[ind][wordInd] = value; }
+  void modifyZRegister(const byte ind, const std::vector<word>& values);
+  void modifyIP(const word& value)
+    { states.back().registers.IP = value; }
+  void modifyFlags(const word& value)
+    { states.back().registers.flags = value; }
+  void modifyStackBase(const word& value)
+    { states.back().registers.stackBase = value; }
+  void modifyStackSize(const word& value)
+    { states.back().registers.stackSize = value; }
+  void modifyStackPointer(const word& value)
+    { states.back().registers.stackPointer = value; }
+
+  void setEXException(const SynchronizedDataPackage<Instruction>& faultyInstr);
+  void clearEXException();
+  void cacheEXState()
+    { cachedExState = states.back().EX.state; }
+  void restoreEXState()
+    { states.back().EX.state = cachedExState; }
 
   void dumpSimulationToJSONs(const std::string& outputDirPath);
 };

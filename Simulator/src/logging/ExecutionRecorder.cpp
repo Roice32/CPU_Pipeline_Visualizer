@@ -71,6 +71,35 @@ void ExecutionRecorder::addExtraInfo(const Modules &moduleName, const std::strin
   }
 }
 
+void ExecutionRecorder::pushToStack(const std::vector<word> &values, bool reverse)
+{
+  auto& stack = states.back().stack;
+  if (reverse)
+  {
+    for (int i = values.size() - 1; i >= 0; --i)
+    {
+      stack.push_back(values[i]);
+    }
+  }
+  else
+  {
+    for (const auto& value : values)
+    {
+      stack.push_back(value);
+    }
+  }
+}
+
+void ExecutionRecorder::popFromStack(byte count)
+{
+  std::deque<word>& stack = states.back().stack;
+  while (!stack.empty() && count > 0)
+  {
+    stack.pop_back();
+    --count;
+  }
+}
+
 void ExecutionRecorder::popPipeData(const Pipes &pipeName)
 {
   auto& pipes = states.back().pipes;
@@ -175,6 +204,67 @@ void ExecutionRecorder::rewriteDEWorkTempStorage(const fetch_window* fws,
   }
   states.back().DE.fwTempStorage.cacheStartAddr = cacheStartAddr;
   states.back().DE.fwTempStorage.storedWordsCount = storedWordsCount;
+}
+
+void ExecutionRecorder::modifyZRegister(const byte ind, const std::vector<word> &values)
+{
+  auto& zReg = states.back().registers.Z[ind];
+  for (size_t i = 0; i < WORDS_PER_Z_REGISTER && i < values.size(); ++i)
+  {
+    zReg[i] = values[i];
+  }
+}
+
+void ExecutionRecorder::setEXException(const SynchronizedDataPackage<Instruction> &faultyInstr)
+{
+  std::stringstream exceptionMsg;
+  switch (faultyInstr.handlerAddr)
+  {
+    case DIV_BY_ZERO_HANDL:
+      exceptionMsg << "Division by 0";
+      break;
+    case INVALID_DECODE_HANDL:
+      switch (faultyInstr.excpData)
+      {
+        case UNKNOWN_OP_CODE:
+          exceptionMsg << "Unknown operation code";
+          break;
+        case NULL_SRC:
+          exceptionMsg << "Null where argument expected";
+          break;
+        case NON_NULL_SRC:
+          exceptionMsg << "Argument where null expected";
+          break;
+        case INCOMPATIBLE_PARAMS:
+          exceptionMsg << "Incompatible parameters (mutually / for given operation)";
+          break;
+        default:
+          exceptionMsg << "Invalid decode handler address";
+      }
+      break;
+    case MISALIGNED_ACCESS_HANDL:
+      exceptionMsg << "Request to memory address not aligned to 16b";
+      break;
+    case STACK_OVERFLOW_HANDL:
+      if (faultyInstr.excpData == PUSH_OVERFLOW)
+        exceptionMsg << "Over-pushed stack exceeded upper limit";
+      else
+        exceptionMsg << "Over-popped stack exceeded lower limit";
+      break;
+    case MISALIGNED_IP_HANDL:
+      exceptionMsg << "IP not aligned to 16b";
+      break;
+    default:
+      exceptionMsg << "Unknown exception handler address";
+  }
+  
+  exceptionMsg << " at #" + convDecToHex(faultyInstr.associatedIP) + "\n";
+  states.back().EX.activeException = exceptionMsg.str();
+}
+
+void ExecutionRecorder::clearEXException()
+{
+  states.back().EX.activeException = "";
 }
 
 void ExecutionRecorder::dumpSimulationToJSONs(const std::string &outputDirPath)

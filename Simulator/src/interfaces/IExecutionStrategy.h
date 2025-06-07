@@ -1,23 +1,30 @@
 #pragma once
 
-#include "CPURegisters.h"
-#include "EXLogger.h"
-#include "IMemoryAccesser.h"
-#include "IClockBoundModule.h"
 #include <cassert>
 
-class IExecutionStrategy: public IMemoryAccesser, public EXLogger
+#include "CPURegisters.h"
+#include "IMemoryAccesser.h"
+#include "IClockBoundModule.h"
+#include "ExecutionRecorder.h"
+
+class IExecutionStrategy: public IMemoryAccesser
 {
 protected:
   std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> fromDEtoMe;
   IClockBoundModule* refToEX;
   std::shared_ptr<CPURegisters> regs;
+  std::shared_ptr<ExecutionRecorder> recorder;
 
   IExecutionStrategy(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
     std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> fromDEtoMe,
     IClockBoundModule* refToEX,
-    std::shared_ptr<CPURegisters> registers):
-      IMemoryAccesser(commPipeWithLS), EXLogger(), fromDEtoMe(fromDEtoMe), refToEX(refToEX), regs(registers) {};
+    std::shared_ptr<CPURegisters> registers,
+    std::shared_ptr<ExecutionRecorder> recorder) :
+      IMemoryAccesser(commPipeWithLS),
+      fromDEtoMe(fromDEtoMe),
+      refToEX(refToEX),
+      regs(registers),
+      recorder(recorder) {};
 
   SynchronizedDataPackage<std::vector<word>> getFinalArgValue(byte src, word param = 0, byte isForZReg = false)
   {
@@ -70,15 +77,19 @@ protected:
       break;
       case SP_REG:
         *regs->stackPointer = result[0];
+        recorder->modifyStackPointer(*regs->stackPointer);
       break;
       case ST_BASE:
         *regs->stackBase = result[0];
+        recorder->modifyStackBase(*regs->stackBase);
       break;
       case ST_SIZE:
         *regs->stackSize = result[0];
+        recorder->modifyStackSize(*regs->stackSize);
       break;
       case R0 ... R7:
         *regs->registers[destType - R0] = result[0];
+        recorder->modifyRRegister(destType - R0, *regs->registers[destType - R0]);
       break;
       case ADDR_R0 ... ADDR_R7:
         {
@@ -90,6 +101,7 @@ protected:
       break;
       case Z0 ... Z3:
         *regs->zRegisters[destType - Z0] = result;
+        recorder->modifyZRegister(destType - Z0, *regs->zRegisters[destType - Z0]);
       break;
       default:
         throw std::invalid_argument("Wrong or unimplemented destination type");
@@ -104,11 +116,19 @@ protected:
     clock_time currTick = refToEX->getCurrTime();
     syncReq.sentAt = currTick;
     fromEXtoLS->sendA(syncReq);
+    recorder->pushEXtoLSData(syncReq);
+    recorder->cacheEXState();
+    recorder->modifyModuleState(EX, "Awaiting "
+                                    + std::to_string(howManyWords)
+                                    + " words from LS at #"
+                                    + convDecToHex(addr));
     refToEX->enterIdlingState();
     while (!fromEXtoLS->pendingB())
       refToEX->returnFromIdlingState();
     SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
     refToEX->awaitNextTickToHandle(receivedPckg);
+    recorder->popPipeData(LStoEX);
+    recorder->restoreEXState();
     return receivedPckg;
   }
 
@@ -119,11 +139,23 @@ protected:
     clock_time currTick = refToEX->getCurrTime();
     syncReq.sentAt = currTick;
     fromEXtoLS->sendA(syncReq);
+    recorder->pushEXtoLSData(syncReq);
+    std::stringstream statusMsg;
+    statusMsg << "Awaiting store of ";
+    for (size_t i = 0; i < data.size(); ++i)
+    {
+      statusMsg << convDecToHex(data[i]) << " ";
+    }
+    statusMsg << "by LS at #" << convDecToHex(addr);
+    recorder->cacheEXState();
+    recorder->modifyModuleState(EX, statusMsg.str());
     refToEX->enterIdlingState();
     while (!fromEXtoLS->pendingB())
       refToEX->returnFromIdlingState();
     SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
     refToEX->awaitNextTickToHandle(receivedPckg);
+    recorder->popPipeData(LStoEX);
+    recorder->restoreEXState();
     return receivedPckg;
   }
 
@@ -134,38 +166,13 @@ protected:
       *regs->IP += WORD_BYTES;
     if (instr.src2 == IMM || instr.src2 == ADDR)
       *regs->IP += WORD_BYTES;
+    recorder->modifyIP(*regs->IP);
   }
 
-  static std::string logException(SynchronizedDataPackage<Instruction> faultyInstr)
+  void jumpIP(address newIP)
   {
-    std::string result = "Encountered exception ";
-    if (faultyInstr.handlerAddr == DIV_BY_ZERO_HANDL)
-      result += "'Division by 0'";
-    if (faultyInstr.handlerAddr == INVALID_DECODE_HANDL)
-    {
-      if (faultyInstr.excpData == UNKNOWN_OP_CODE)
-        result += "'Unknown operation code'";
-      else if (faultyInstr.excpData == NULL_SRC)
-        result += "'Null where argument expected'";
-      else if (faultyInstr.excpData == NON_NULL_SRC)
-        result += "'Argument where null expected'";
-      else
-        result += "'Incompatible parameters (mutually / for given operation)'";
-    }
-    if (faultyInstr.handlerAddr == MISALIGNED_ACCESS_HANDL)
-      result += "'Request to memory address not aligned to 16b'";
-    if (faultyInstr.handlerAddr == STACK_OVERFLOW_HANDL)
-    {
-      if (faultyInstr.excpData == PUSH_OVERFLOW)
-        result += "'Over-pushed stack exceeded upper limit'";
-      else
-        result += "'Over-popped stack exceeded lower limit'";
-    }
-    if (faultyInstr.handlerAddr == MISALIGNED_IP_HANDL)
-      result += "'IP not aligned to 16b'";
-    
-    result += " at #" + convDecToHex(faultyInstr.associatedIP) + "\n";
-    return result;
+    *regs->IP = newIP;
+    recorder->modifyIP(*regs->IP);
   }
 
 public:
@@ -173,16 +180,19 @@ public:
 
   void handleException(SynchronizedDataPackage<Instruction> faultyInstr)
   {
-    logComplete(refToEX->getCurrTime(), logException(faultyInstr));
+    recorder->setEXException(faultyInstr);
     if (*regs->flags & EXCEPTION)
     {
       refToEX->endSimulation();
-      std::string endMessage = "\t!EX forcefully ends simulation at T=" + std::to_string(refToEX->getCurrTime()) + " due to double exception!\n";
-      logAdditional(endMessage);
+      recorder->modifyModuleState(EX, "Forcefully ended simulation due to double exception");
       return;
     }
 
     *regs->flags |= EXCEPTION;
+    recorder->modifyFlags(*regs->flags);
+
+    recorder->modifyModuleState(EX, "Awaiting exception handler at #"
+                                    + convDecToHex(faultyInstr.handlerAddr));
 
     SynchronizedDataPackage<std::vector<word>> methodAddressPckg = requestDataAt(faultyInstr.handlerAddr, 1);
     word methodAddress = methodAddressPckg.data[0];
@@ -196,10 +206,19 @@ public:
       savedState.push_back(*regs->registers[reg]);
     storeDataAt(SAVE_STATE_ADDR, REGISTER_COUNT + 4, savedState);
 
-    std::string message = "Calling exception handler at #" + convDecToHex(methodAddress) + "\n";
-    *regs->IP = methodAddress;
+    std::vector<address> savedStateAddrs;
+    for (int ind = 0; ind < savedState.size(); ++ind)
+      savedStateAddrs.push_back(SAVE_STATE_ADDR + ind * WORD_BYTES);
+
+    recorder->addExtraInfo(EX, "Saved {IP, SP, FLAGS, R0-7} at memory range [#"
+                               + convDecToHex(SAVE_STATE_ADDR)
+                               + " - #"
+                               + convDecToHex(SAVE_STATE_ADDR + (REGISTER_COUNT + 4) * WORD_BYTES - 1)
+                               + "]");
+
+    jumpIP(methodAddress);
     clock_time lastTick = refToEX->waitTillLastTick();
     fromDEtoMe->sendB(methodAddress);
-    logComplete(lastTick, message);
+    recorder->pushEXtoDEData(SynchronizedDataPackage<address>(*regs->IP, lastTick));
   }
 };

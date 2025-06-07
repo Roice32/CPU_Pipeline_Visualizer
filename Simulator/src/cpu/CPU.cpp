@@ -27,7 +27,11 @@ CPU::CPU(std::shared_ptr<Memory> memory, std::shared_ptr<ExecutionRecorder> reco
                                       clock->clockSyncVars,
                                       registers->flags,
                                       recorder);
-  EXModule = std::make_shared<Execute>(fromEXtoLS, fromDEtoEX, registers, clock->clockSyncVars);
+  EXModule = std::make_shared<Execute>(fromEXtoLS,
+                                       fromDEtoEX,
+                                       registers,
+                                       clock->clockSyncVars,
+                                       recorder);
 }
 
 void CPU::runSimulation()

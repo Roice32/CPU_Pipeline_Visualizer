@@ -1,26 +1,9 @@
 #include "ExecPop.h"
 
-ExecPop::ExecPop(std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<MemoryAccessRequest>, SynchronizedDataPackage<std::vector<word>>>> commPipeWithLS,
-  std::shared_ptr<InterThreadCommPipe<SynchronizedDataPackage<Instruction>, SynchronizedDataPackage<address>>> commPipeWithDE,
-  IClockBoundModule* refToEX,
-  std::shared_ptr<CPURegisters> registers):
-    IExecutionStrategy(commPipeWithLS, commPipeWithDE, refToEX, registers) {};
-
-std::string ExecPop::log(LoggablePackage toLog)
-{
-  std::string result = "Finished executing: " + plainInstructionToString(toLog.instr);
-  if (toLog.instr.src1 != NULL_VAL)
-  {
-    result += "(" + plainArgToString(toLog.instr.src1, toLog.instr.param1);
-    result += " = " + std::to_string(toLog.actualParam1) + ")";
-  }
-  result += "\n";
-  return result;
-}
-
 void ExecPop::executeInstruction(SynchronizedDataPackage<Instruction> instrPackage)
 {
   Instruction instr = instrPackage.data;
+  recorder->modifyModuleState(EX, "Executing " + instr.toString());
 
   if (*regs->stackSize < *regs->stackPointer || *regs->stackSize - *regs->stackPointer < WORD_BYTES)
   {
@@ -54,7 +37,8 @@ void ExecPop::executeInstruction(SynchronizedDataPackage<Instruction> instrPacka
     }
   }
   *regs->stackPointer += WORD_BYTES;
+  recorder->modifyStackPointer(*regs->stackPointer);
+  recorder->popFromStack();
   moveIP(instr);
   clock_time lastTick = refToEX->waitTillLastTick();
-  logComplete(lastTick, log(LoggablePackage(instr, valueOnTopPckg.data.size() > 0 ? valueOnTopPckg.data[0] : 0)));
 }
