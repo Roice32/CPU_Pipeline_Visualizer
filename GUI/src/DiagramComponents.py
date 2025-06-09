@@ -283,35 +283,18 @@ class ModuleComponent(DiagramComponent):
                     "changed": previous_state and componentData.get('state') != prevComponentData.get('state')})
     details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
     
-    if self.name == "LS" or self.name == "IC":
-      cacheData = componentData.get("cache", {})
-      prevCacheData = prevComponentData.get("cache", {})
-      
-      details.append({"type": "text", "content": f"Cache Size: {cacheData.get('size', 0)}", 
-                      "changed": previous_state and cacheData.get('size', 0) != prevCacheData.get('size', 0)})
-      
-      if self.name == "LS":
-        physAccess = componentData.get('physicalMemoryAccessHappened', False)
-        prevPhysAccess = prevComponentData.get('physicalMemoryAccessHappened', False)
-        details.append({"type": "text", "content": f"Physical Memory Access: {'Yes' if physAccess else 'No'}", 
-                        "changed": previous_state and physAccess != prevPhysAccess})
-        
-        foundIndex = cacheData.get('foundIndex', 0)
-        prevFoundIndex = prevCacheData.get('foundIndex', 0)
-        details.append({"type": "text", "content": f"Found Index: {foundIndex}", 
-                        "changed": previous_state and foundIndex != prevFoundIndex})
-      else:  # IC
-        internalIP = componentData.get('internalIP', 0)
-        prevInternalIP = prevComponentData.get('internalIP', 0)
-        details.append({"type": "text", "content": f"InternalIP: {internalIP}", 
-                        "changed": previous_state and internalIP != prevInternalIP})
+    if self.name == "IC":
+      internalIP = componentData.get('internalIP', 0)
+      prevInternalIP = prevComponentData.get('internalIP', 0)
+      details.append({"type": "text", "content": f"InternalIP: {internalIP}", 
+                      "changed": previous_state and internalIP != prevInternalIP})
     
     elif self.name == "DE":
       fwStorage = componentData.get("fwTempStorage", {})
       prevFwStorage = prevComponentData.get("fwTempStorage", {})
       
-      details.append({"type": "text", "content": f"Last Decoded Instruction: {fwStorage.get('lastDecodedInstr', 'N/A')}",
-                      "changed": previous_state and fwStorage.get('lastDecodedInstr') != prevFwStorage.get('lastDecodedInstr')})
+      details.append({"type": "text", "content": f"Last Decoded Instruction: {componentData.get('lastDecodedInstr', 'N/A')}",
+                      "changed": previous_state and componentData.get('lastDecodedInstr') != prevComponentData.get('lastDecodedInstr')})
       details.append({"type": "text", "content": f"Cache Start Address: {fwStorage.get('cacheStartAddr', 0)}", 
                       "changed": previous_state and fwStorage.get('cacheStartAddr', 0) != prevFwStorage.get('cacheStartAddr', 0)})
       

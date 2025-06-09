@@ -131,16 +131,15 @@ bool Decode::processFetchWindow(fetch_window newBatch)
     }
   }
   fwTempStorage.shiftUsedWords(paramsCount + 1);
-  recorder->rewriteDEWorkTempStorage(fwTempStorage.storedFWs,
-                                     fwTempStorage.cacheStartAddr,
-                                     fwTempStorage.storedWordsCount);
   waitTillLastTick();
   syncResponse.sentAt = clockSyncVars->cycleCount;
   fromMetoEX->sendA(syncResponse);
   recorder->pushDEtoEXData(syncResponse);
-  if (instr.opCode != UNINITIALIZED_MEM && !syncResponse.exceptionTriggered && clockSyncVars->running)
-    recorder->lastDecodedInstruction("#" + convDecToHex(fwTempStorage.getAssociatedInstrAddr()) + ": "
-                                     + instr.toString());                                      
+  recorder->lastDecodedInstruction("#" + convDecToHex(syncResponse.associatedIP) + ": "
+                                   + instr.toString());
+  recorder->rewriteDEWorkTempStorage(fwTempStorage.storedFWs,
+                                     fwTempStorage.cacheStartAddr,
+                                     fwTempStorage.storedWordsCount);
   return true;
 }
 

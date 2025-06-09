@@ -37,7 +37,8 @@ inline std::string ExecutionState::hexFW(const fetch_window &value,
   ss << margins[0];
   for (byte i = 0; i < FETCH_WINDOW_WORDS; ++i)
   {
-    ss << hexW((value >> ((FETCH_WINDOW_BYTES - 1 - i) * 8)), prefix, padToLen, false);
+    byte shiftAmount = (FETCH_WINDOW_WORDS - 1 - i) * WORD_BYTES * 8;
+    ss << hexW((value >> shiftAmount), prefix, padToLen, false);
     if (i < FETCH_WINDOW_WORDS - 1)
     {
       ss << divider;
@@ -287,7 +288,6 @@ std::string ExecutionState::toJSON()
   // LS stage
   ss << "\"LS\":{";
   ss << "\"state\":\"" << LS.state << "\",";
-  ss << "\"physicalMemoryAccessHappened\":" << (LS.physicalMemoryAccessHappened ? "true" : "false") << ",";
   
   // LS cache
   ss << "\"cache\":{";
@@ -323,7 +323,6 @@ std::string ExecutionState::toJSON()
   
   // IC cache
   ss << "\"cache\":{";
-  ss << "\"size\":" << IC.cache.size << ",";
   ss << "\"storage\":[";
   for (unsigned int i = 0; i < IC.cache.size; ++i) {
     ss << "{";

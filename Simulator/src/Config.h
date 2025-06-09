@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <iostream>
 
 using byte = uint8_t;
 using register_16b = uint16_t;
@@ -141,10 +142,10 @@ inline std::string convDecToHex(word source)
 {
   std::string result = "xxxx";
   byte bytesGroup;
-  for (byte ind = 0; ind < WORD_BYTES * 2; ++ind)
+  for (int ind = WORD_BYTES * 2 - 1; ind >= 0; --ind)
   {
     bytesGroup = source & 0xf;
-    result.at(WORD_BYTES * 2 - ind - 1) = (bytesGroup > 9) ? ('a' + bytesGroup - 10) : ('0' + bytesGroup);
+    result.at(ind) = (bytesGroup > 9) ? ('a' + bytesGroup - 10) : ('0' + bytesGroup);
     source >>= 4;
   }
   return result;
@@ -155,10 +156,10 @@ inline std::string fwToStr(fetch_window source)
   std::string result = "[";
   for (byte ind = 0; ind < FETCH_WINDOW_WORDS; ++ind)
   {
-    result += convDecToHex(source & 0xffff);
+    byte shiftAmount = (FETCH_WINDOW_BYTES - ind - 1) * WORD_BYTES * 8;
+    result += convDecToHex((source >> shiftAmount) & 0xffff);
     if (ind != FETCH_WINDOW_WORDS - 1)
       result += " ";
-    source >>= WORD_BYTES * 8;
   }
   result += "]";
   return result;

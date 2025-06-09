@@ -56,7 +56,6 @@ struct ExecutionState
 
   struct {
     std::string state = "Idle";
-    bool physicalMemoryAccessHappened = false;
 
     struct {
       unsigned int size = LS_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(word);

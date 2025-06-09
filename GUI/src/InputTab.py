@@ -332,10 +332,13 @@ class InputTab(QWidget):
   def PostExecuteSimulation(self, process: QProcess):
     # Check if the execution was successful
     if process.exitCode() != 0:
-      processOutput = process.readAllStandardError().data().decode()
+      processError = process.readAllStandardError().data().decode()
       self.SetStatusText(f"Simulation failed", error=True)
-      QMessageBox.critical(self, "Error", f"{processOutput}")
+      QMessageBox.critical(self, "Error", f"{processError}")
       return
+
+    processOutput = process.readAllStandardOutput().data().decode()
+    print(processOutput)
 
     self.SetStatusText("Processing simulation results...", error=False)
     self.parent.simulationTab.LoadSimulationData()

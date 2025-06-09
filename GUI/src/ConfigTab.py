@@ -9,10 +9,10 @@ class Config:
   autoplay_speed_millis:           int
 
   clock_period_millis:             int
-  ic_cycles_per_op:                int
-  ic_cycles_per_op_with_cache_hit: int
   ls_cycles_per_op:                int
   ls_cycles_per_op_with_cache_hit: int
+  ic_cycles_per_op:                int
+  ic_cycles_per_op_with_cache_hit: int
   de_cycles_per_op:                int
   ex_cycles_per_op:                int
 
@@ -20,10 +20,10 @@ class Config:
   def __init__(self) -> None:
     self.autoplay_speed_millis           = 200
     self.clock_period_millis             = 1
-    self.ic_cycles_per_op                = 3
-    self.ic_cycles_per_op_with_cache_hit = 2
     self.ls_cycles_per_op                = 15
     self.ls_cycles_per_op_with_cache_hit = 7
+    self.ic_cycles_per_op                = 3
+    self.ic_cycles_per_op_with_cache_hit = 2
     self.de_cycles_per_op                = 2
     self.ex_cycles_per_op                = 5
 
@@ -101,6 +101,18 @@ class ConfigTab(QWidget):
                             "Clock Period",
                             (1, 100),
                             "Sets the CPU's clock to tick every X milliseconds.")
+    # LS_CYCLES_PER_OP
+    self.lsCyclesPerOpInput = self.GenConfigElement(scrollLayout,
+                            "LS Cycles per Op",
+                            (1, 100),
+                            "The number of cycles the Load Store unit takes to execute an operation"
+                            + " (deliver a fetch window to DE; deliver data to EX; store data from EX).")
+    # LS_CYCLES_PER_OP_WITH_CACHE_HIT
+    self.lsCyclesPerOpWithCacheHitInput = self.GenConfigElement(scrollLayout,
+                                  "LS Cycles per Op with Cache Hit",
+                                  (1, 100),
+                                  "The number of cycles the Load Store unit takes to execute an"
+                                   + " operation when the data is in the cache & valid.")
     # IC_CYCLES_PER_OP
     self.icCyclesPerOpInput = self.GenConfigElement(scrollLayout,
                             "IC Cycles per Op",
@@ -113,18 +125,6 @@ class ConfigTab(QWidget):
                                   "IC Cycles per Op with Cache Hit",
                                   (1, 100),
                                   "The number of cycles the Instruction Cache takes to execute an"
-                                   + " operation when the data is in the cache & valid.")
-    # LS_CYCLES_PER_OP
-    self.lsCyclesPerOpInput = self.GenConfigElement(scrollLayout,
-                            "LS Cycles per Op",
-                            (1, 100),
-                            "The number of cycles the Load Store unit takes to execute an operation"
-                            + " (deliver a fetch window to DE; deliver data to EX; store data from EX).")
-    # LS_CYCLES_PER_OP_WITH_CACHE_HIT
-    self.lsCyclesPerOpWithCacheHitInput = self.GenConfigElement(scrollLayout,
-                                  "LS Cycles per Op with Cache Hit",
-                                  (1, 100),
-                                  "The number of cycles the Load Store unit takes to execute an"
                                    + " operation when the data is in the cache & valid.")
     # DE_CYCLES_PER_OP
     self.deCyclesPerOpInput = self.GenConfigElement(scrollLayout,
@@ -200,10 +200,10 @@ class ConfigTab(QWidget):
 
     self.autoplaySpeedInput.setValue(self.currConfig.autoplay_speed_millis)
     self.clockPeriodInput.setValue(self.currConfig.clock_period_millis)
-    self.icCyclesPerOpInput.setValue(self.currConfig.ic_cycles_per_op)
-    self.icCyclesPerOpWithCacheHitInput.setValue(self.currConfig.ic_cycles_per_op_with_cache_hit)
     self.lsCyclesPerOpInput.setValue(self.currConfig.ls_cycles_per_op)
     self.lsCyclesPerOpWithCacheHitInput.setValue(self.currConfig.ls_cycles_per_op_with_cache_hit)
+    self.icCyclesPerOpInput.setValue(self.currConfig.ic_cycles_per_op)
+    self.icCyclesPerOpWithCacheHitInput.setValue(self.currConfig.ic_cycles_per_op_with_cache_hit)
     self.deCyclesPerOpInput.setValue(self.currConfig.de_cycles_per_op)
     self.exCyclesPerOpInput.setValue(self.currConfig.ex_cycles_per_op)
 
@@ -211,10 +211,10 @@ class ConfigTab(QWidget):
   def Save(self) -> None:
     self.currConfig.autoplay_speed_millis           = self.autoplaySpeedInput.value()
     self.currConfig.clock_period_millis             = self.clockPeriodInput.value()
-    self.currConfig.ic_cycles_per_op                = self.icCyclesPerOpInput.value()
-    self.currConfig.ic_cycles_per_op_with_cache_hit = self.icCyclesPerOpWithCacheHitInput.value()
     self.currConfig.ls_cycles_per_op                = self.lsCyclesPerOpInput.value()
     self.currConfig.ls_cycles_per_op_with_cache_hit = self.lsCyclesPerOpWithCacheHitInput.value()
+    self.currConfig.ic_cycles_per_op                = self.icCyclesPerOpInput.value()
+    self.currConfig.ic_cycles_per_op_with_cache_hit = self.icCyclesPerOpWithCacheHitInput.value()
     self.currConfig.de_cycles_per_op                = self.deCyclesPerOpInput.value()
     self.currConfig.ex_cycles_per_op                = self.exCyclesPerOpInput.value()
 

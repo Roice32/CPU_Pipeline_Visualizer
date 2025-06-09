@@ -104,7 +104,12 @@ public:
     if (opNames.empty())
       initializeNames();
 
-    std::string result = opNames.at((OpCode) opCode);
+    std::string result = "";
+    if (opNames.find((OpCode) opCode) != opNames.end())
+      result = opNames.at((OpCode) opCode);
+    else
+      result = "???";
+
     result += plainArgToString(src1, param1);
     if (src1 * src2 != NULL_VAL)
       result += ", ";
