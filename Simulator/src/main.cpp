@@ -38,11 +38,6 @@ void overloadConfig(char* argv[])
     {
       EX_CYCLES_PER_OP = value;
     }
-    else 
-    {
-      std::cerr << "Error: Unknown configuration option '" << arg << "'\n";
-      exit(EXIT_FAILURE);
-    }
   }
 }
 

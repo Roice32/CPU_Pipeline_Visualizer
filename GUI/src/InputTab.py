@@ -62,7 +62,21 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
 # -----------------------------------------------------------------------------------------------------------------------------
 class InputTab(QWidget):
-  buttonStyle = "border: 1px solid black; border-radius: 5px; height: 30%; background-color: #f0f0f0; font: bold;"
+  buttonStyleSheet = """
+    QPushButton {
+        border: 1px solid black;
+        border-radius: 5px;
+        height: 30%;
+        background-color: #f0f0f0;
+        font-weight: bold;
+    }
+    QPushButton:hover {
+        background-color: #d0d0d0;
+    }
+    QPushButton:pressed {
+        border: 2px solid #007BFF;
+    }
+"""
   statusStyle = "font-weight: bold; color: #333; margin: 5px; padding: 5px; border-radius: 4px; background-color: #f8f8f8;"
   parent = None
   asmText = None
@@ -112,11 +126,11 @@ class InputTab(QWidget):
     
     openAsmBtn = QPushButton("Open")
     openAsmBtn.clicked.connect(self.OpenAsmFile)
-    openAsmBtn.setStyleSheet(InputTab.buttonStyle)
+    openAsmBtn.setStyleSheet(InputTab.buttonStyleSheet)
     
     saveAsmBtn = QPushButton("Save")
     saveAsmBtn.clicked.connect(self.SaveAsmFile)
-    saveAsmBtn.setStyleSheet(InputTab.buttonStyle)
+    saveAsmBtn.setStyleSheet(InputTab.buttonStyleSheet)
     
     asmBtnLayout.addWidget(openAsmBtn)
     asmBtnLayout.addWidget(saveAsmBtn)
@@ -137,7 +151,7 @@ class InputTab(QWidget):
     convertBtn = QPushButton("→")
     convertBtn.setFixedWidth(50)
     convertBtn.setFixedHeight(30)
-    convertBtn.setStyleSheet(InputTab.buttonStyle)
+    convertBtn.setStyleSheet(InputTab.buttonStyleSheet)
     convertBtn.clicked.connect(self.ConvertAsmToHex)
     buttonLayout.addWidget(convertBtn)
     
@@ -146,7 +160,7 @@ class InputTab(QWidget):
     executeBtn = QPushButton("Execute")
     executeBtn.setFixedWidth(80)
     executeBtn.setFixedHeight(30)
-    executeBtn.setStyleSheet(InputTab.buttonStyle)
+    executeBtn.setStyleSheet(InputTab.buttonStyleSheet)
     executeBtn.clicked.connect(self.ExecuteSimulation)
     middleLayout.addWidget(executeBtn, 0, Qt.AlignCenter)
 
@@ -168,11 +182,11 @@ class InputTab(QWidget):
     
     openHexBtn = QPushButton("Open")
     openHexBtn.clicked.connect(self.OpenHexFile)
-    openHexBtn.setStyleSheet(InputTab.buttonStyle)
+    openHexBtn.setStyleSheet(InputTab.buttonStyleSheet)
     
     saveHexBtn = QPushButton("Save")
     saveHexBtn.clicked.connect(self.SaveHexFile)
-    saveHexBtn.setStyleSheet(InputTab.buttonStyle)
+    saveHexBtn.setStyleSheet(InputTab.buttonStyleSheet)
     
     hexBtnLayout.addWidget(openHexBtn)
     hexBtnLayout.addWidget(saveHexBtn)
@@ -308,20 +322,22 @@ class InputTab(QWidget):
           if os.path.isfile(file_path):
             os.remove(file_path)
 
+    self.parent.configTab.Save()
     self.SetStatusText("Executing simulation...", error=False)
-    process = QProcess()
+    process = QProcess(self)
+    process.finished.connect(lambda _: self.PostExecuteSimulation(process))
     process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, simulationPath] + self.GenerateConfigOverloadParams())
 
-    process.waitForFinished(-1)
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def PostExecuteSimulation(self, process: QProcess):
     # Check if the execution was successful
     if process.exitCode() != 0:
-      processOutput = process.readAllStandardOutput().data().decode()
+      processOutput = process.readAllStandardError().data().decode()
       self.SetStatusText(f"Simulation failed", error=True)
       QMessageBox.critical(self, "Error", f"{processOutput}")
       return
 
-    # Notify simulation tab to load data
-    self.SetStatusText("Processing simulation data...", error=False)
+    self.SetStatusText("Processing simulation results...", error=False)
     self.parent.simulationTab.LoadSimulationData()
 
     # Switch to simulation tab

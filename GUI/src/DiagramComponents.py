@@ -489,7 +489,15 @@ class SpecComponent(DiagramComponent):
   def SetDetails(self, config: Config):
     self.details = []
     self.details.append({"type": "text", "content": "", "changed": False})  # Add a blank line
+    self.details.append({"type": "text", "content": "CPU Configuration used for this simulation", "changed": False})
+    self.details.append({"type": "text", "content": "", "changed": False})  # Add a blank line
     self.details.append({"type": "text", "content": f"Clock Period: {config.clock_period_millis} ms", "changed": False})
+    self.details.append({"type": "text", "content": f"IC Cycles per Op: {config.ic_cycles_per_op}", "changed": False})
+    self.details.append({"type": "text", "content": f"IC Cycles per Op with Cache Hit: {config.ic_cycles_per_op_with_cache_hit}", "changed": False})
+    self.details.append({"type": "text", "content": f"LS Cycles per Op: {config.ls_cycles_per_op}", "changed": False})
+    self.details.append({"type": "text", "content": f"LS Cycles per Op with Cache Hit: {config.ls_cycles_per_op_with_cache_hit}", "changed": False})
+    self.details.append({"type": "text", "content": f"DE Cycles per Op: {config.de_cycles_per_op}", "changed": False})
+    self.details.append({"type": "text", "content": f"EX Cycles per Op: {config.ex_cycles_per_op}", "changed": False})
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GetDetailsText(self, _state, _memory, _previous_state=None, _previous_memory=None):

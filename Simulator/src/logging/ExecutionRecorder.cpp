@@ -19,12 +19,12 @@ void ExecutionRecorder::goToNextState()
 {
   ExecutionState newState = states.back();
   newState.cycle++;
+  newState.memoryChanges = {};
+  newState.LS.extra = "";
+  newState.IC.extra = "";
+  newState.DE.extra = "";
+  newState.EX.extra = "";
   states.push_back(newState);
-  states.back().memoryChanges = {};
-  states.back().LS.extra = "";
-  states.back().IC.extra = "";
-  states.back().DE.extra = "";
-  states.back().EX.extra = "";
 }
 
 void ExecutionRecorder::modifyModuleState(const Modules& moduleName, const std::string& state)
@@ -287,7 +287,7 @@ void ExecutionRecorder::dumpStateToJSON(ExecutionState& state, const std::string
   std::ofstream file(stateJsonFilePath);
   if (!file.is_open())
   {
-    std::cerr << "Error: Unable to open file " << stateJsonFilePath << std::endl;
+    std::cerr << "Error: Unable to create file " << stateJsonFilePath << std::endl;
     return;
   }
   file << state.toJSON();
@@ -308,7 +308,7 @@ void ExecutionRecorder::dumpMemoryToJSON(const clock_time cycle, const std::stri
   std::ofstream file(memoryJsonFilePath);
   if (!file.is_open())
   {
-    std::cerr << "Error: Unable to open file " << memoryJsonFilePath << std::endl;
+    std::cerr << "Error: Unable to create file " << memoryJsonFilePath << std::endl;
     return;
   }
   file << "{";

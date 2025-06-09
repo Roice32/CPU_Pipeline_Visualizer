@@ -158,10 +158,10 @@ class SimulationTab(QWidget):
 
     self.setLayout(layout)
 
-    # Timer for auto-play
+    # Timer for autoplay
     self.autoPlayTimer = QTimer(self)
     self.autoPlayTimer.timeout.connect(self.IncreaseCycle)
-    self.autoPlayTimer.setInterval(1000)
+    self.autoPlayTimer.setInterval(self.parent.GetConfig().autoplay_speed_millis)
 
     # Setup keyboard shortcuts
     self.SetupKeyboardShortcuts()
@@ -357,7 +357,6 @@ class SimulationTab(QWidget):
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def LoadSimulationData(self):
-    tempDir = self.parent.GetTempDir()
     cpuStatesDir = self.parent.GetSimulationCpuStatesDir()
     memoryDir = self.parent.GetSimulationMemoryDir()
 
