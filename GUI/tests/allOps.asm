@@ -47,7 +47,6 @@ simd_exec_post_setup:
   ret                  ; return from subroutine, execution continues after call
 
 setup_loop:
-  mov r3, batch_addr ; r3 = address of batch_addr[0]
   mov [counter], 0x0 ; initialize counter to 0
 loop_step:
   mov r3, batch_addr ; r3 = address of batch_addr[0]
@@ -81,11 +80,11 @@ batch_addr:
 dblock 0xffff, 4
 
 data_0:
-dw 0x0001
-data_1:
 dw 0x0002
+data_1:
+dw 0x0006
 data_2:
-dw 0x000f
+dw 0x003e
 data_3:
 dw 0x0afa
 

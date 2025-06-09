@@ -84,7 +84,7 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
     cache.prepareForOps(currAddr);
     if (cache.isAHit())
     {
-      recorder->addExtraInfo(DE, "Cache hit for word at #" + convDecToHex(currAddr));
+      recorder->addExtraInfo(LS, "Cache hit for word at #" + convDecToHex(currAddr));
       currWord = cache.get(getCurrTime());
       response.push_back(currWord);
       continue;
@@ -158,7 +158,7 @@ void LoadStore::executeModuleLogic()
                                 + std::to_string(exReq.sentAt)
                                 + " regarding #" + convDecToHex(exReq.data.reqAddr)
                                 + " with "
-                                + std::string(physicalMemoryAccessHappened ? "no" : "")
+                                + std::string(physicalMemoryAccessHappened ? "" : "no")
                                 + " physical memory access.");
     return;
   }

@@ -113,9 +113,13 @@ class InputTab(QWidget):
     leftLayout = QVBoxLayout()
     leftLayout.addWidget(QLabel("input.asm"))
 
-    self.asmText = QTextEdit()
     font = QFont("Courier New", 10)
+    self.asmText = QTextEdit()
     self.asmText.setFont(font)
+    # Set tab to 2 spaces
+    metrics = self.asmText.fontMetrics()
+    tab_width = 2 * metrics.horizontalAdvance(' ')
+    self.asmText.setTabStopDistance(tab_width)
     leftLayout.addWidget(self.asmText)
     
     # Apply syntax highlighter to ASM text
@@ -175,6 +179,10 @@ class InputTab(QWidget):
 
     self.hexText = QTextEdit()
     self.hexText.setFont(font)
+    # Set tab to 2 spaces
+    metrics = self.hexText.fontMetrics()
+    tab_width = 2 * metrics.horizontalAdvance(' ')
+    self.hexText.setTabStopDistance(tab_width)
     rightLayout.addWidget(self.hexText)
 
     # HEX Buttons layout
@@ -226,14 +234,17 @@ class InputTab(QWidget):
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def OpenAsmFile(self):
+    self.SetAllButtonsEnabled(False)  # Disable all buttons while loading
     options = QFileDialog.Options()
     filename, _ = QFileDialog.getOpenFileName(self, "Open ASM File", "", "Assembly Files (*.asm);;All Files (*)", options=options)
     if filename:
       with open(filename, 'r') as file:
         self.asmText.setText(file.read())
+    self.SetAllButtonsEnabled(True)  # Re-enable buttons after loading
   
   # ---------------------------------------------------------------------------------------------------------------------------
   def SaveAsmFile(self):
+    self.SetAllButtonsEnabled(False)
     options = QFileDialog.Options()
     filename, _ = QFileDialog.getSaveFileName(self, "Save ASM File", "", "Assembly Files (*.asm);;All Files (*)", options=options)
     if filename:
@@ -244,17 +255,21 @@ class InputTab(QWidget):
       with open(filename, 'w') as file:
         file.write(self.asmText.toPlainText())
         QMessageBox.information(self, "Success", f"File saved successfully: {filename}")
+    self.SetAllButtonsEnabled(True)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def OpenHexFile(self):
+    self.SetAllButtonsEnabled(False)
     options = QFileDialog.Options()
     filename, _ = QFileDialog.getOpenFileName(self, "Open HEX File", "", "Hex Files (*.hex);;All Files (*)", options=options)
     if filename:
       with open(filename, 'r') as file:
         self.hexText.setText(file.read())
+    self.SetAllButtonsEnabled(True)
   
   # ---------------------------------------------------------------------------------------------------------------------------
   def SaveHexFile(self):
+    self.SetAllButtonsEnabled(False)
     options = QFileDialog.Options()
     filename, _ = QFileDialog.getSaveFileName(self, "Save HEX File", "", "Hex Files (*.hex);;All Files (*)", options=options)
     if filename:
@@ -265,9 +280,11 @@ class InputTab(QWidget):
       with open(filename, 'w') as file:
         file.write(self.hexText.toPlainText())
         QMessageBox.information(self, "Success", f"File saved successfully: {filename}")
+    self.SetAllButtonsEnabled(True)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def ConvertAsmToHex(self):
+    self.SetAllButtonsEnabled(False)
     # Save ASM to temp file
     self.SetStatusText("Converting .asm to .hex...", error=False)
 
@@ -299,9 +316,11 @@ class InputTab(QWidget):
     except Exception as e:
       self.SetStatusText(f"Error converting .asm to .hex", error=True)
       QMessageBox.critical(self, "Error", str(e))
+    self.SetAllButtonsEnabled(True)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def ExecuteSimulation(self):
+    self.SetAllButtonsEnabled(False)
     # Save HEX to temp file
     self.SetStatusText("Saving hex source file...", error=False)
     hexPath = os.path.join(self.parent.GetTempDir(), "input.hex")
@@ -346,6 +365,7 @@ class InputTab(QWidget):
     # Switch to simulation tab
     self.SetStatusText("Simulation complete.", error=False)
     self.parent.SetSimulationTabEnabled(True)
+    self.SetAllButtonsEnabled(True)
     self.parent.SwitchToSimulationTab()
 
   # ---------------------------------------------------------------------------------------------------------------------------
@@ -356,6 +376,12 @@ class InputTab(QWidget):
       params.append(f"--{arg.replace('_', '-')}")
       params.append(str(getattr(config, arg)))
     return params
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def SetAllButtonsEnabled(self, enabled):
+    """Enable or disable all buttons in the InputTab."""
+    for widget in self.findChildren(QPushButton):
+      widget.setEnabled(enabled)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GetAsmText(self):

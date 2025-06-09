@@ -87,6 +87,7 @@ struct ExecutionState
 
   struct {
     std::string state = "Idle";
+    std::string substate = "";
     std::string activeException = "";
     std::string extra = "";
   } EX;

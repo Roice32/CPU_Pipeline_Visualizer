@@ -23,6 +23,8 @@ void ExecJumpOp::executeInstruction(SynchronizedDataPackage<Instruction> instrPa
   clock_time lastTick = refToEX->waitTillLastTick();
   if (plainJump || equalJump || lessJump || greaterJump || zeroJump)
   {
+    recorder->modifyModuleState(EX, "Awaiting instruction at #"
+                                + convDecToHex(jumpAddressPckg.data[0]));
     recorder->addExtraInfo(EX, "Jump taken to #" + convDecToHex(jumpAddressPckg.data[0]));
     jumpIP(jumpAddressPckg.data[0]);
     mssgToDE.sentAt = lastTick;

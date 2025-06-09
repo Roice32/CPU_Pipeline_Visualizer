@@ -17,7 +17,7 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
   fromMetoLS->sendA(syncReq);
 
   if (clockSyncVars->running)
-    recorder->modifyModuleState(IC, "Awaiting fetch window at " + convDecToHex(addr) + " from LS");
+    recorder->modifyModuleState(IC, "Awaiting fetch window at #" + convDecToHex(addr) + " from LS");
     recorder->pushICtoLSData(syncReq);
 
   enterIdlingState();
@@ -33,7 +33,7 @@ fetch_window InstructionCache::getFetchWindowFromLS(address addr) {
     recorder->popPipeData(Pipes::LStoIC);
     recorder->modifyModuleState(IC, "Received fetch window "
                                     + fwToStr(receivedPckg.data)
-                                    + " from LS at "
+                                    + " from LS at #"
                                     + convDecToHex(receivedPckg.associatedIP));
     
     if (!receivedPckg.exceptionTriggered)
@@ -57,9 +57,9 @@ bool InstructionCache::checkIPChangeSignal()
   recorder->popPipeData(Pipes::DEtoIC);
   clock_time timeReceived = getCurrTime();
   internalIP = signalFromDE.data / FETCH_WINDOW_BYTES * FETCH_WINDOW_BYTES;
-  recorder->modifyModuleState(IC, "Received IP change signal from DE to "
+  recorder->modifyModuleState(IC, "Received IP change signal from DE to #"
                                   + convDecToHex(signalFromDE.data)
-                                  + " (aligned as "
+                                  + " (aligned as #"
                                   + convDecToHex(internalIP)
                                   + ")");
   recorder->modifICInternalIP(internalIP);
@@ -102,13 +102,13 @@ void InstructionCache::executeModuleLogic()
     fromMetoDE->sendA(syncResponse);
     recorder->pushICtoDEData(syncResponse);
     if (fwAlreadyInCache)
-      recorder->addExtraInfo(IC, "Cache hit for fetch window at " + convDecToHex(syncResponse.associatedIP));
+      recorder->addExtraInfo(IC, "Cache hit for fetch window at #" + convDecToHex(syncResponse.associatedIP));
   }
 }
 
 void InstructionCache::run()
 {
-  recorder->modifyModuleState(IC, "Starting simulation from " + convDecToHex(SIM_START_ADDR));
+  recorder->modifyModuleState(IC, "Starting simulation from #" + convDecToHex(SIM_START_ADDR));
   clockSyncVars->ICReady = true;
   startCurrOpTimer();
   executeModuleLogic();

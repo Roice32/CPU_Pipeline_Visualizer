@@ -310,6 +310,13 @@ class ModuleComponent(DiagramComponent):
                           "headers": ["Fetch Windows Temp Storage", "Changed"],
                           "rows": [[storedFWs, changed]]})
     
+    elif self.name == "EX":
+      substate = componentData.get('substate', 'N/A')
+      prevSubstate = prevComponentData.get('substate', 'N/A')
+      if substate != "":
+        details.append({"type": "text", "content": f"Substate: {substate}",
+                        "changed": previous_state and substate != prevSubstate})
+
     if componentData.get('extra') != "":
       details.append({"type": "text", "content": f"Extra info: {componentData.get('extra', 'N/A')}",
                     "changed": previous_state and componentData.get('extra') != prevComponentData.get('extra')})
@@ -353,25 +360,17 @@ class CacheComponent(DiagramComponent):
         storageTableHeaders.extend(["Last Hit Time", "Modified"])
 
         for i, entry in enumerate(storage):
-          changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry != prevStorage[i])) else "No"
-          storageTableRows.append([
-            str(i) + ".0",
-            entry[0].get("data", "N/A"),
-            entry[0].get("tag", "N/A"),
-            entry[0].get("valid", False),
-            entry[0].get("lastHitTime", "N/A"),
-            entry[0].get("modified", False),
-            changed
-          ])
-          storageTableRows.append([
-            str(i) + ".1",
-            entry[1].get("data", "N/A"),
-            entry[1].get("tag", "N/A"),
-            entry[1].get("valid", False),
-            entry[1].get("lastHitTime", "N/A"),
-            entry[1].get("modified", False),
-            changed
-          ])
+          for j in range(2):  # Two entries per cache line
+            changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry[j] != prevStorage[i][j])) else "No"
+            storageTableRows.append([
+              str(i) + f".{j}",
+              entry[j].get("data", "N/A"),
+              entry[j].get("tag", "N/A"),
+              entry[j].get("valid", False),
+              entry[j].get("lastHitTime", "N/A"),
+              entry[j].get("modified", False),
+              changed
+            ])
       else: # IC_Cache
         for i, entry in enumerate(storage):
           changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry != prevStorage[i])) else "No"

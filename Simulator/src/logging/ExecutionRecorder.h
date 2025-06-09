@@ -31,7 +31,6 @@ class ExecutionRecorder
 private:
   std::map<address, word> memory = {};
   std::vector<ExecutionState> states = {};
-  std::string cachedExState = "";
 
   void dumpStateToJSON(ExecutionState& state, const std::string& outputDirPath);
   void updateMemory(const std::unordered_map<address, word>& memoryChanges);
@@ -100,10 +99,8 @@ public:
 
   void setEXException(const SynchronizedDataPackage<Instruction>& faultyInstr);
   void clearEXException();
-  void cacheEXState()
-    { cachedExState = states.back().EX.state; }
-  void restoreEXState()
-    { states.back().EX.state = cachedExState; }
+  void setEXSubstate(const std::string& substate)
+    { states.back().EX.substate = substate; }
 
   void dumpSimulationToJSONs(const std::string& outputDirPath);
 };

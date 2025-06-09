@@ -193,11 +193,11 @@ std::string ExecutionState::toJSON()
   for (size_t i = 0; i < pipes.DEtoEX.size(); ++i) {
     ss << "{";
     ss << "\"data\":\"";
-    ss << "OpCode: " << hexW(pipes.DEtoEX[i].data.opCode, "", 2, false) << "\\n";
-    ss << "Src1: " << hexW(pipes.DEtoEX[i].data.src1, "", 2, false) << "\\n";
-    ss << "Src2: " << hexW(pipes.DEtoEX[i].data.src2, "", 2, false) << "\\n";
-    ss << "Param1: " << hexW(pipes.DEtoEX[i].data.param1, "", 4, false) << "\\n";
-    ss << "Param2: " << hexW(pipes.DEtoEX[i].data.param2, "", 4, false);
+      ss << "OpCode: " << hexW(pipes.DEtoEX[i].data.opCode, "", 2, false) << "\\n";
+      ss << "Src1: " << hexW(pipes.DEtoEX[i].data.src1, "", 2, false) << "\\n";
+      ss << "Src2: " << hexW(pipes.DEtoEX[i].data.src2, "", 2, false) << "\\n";
+      ss << "Param1: " << hexW(pipes.DEtoEX[i].data.param1, "", 4, false) << "\\n";
+      ss << "Param2: " << hexW(pipes.DEtoEX[i].data.param2, "", 4, false);
     ss << "\",";
     ss << "\"sentAt\":" << pipes.DEtoEX[i].sentAt << ",";
     ss << "\"associatedIP\":" << hexW(pipes.DEtoEX[i].associatedIP, "#") << ",";
@@ -234,18 +234,17 @@ std::string ExecutionState::toJSON()
   ss << "\"EXtoLS\":[";
   for (size_t i = 0; i < pipes.EXtoLS.size(); ++i) {
     ss << "{";
-    ss << "\"data\":{";
-    ss << "\"reqAddr\":" << hexW(pipes.EXtoLS[i].data.reqAddr, "#") << ",";
-    ss << "\"wordsSizeOfReq\":" << std::to_string(pipes.EXtoLS[i].data.wordsSizeOfReq) << ",";
-    ss << "\"isStoreOperation\":" << (pipes.EXtoLS[i].data.isStoreOperation ? "true" : "false") << ",";
-    ss << "\"reqData\":[";
-    for (size_t j = 0; j < pipes.EXtoLS[i].data.reqData.size(); ++j) {
-        ss << hexW(pipes.EXtoLS[i].data.reqData[j]);
-        if (j < pipes.EXtoLS[i].data.reqData.size() - 1)
-          ss << ",";
-    }
-    ss << "]";
-    ss << "},";
+    ss << "\"data\":\"";
+      ss << "Request Addr.:\\n" << hexW(pipes.EXtoLS[i].data.reqAddr, "#", 4, false);
+      ss << "\\nWords Count: " << std::to_string(pipes.EXtoLS[i].data.wordsSizeOfReq) << "";
+      ss << "\\nIs Read Op?\\n" << (pipes.EXtoLS[i].data.isStoreOperation ? "No" : "Yes");
+      if (pipes.EXtoLS[i].data.isStoreOperation) {
+        ss << "\\nWords:";
+        for (size_t j = 0; j < pipes.EXtoLS[i].data.reqData.size(); ++j) {
+            ss << "\\n" << hexW(pipes.EXtoLS[i].data.reqData[j], "0x", 4, false);
+        }
+      }
+    ss << "\",";
     ss << "\"sentAt\":" << pipes.EXtoLS[i].sentAt << ",";
     ss << "\"associatedIP\":" << hexW(pipes.EXtoLS[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.EXtoLS[i].exceptionTriggered ? "true" : "false");
@@ -263,13 +262,18 @@ std::string ExecutionState::toJSON()
   ss << "\"LStoEX\":[";
   for (size_t i = 0; i < pipes.LStoEX.size(); ++i) {
     ss << "{";
-    ss << "\"data\":[";
-    for (size_t j = 0; j < pipes.LStoEX[i].data.size(); ++j) {
-        ss << hexW(pipes.LStoEX[i].data[j]);
-        if (j < pipes.LStoEX[i].data.size() - 1)
-          ss << "\n";
+    ss << "\"data\":\"";
+    if (pipes.LStoEX[i].data.empty()) {
+        ss << "None";
     }
-    ss << "],";
+    else {
+      for (size_t j = 0; j < pipes.LStoEX[i].data.size(); ++j) {
+          ss << hexW(pipes.LStoEX[i].data[j], "0x", 4, false);
+          if (j < pipes.LStoEX[i].data.size() - 1)
+            ss << "\\n";
+      }
+    }
+    ss << "\",";
     ss << "\"sentAt\":" << pipes.LStoEX[i].sentAt << ",";
     ss << "\"associatedIP\":" << hexW(pipes.LStoEX[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.LStoEX[i].exceptionTriggered ? "true" : "false");
@@ -363,6 +367,7 @@ std::string ExecutionState::toJSON()
   // EX stage
   ss << "\"EX\":{";
   ss << "\"state\":\"" << EX.state << "\"";
+  ss << ",\"substate\":\"" << EX.substate << "\"";
   ss << ",\"activeException\":\"" << EX.activeException << "\"";
   ss << ",\"extra\":\"" << EX.extra << "\""; // Extra information for EX stage
   ss << "}"; // End of EX stage

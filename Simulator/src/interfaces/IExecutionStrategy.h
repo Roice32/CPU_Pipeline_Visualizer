@@ -115,18 +115,17 @@ protected:
     syncReq.sentAt = currTick;
     fromEXtoLS->sendA(syncReq);
     recorder->pushEXtoLSData(syncReq);
-    recorder->cacheEXState();
-    recorder->modifyModuleState(EX, "Awaiting "
-                                    + std::to_string(howManyWords)
-                                    + " words from LS at #"
-                                    + convDecToHex(addr));
+    recorder->setEXSubstate("Awaiting "
+                            + std::to_string(howManyWords)
+                            + " words from LS at #"
+                            + convDecToHex(addr));
     refToEX->enterIdlingState();
     while (!fromEXtoLS->pendingB())
       refToEX->returnFromIdlingState();
     SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
     refToEX->awaitNextTickToHandle(receivedPckg);
     recorder->popPipeData(LStoEX);
-    recorder->restoreEXState();
+    recorder->setEXSubstate("");
     return receivedPckg;
   }
 
@@ -142,18 +141,17 @@ protected:
     statusMsg << "Awaiting store of ";
     for (size_t i = 0; i < data.size(); ++i)
     {
-      statusMsg << convDecToHex(data[i]) << " ";
+      statusMsg << "0x" << convDecToHex(data[i]) << " ";
     }
     statusMsg << "by LS at #" << convDecToHex(addr);
-    recorder->cacheEXState();
-    recorder->modifyModuleState(EX, statusMsg.str());
+    recorder->setEXSubstate(statusMsg.str());
     refToEX->enterIdlingState();
     while (!fromEXtoLS->pendingB())
       refToEX->returnFromIdlingState();
     SynchronizedDataPackage<std::vector<word>> receivedPckg = fromEXtoLS->getB();
     refToEX->awaitNextTickToHandle(receivedPckg);
     recorder->popPipeData(LStoEX);
-    recorder->restoreEXState();
+    recorder->setEXSubstate("");
     return receivedPckg;
   }
 

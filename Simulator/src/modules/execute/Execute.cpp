@@ -156,7 +156,7 @@ void Execute::executeModuleLogic()
   }
   if (discardHappened)
     recorder->addExtraInfo(EX, "(Awaiting for instruction at #"
-                               + convDecToHex(currInstr.associatedIP)
+                               + convDecToHex(*registers->IP)
                                + ")");
 
   if (currInstr.exceptionTriggered && currInstr.excpData == MISALIGNED_IP)
@@ -169,8 +169,9 @@ void Execute::executeModuleLogic()
   {
     if (currInstr.associatedIP == *registers->IP)
       *registers->IP += 2;
-      recorder->modifyModuleState(EX, "Moving past uninitialized memory at #"
-                                      + convDecToHex(currInstr.associatedIP));
+    recorder->modifyModuleState(EX, "Awaiting for instruction at #"
+                                    + convDecToHex(*registers->IP));
+
     return;
   }
 
@@ -186,5 +187,6 @@ void Execute::executeModuleLogic()
                                     + currInstr.data.toString() + "' from #"
                                     + convDecToHex(currInstr.associatedIP));
     executeInstruction(currInstr);
+    recorder->addExtraInfo(EX, "Retired instruction");
   }
 }
