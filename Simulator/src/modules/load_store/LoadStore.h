@@ -20,7 +20,6 @@ private:
   fetch_window bufferedLoadFrom(address addr) override;
   void storeAt(address addr, byte value) override;
   std::vector<word> handleRequestFromEX(MemoryAccessRequest req);
-  void emptyCacheIntoMemory();
 
 public:
   LoadStore(std::shared_ptr<Memory> simulatedMemory,
@@ -30,5 +29,4 @@ public:
     std::shared_ptr<ExecutionRecorder> recorder);
 
   void executeModuleLogic() override;
-  void run() override;
 };

@@ -31,7 +31,6 @@ void Memory::storeData(address& currAddr, const char* instr)
 
 bool Memory::isValidInputLine(std::string inLine)
 {
-  std::cout << "Line: " << inLine << "\n";
   byte ind = 0;
   int lineDataSize = ADDRESS_WIDTH / WORD_BYTES / 2;
 
@@ -62,8 +61,8 @@ Memory::Memory(const char* hexSourceFilePath)
 
   if (!sourceCodeFile)
   {
-    std::cout << "Failed to open file: " << hexSourceFilePath << "\n";
-    throw "INVALID_INPUT_FILE";
+    std::cerr << "Failed to open file: " << hexSourceFilePath << "\n";
+    exit(EXIT_FAILURE);
   }
 
   while(std::getline(sourceCodeFile, instrString))

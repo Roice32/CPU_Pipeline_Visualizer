@@ -270,7 +270,7 @@ class InputTab(QWidget):
       # Run parsing script
       process = QProcess()
       process.start("python.exe", [parseScript, "--config-file", configFile, "--in-file", asmPath, "--out-file", hexPath])
-      process.waitForFinished()
+      process.waitForFinished(-1)
 
       processOutput = process.readAllStandardOutput().data().decode()
       if processOutput != "":
@@ -310,9 +310,9 @@ class InputTab(QWidget):
 
     self.SetStatusText("Executing simulation...", error=False)
     process = QProcess()
-    process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, simulationPath])
+    process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, simulationPath] + self.GenerateConfigOverloadParams())
 
-    process.waitForFinished()
+    process.waitForFinished(-1)
     # Check if the execution was successful
     if process.exitCode() != 0:
       processOutput = process.readAllStandardOutput().data().decode()
@@ -328,6 +328,15 @@ class InputTab(QWidget):
     self.SetStatusText("Simulation complete.", error=False)
     self.parent.SetSimulationTabEnabled(True)
     self.parent.SwitchToSimulationTab()
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GenerateConfigOverloadParams(self):
+    config = self.parent.GetConfig()
+    params = []
+    for arg in vars(config):
+      params.append(f"--{arg.replace('_', '-')}")
+      params.append(str(getattr(config, arg)))
+    return params
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GetAsmText(self):

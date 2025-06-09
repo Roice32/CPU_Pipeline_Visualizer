@@ -1,8 +1,6 @@
-import json
 from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsTextItem
-from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPen, QColor, QBrush
-
+from ConfigTab import Config
 
 # -----------------------------------------------------------------------------------------------------------------------------
 class ComponentColors:
@@ -481,6 +479,21 @@ class PipelineComponent(DiagramComponent):
     prevPipeData = prevPipes.get(pipeName, [])
     
     return pipeData != prevPipeData
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class SpecComponent(DiagramComponent):
+  details = []
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def SetDetails(self, config: Config):
+    self.details = []
+    self.details.append({"type": "text", "content": "", "changed": False})  # Add a blank line
+    self.details.append({"type": "text", "content": f"Clock Period: {config.clock_period_millis} ms", "changed": False})
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GetDetailsText(self, _state, _memory, _previous_state=None, _previous_memory=None):
+    return self.details
 
 
 # -----------------------------------------------------------------------------------------------------------------------------

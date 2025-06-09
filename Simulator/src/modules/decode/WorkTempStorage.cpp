@@ -1,6 +1,6 @@
 #include "WorkTempStorage.h"
 
-#include <cassert>
+#include <iostream>
 
 WorkTempStorage::WorkTempStorage()
 {
@@ -28,7 +28,12 @@ WorkTempStorage& WorkTempStorage::operator<<(const byte wordsCount)
 
 void WorkTempStorage::concatNewFW(fetch_window newFW)
 {
-  assert(storedWordsCount < FETCH_WINDOW_BYTES / WORD_BYTES && "Attempt to overwrite non-empty cache end");
+  if (storedWordsCount >= FETCH_WINDOW_BYTES / WORD_BYTES)
+  {
+    std::cerr << "Attempt to concat new fetch window to non-empty cache end" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
   byte emptyWordsInFirstFW = FETCH_WINDOW_BYTES / WORD_BYTES - storedWordsCount;
   storedFWs[0] >>= (emptyWordsInFirstFW * WORD_BYTES * 8);
   storedFWs[1] = newFW;

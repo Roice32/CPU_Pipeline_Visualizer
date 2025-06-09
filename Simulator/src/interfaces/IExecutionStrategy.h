@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cassert>
-
 #include "CPURegisters.h"
 #include "IMemoryAccesser.h"
 #include "IClockBoundModule.h"

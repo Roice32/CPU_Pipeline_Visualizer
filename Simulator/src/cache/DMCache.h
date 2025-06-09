@@ -1,8 +1,9 @@
 #pragma once
 
 #include "CacheLine.h"
-#include <cassert>
+
 #include <vector>
+#include <iostream>
 
 template <typename DataType>
 class DMCache
@@ -48,7 +49,11 @@ public:
   {
     currReqIndex = (address (currReq << tagSize)) >> (tagSize + offsetSize);
     currReqTag = currReq >> (indexSize + offsetSize);
-    assert(currReqIndex >= 0 && currReqIndex < cacheSize);
+    if (currReqIndex >= cacheSize)
+    {
+      std::cerr << "Cache index out of bounds: " << currReqIndex << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
 
   bool isAHit()

@@ -73,6 +73,10 @@ class CPUSimulator(QMainWindow):
     self.tabs.addTab(self.helpTab, "Help")
 
   # ---------------------------------------------------------------------------------------------------------------------------
+  def GetConfig(self):
+    return self.configTab.currConfig
+
+  # ---------------------------------------------------------------------------------------------------------------------------
   def GetTempDir(self):
     return self.tempDir
 
@@ -87,36 +91,6 @@ class CPUSimulator(QMainWindow):
   # ---------------------------------------------------------------------------------------------------------------------------
   def GetSimulationMemoryDir(self):
     return os.path.join(self.tempDir, "simulation", "memory")
-
-  # ---------------------------------------------------------------------------------------------------------------------------
-  def GetConfigValues(self):
-    return {
-      "clockPeriod": self.clockPeriod,
-      "deWorkMemory": self.deWorkMemory,
-      "icCacheSize": self.icCacheSize,
-      "lsCacheSize": self.lsCacheSize,
-      "exCyclesPerOp": self.exCyclesPerOp
-    }
-
-  # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateClockPeriod(self, value):
-    self.clockPeriod = value
-
-  # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateDeWorkMemory(self, value):
-    self.deWorkMemory = value
-
-  # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateIcCacheSize(self, value):
-    self.icCacheSize = value
-
-  # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateLsCacheSize(self, value):
-    self.lsCacheSize = value
-
-  # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateExCyclesPerOp(self, value):
-    self.exCyclesPerOp = value
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def SwitchToSimulationTab(self):

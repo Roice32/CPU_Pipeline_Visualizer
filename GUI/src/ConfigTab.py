@@ -1,91 +1,99 @@
-from PyQt5.QtWidgets import QWidget, QFormLayout, QSpinBox
+from PyQt5.QtWidgets import QWidget, QFormLayout, QSpinBox, QPushButton
+from PyQt5.QtWidgets import QHBoxLayout
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QLabel
+
+
+# -----------------------------------------------------------------------------------------------------------------------------
+class Config:
+  clock_period_millis: int
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def __init__(self):
+    self.clock_period_millis = 1
 
 
 # -----------------------------------------------------------------------------------------------------------------------------
 class ConfigTab(QWidget):
+  buttonStyle = "border: 1px solid black; border-radius: 5px; height: 30%; width: 50%; background-color: #f0f0f0; font: bold;"
+
   parent = None
+  currConfig = None
+  prevConfig = None
+
   clockPeriodInput = None
-  deWorkMemoryInput = None
-  icCacheInput = None
-  lsCacheInput = None
-  exCyclesInput = None
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self, parent):
     super().__init__()
     self.parent = parent
-
     layout = QFormLayout()
 
-    # Get initial config values
-    config = parent.GetConfigValues()
+    # Set font for the widget and its children
+    font = self.font()
+    font.setPointSize(10)
+    font.setBold(True)
+    self.setFont(font)
+
+    self.currConfig = Config()
+    self.prevConfig = Config()
 
     # CLOCK_PERIOD_MILLIS
-    self.clockPeriodInput = QSpinBox()
-    self.clockPeriodInput.setRange(1, 100)
-    self.clockPeriodInput.setValue(config["clockPeriod"])
-    self.clockPeriodInput.valueChanged.connect(self.UpdateClockPeriod)
-    layout.addRow("CLOCK_PERIOD_MILLIS:", self.clockPeriodInput)
+    self.clockPeriodInput = self.GenConfigElement(layout,
+                                                  "Clock Period",
+                                                  (1, 100),
+                                                  "Sets the CPU's clock to tick every X milliseconds.")
 
-    # DE_WORK_MEMORY_FW_SIZE
-    self.deWorkMemoryInput = QSpinBox()
-    self.deWorkMemoryInput.setRange(2, 5)
-    self.deWorkMemoryInput.setValue(config["deWorkMemory"])
-    self.deWorkMemoryInput.valueChanged.connect(self.UpdateDeWorkMemory)
-    layout.addRow("DE_WORK_MEMORY_FW_SIZE:", self.deWorkMemoryInput)
+    # Buttons layout
+    buttonsLayout = QHBoxLayout()
+    buttonsLayout.addStretch(1)  # Add stretchable space before buttons
 
-    # IC_CACHE_WORDS_SIZE
-    self.icCacheInput = QSpinBox()
-    self.icCacheInput.setRange(16, 1024)
-    self.icCacheInput.setValue(config["icCacheSize"])
-    self.icCacheInput.valueChanged.connect(self.UpdateIcCacheSize)
-    layout.addRow("IC_CACHE_WORDS_SIZE:", self.icCacheInput)
+    self.saveButton = QPushButton("Save")
+    self.saveButton.clicked.connect(self.Save)
+    self.saveButton.setStyleSheet(ConfigTab.buttonStyle)
+    buttonsLayout.addWidget(self.saveButton)
 
-    # LS_CACHE_WORDS_SIZE
-    self.lsCacheInput = QSpinBox()
-    self.lsCacheInput.setRange(16, 1024)
-    self.lsCacheInput.setValue(config["lsCacheSize"])
-    self.lsCacheInput.valueChanged.connect(self.UpdateLsCacheSize)
-    layout.addRow("LS_CACHE_WORDS_SIZE:", self.lsCacheInput)
+    self.resetButton = QPushButton("Reset")
+    self.resetButton.clicked.connect(lambda: self.SetConfig(self.prevConfig))
+    self.resetButton.setStyleSheet(ConfigTab.buttonStyle)
+    buttonsLayout.addWidget(self.resetButton)
 
-    # EX_CYCLES_PER_OP
-    self.exCyclesInput = QSpinBox()
-    self.exCyclesInput.setRange(4, 100)
-    self.exCyclesInput.setValue(config["exCyclesPerOp"])
-    self.exCyclesInput.valueChanged.connect(self.UpdateExCyclesPerOp)
-    layout.addRow("EX_CYCLES_PER_OP:", self.exCyclesInput)
+    buttonsLayout.addStretch(1)  # Add stretchable space after buttons
 
+    layout.addRow(buttonsLayout)
+
+    self.SetConfig(self.currConfig)
     self.setLayout(layout)
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateClockPeriod(self, value):
-    self.parent.UpdateClockPeriod(value)
+  def GenConfigElement(self, top_layout, title, range, description):
+    groupBox = QGroupBox(title)
+    layout = QVBoxLayout()
+
+    descriptionLabel = QLabel(description)
+    descriptionLabel.setWordWrap(True)
+    descriptionLabel.setStyleSheet("font-size: 9pt;")
+    layout.addWidget(descriptionLabel)
+
+    inputField = QSpinBox()
+    inputField.setRange(range[0], range[1])
+    inputField.setButtonSymbols(QSpinBox.NoButtons)
+    inputField.setMaximumWidth(int(self.parent.width() * 0.1))
+    inputField.setStyleSheet("font-size: 10pt;")
+    layout.addWidget(inputField)
+
+    groupBox.setLayout(layout)
+    top_layout.addRow(groupBox)
+
+    return inputField
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateDeWorkMemory(self, value):
-    self.parent.UpdateDeWorkMemory(value)
+  def SetConfig(self, config):
+    self.currConfig = config
+    self.clockPeriodInput.setValue(self.currConfig.clock_period_millis)
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateIcCacheSize(self, value):
-    self.parent.UpdateIcCacheSize(value)
-
-  # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateLsCacheSize(self, value):
-    self.parent.UpdateLsCacheSize(value)
-
-  # ---------------------------------------------------------------------------------------------------------------------------
-  def UpdateExCyclesPerOp(self, value):
-    self.parent.UpdateExCyclesPerOp(value)
-
-  # ---------------------------------------------------------------------------------------------------------------------------
-  def GetConfigValues(self):
-    return {
-      "clockPeriod": self.clockPeriodInput.value(),
-      "deWorkMemory": self.deWorkMemoryInput.value(),
-      "icCacheSize": self.icCacheInput.value(),
-      "lsCacheSize": self.lsCacheInput.value(),
-      "exCyclesPerOp": self.exCyclesInput.value()
-    }
+  def Save(self):
+    self.currConfig.clock_period_millis = self.clockPeriodInput.value()
 
 
 # -----------------------------------------------------------------------------------------------------------------------------

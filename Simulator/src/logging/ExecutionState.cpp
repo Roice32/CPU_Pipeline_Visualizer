@@ -6,7 +6,7 @@
 inline std::string ExecutionState::hexW(const word &value,
                                         const std::string &prefix,
                                         const byte &padToLen,
-                                        const bool& quotes) const
+                                        const bool& quotes)
 {
   static std::stringstream ss = std::stringstream();
   static std::string result;
@@ -27,7 +27,7 @@ inline std::string ExecutionState::hexFW(const fetch_window &value,
                                          const std::vector<std::string> &margins,
                                          const bool &quotes,
                                          const byte &padToLen,
-                                         const std::string &prefix) const
+                                         const std::string &prefix)
 {
   static std::stringstream ss = std::stringstream();
 
@@ -123,9 +123,8 @@ std::string ExecutionState::toJSON()
     ss << "\"sentAt\":" << pipes.ICtoLS[i].sentAt << ",";
     ss << "\"associatedIP\":" << hexW(pipes.ICtoLS[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.ICtoLS[i].exceptionTriggered ? "true" : "false");
-    if (pipes.ICtoLS[i].exceptionTriggered)
-    {
-      ss << ",\"excpData\":" << hexW(pipes.ICtoLS[i].excpData) << ",";
+    if (pipes.ICtoLS[i].exceptionTriggered) {
+      ss << ",\"excpData\":" << EXCEPTION_HANDLER_NAMES[pipes.ICtoLS[i].handlerAddr] << ",";
       ss << "\"handlerAddr\":" << hexW(pipes.ICtoLS[i].handlerAddr, "#");
     }
     ss << "}";
@@ -143,7 +142,7 @@ std::string ExecutionState::toJSON()
     ss << "\"associatedIP\":" << hexW(pipes.LStoIC[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.LStoIC[i].exceptionTriggered ? "true" : "false");
     if (pipes.LStoIC[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << hexW(pipes.LStoIC[i].excpData) << ",";
+        ss << ",\"excpData\":" << EXCEPTION_HANDLER_NAMES[pipes.LStoIC[i].handlerAddr] << ",";
         ss << "\"handlerAddr\":" << hexW(pipes.LStoIC[i].handlerAddr, "#");
     }
     ss << "}";
@@ -161,7 +160,7 @@ std::string ExecutionState::toJSON()
     ss << "\"associatedIP\":" << hexW(pipes.ICtoDE[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.ICtoDE[i].exceptionTriggered ? "true" : "false");
     if (pipes.ICtoDE[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << hexW(pipes.ICtoDE[i].excpData) << ",";
+        ss << ",\"excpData\":" << EXCEPTION_HANDLER_NAMES[pipes.ICtoDE[i].handlerAddr] << ",";
         ss << "\"handlerAddr\":" << hexW(pipes.ICtoDE[i].handlerAddr, "#");
     }
     ss << "}";
@@ -179,7 +178,7 @@ std::string ExecutionState::toJSON()
     ss << "\"associatedIP\":" << hexW(pipes.DEtoIC[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.DEtoIC[i].exceptionTriggered ? "true" : "false");
     if (pipes.DEtoIC[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << hexW(pipes.DEtoIC[i].excpData) << ",";
+        ss << ",\"excpData\":" << EXCEPTION_HANDLER_NAMES[pipes.DEtoIC[i].handlerAddr] << ",";
         ss << "\"handlerAddr\":" << hexW(pipes.DEtoIC[i].handlerAddr, "#");
     }
     ss << "}";
@@ -192,18 +191,18 @@ std::string ExecutionState::toJSON()
   ss << "\"DEtoEX\":[";
   for (size_t i = 0; i < pipes.DEtoEX.size(); ++i) {
     ss << "{";
-    ss << "\"data\":{";
-    ss << "\"opCode\":" << hexW(pipes.DEtoEX[i].data.opCode, "", 2) << ",";
-    ss << "\"src1\":" << hexW(pipes.DEtoEX[i].data.src1, "", 2) << ",";
-    ss << "\"src2\":" << hexW(pipes.DEtoEX[i].data.src2, "", 2) << ",";
-    ss << "\"param1\":" << hexW(pipes.DEtoEX[i].data.param1, "") << ",";
-    ss << "\"param2\":" << hexW(pipes.DEtoEX[i].data.param2, "");
-    ss << "},";
+    ss << "\"data\":\"";
+    ss << "OpCode: " << hexW(pipes.DEtoEX[i].data.opCode, "", 2, false) << "\\n";
+    ss << "Src1: " << hexW(pipes.DEtoEX[i].data.src1, "", 2, false) << "\\n";
+    ss << "Src2: " << hexW(pipes.DEtoEX[i].data.src2, "", 2, false) << "\\n";
+    ss << "Param1: " << hexW(pipes.DEtoEX[i].data.param1, "", 4, false) << "\\n";
+    ss << "Param2: " << hexW(pipes.DEtoEX[i].data.param2, "", 4, false);
+    ss << "\",";
     ss << "\"sentAt\":" << pipes.DEtoEX[i].sentAt << ",";
     ss << "\"associatedIP\":" << hexW(pipes.DEtoEX[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.DEtoEX[i].exceptionTriggered ? "true" : "false");
     if (pipes.DEtoEX[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << hexW(pipes.DEtoEX[i].excpData) << ",";
+        ss << ",\"excpData\":" << EXCEPTION_HANDLER_NAMES[pipes.DEtoEX[i].handlerAddr] << ",";
         ss << "\"handlerAddr\":" << hexW(pipes.DEtoEX[i].handlerAddr, "#");
     }
     ss << "}";
@@ -221,7 +220,7 @@ std::string ExecutionState::toJSON()
     ss << "\"associatedIP\":" << hexW(pipes.EXtoDE[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.EXtoDE[i].exceptionTriggered ? "true" : "false");
     if (pipes.EXtoDE[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << hexW(pipes.EXtoDE[i].excpData) << ",";
+        ss << ",\"excpData\":" << EXCEPTION_HANDLER_NAMES[pipes.EXtoDE[i].handlerAddr] << ",";
         ss << "\"handlerAddr\":" << hexW(pipes.EXtoDE[i].handlerAddr, "#");
     }
     ss << "}";
@@ -250,7 +249,7 @@ std::string ExecutionState::toJSON()
     ss << "\"associatedIP\":" << hexW(pipes.EXtoLS[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.EXtoLS[i].exceptionTriggered ? "true" : "false");
     if (pipes.EXtoLS[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << hexW(pipes.EXtoLS[i].excpData) << ",";
+        ss << ",\"excpData\":" << EXCEPTION_HANDLER_NAMES[pipes.EXtoLS[i].handlerAddr] << ",";
         ss << "\"handlerAddr\":" << hexW(pipes.EXtoLS[i].handlerAddr, "#");
     }
     ss << "}";
@@ -267,14 +266,14 @@ std::string ExecutionState::toJSON()
     for (size_t j = 0; j < pipes.LStoEX[i].data.size(); ++j) {
         ss << hexW(pipes.LStoEX[i].data[j]);
         if (j < pipes.LStoEX[i].data.size() - 1)
-          ss << ",";
+          ss << "\n";
     }
     ss << "],";
     ss << "\"sentAt\":" << pipes.LStoEX[i].sentAt << ",";
     ss << "\"associatedIP\":" << hexW(pipes.LStoEX[i].associatedIP, "#") << ",";
     ss << "\"exceptionTriggered\":" << (pipes.LStoEX[i].exceptionTriggered ? "true" : "false");
     if (pipes.LStoEX[i].exceptionTriggered) {
-        ss << ",\"excpData\":" << hexW(pipes.LStoEX[i].excpData) << ",";
+        ss << ",\"excpData\":" << EXCEPTION_HANDLER_NAMES[pipes.LStoEX[i].handlerAddr] << ",";
         ss << "\"handlerAddr\":" << hexW(pipes.LStoEX[i].handlerAddr, "#");
     }
     ss << "}";

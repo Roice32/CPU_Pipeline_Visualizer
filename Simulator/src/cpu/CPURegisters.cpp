@@ -1,9 +1,7 @@
 #include "CPURegisters.h"
-#include <cassert>
 
 CPURegisters::CPURegisters()
 {
-  assert(REGISTER_COUNT > 0 && "REGISTER_COUNT must be positive integer");
   for (byte reg = 0; reg < REGISTER_COUNT; ++reg)
     registers[reg] = std::make_shared<register_16b>();
   for (byte zReg = 0; zReg < Z_REGISTER_COUNT; ++zReg)

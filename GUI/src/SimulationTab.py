@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QEvent, QTimer
 from PyQt5.QtGui import QPainter, QIcon, QColor, QFont, QKeySequence
 from PyQt5.QtWidgets import QShortcut
-from DiagramComponents import CreateComponent, ComponentColors
+from DiagramComponents import CreateComponent, SpecComponent, ComponentColors
 
 
 # -----------------------------------------------------------------------------------------------------------------------------
@@ -263,6 +263,8 @@ class SimulationTab(QWidget):
       component = CreateComponent(name, x, y, w, h, self.diagramScene)
       self.componentItems[name] = component
 
+    self.componentItems["Spec"] = SpecComponent("Spec", icX + MODULE_SIDE, 0, MEM_COMP_WIDTH, MEM_COMP_WIDTH, self.diagramScene)
+
     self.diagramScene.setSceneRect(self.diagramScene.itemsBoundingRect())
     self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
@@ -377,6 +379,8 @@ class SimulationTab(QWidget):
     self.cycleLabel.setText("1")
     self.currentCycleIndex = 1
 
+    self.componentItems["Spec"].SetDetails(self.parent.GetConfig())
+
     self.BuildMemoryMapping()
     self.UpdateSimulationView()
     return True
@@ -402,7 +406,9 @@ class SimulationTab(QWidget):
       component.SetSelected(name == self.selectedComponent)
 
       hasChanged = False
-      if self.currentCycleIndex == 1:
+      if name == "Spec":
+        pass
+      elif self.currentCycleIndex == 1:
         hasChanged = name in ["IC", "Memory"]
       elif self.previousState:
         if name == "Memory":

@@ -3,7 +3,6 @@
 #include "DiscardedCacheElement.h"
 #include "KWayCacheSet.h"
 
-#include <cassert>
 #include <unordered_map>
 
 template <typename DataType>
@@ -27,7 +26,11 @@ public:
     byte setSize = LS_CACHE_SET_SIZE;
     while (setSize > 1)
     {
-      assert(setSize % 2 == 0 && "Set size for k-way cache not power of 2");
+      if (setSize % 2 != 0)
+      {
+        std::cerr << "Error: Set size for k-way cache must be a power of 2" << std::endl;
+        exit(EXIT_FAILURE);
+      }
       setSize /= 2;
     }
 
@@ -59,7 +62,11 @@ public:
   {
     currReqIndex = (address (currReq << tagSize)) >> (tagSize + offsetSize);
     currReqTag = currReq >> (indexSize + offsetSize);
-    assert(currReqIndex >= 0 && currReqIndex < cacheSize);
+    if (currReqIndex >= cacheSize)
+    {
+      std::cerr << "Error: Cache index out of bounds" << std::endl;
+      exit(EXIT_FAILURE);
+    }
     foundIndex = LS_CACHE_SET_SIZE;
   }
 
@@ -76,7 +83,11 @@ public:
 
   DataType get(clock_time hitTime)
   {
-    assert(foundIndex != LS_CACHE_SET_SIZE && "Attempt to get from cache when no hit recorded");
+    if (foundIndex == LS_CACHE_SET_SIZE)
+    {
+      std::cerr << "Error: Attempt to get from cache when no hit recorded" << std::endl;
+      exit(EXIT_FAILURE);
+    }
     CacheLine<DataType>& target = storage[currReqIndex].storedLines[foundIndex];
     target.lastHitTime = hitTime;
     return target.data;

@@ -3,40 +3,40 @@
 #include <cstdint>
 #include <string>
 
-#define CLOCK_PERIOD_MILLIS 1
-
-#define IC_CYCLES_PER_OP 3
-#define IC_CYCLES_PER_OP_WITH_CACHE_HIT 2
-#define LS_CYCLES_PER_OP 15
-#define LS_CYCLES_PER_OP_WITH_CACHE_HIT 7
-#define DE_CYCLES_PER_OP 2
-#define EX_CYCLES_PER_OP 5
-
-#define ADDRESS_WIDTH 16
-#define SAVE_STATE_ADDR 0x0010
-#define DUMMY_ADDRESS address (-1)
-#define SIM_START_ADDR 0xfff0
-
-#define REGISTER_COUNT 8
-#define Z_REGISTER_COUNT 4
-#define WORDS_PER_Z_REGISTER 4
-
-#define WORD_BYTES 2
-#define FETCH_WINDOW_BYTES 8
-#define FETCH_WINDOW_WORDS 4
-#define DE_WORK_MEMORY_FW_SIZE 2
-
-#define IC_CACHE_WORDS_SIZE 64
-#define LS_CACHE_WORDS_SIZE 64
-#define LS_CACHE_SET_SIZE 2
-#define BP_CACHE_ENTRIES_SIZE 16
-
 using byte = uint8_t;
 using register_16b = uint16_t;
 using address = uint16_t;
 using word = uint16_t;
 using fetch_window = uint64_t;
 using clock_time = uint64_t;
+
+#define WORD_BYTES 2
+
+#define REGISTER_COUNT 8
+#define Z_REGISTER_COUNT 4
+#define WORDS_PER_Z_REGISTER 4
+
+#define FETCH_WINDOW_BYTES 8
+#define FETCH_WINDOW_WORDS 4
+#define DE_WORK_MEMORY_FW_SIZE 2
+
+#define ADDRESS_WIDTH 16
+#define SAVE_STATE_ADDR 0x0010
+#define SIM_START_ADDR 0xfff0
+#define DUMMY_ADDRESS address (-1)
+
+extern byte CLOCK_PERIOD_MILLIS;
+
+extern byte IC_CYCLES_PER_OP;
+extern byte IC_CYCLES_PER_OP_WITH_CACHE_HIT;
+extern byte LS_CYCLES_PER_OP;
+extern byte LS_CYCLES_PER_OP_WITH_CACHE_HIT;
+extern byte DE_CYCLES_PER_OP;
+extern byte EX_CYCLES_PER_OP;
+
+#define IC_CACHE_WORDS_SIZE 64
+#define LS_CACHE_WORDS_SIZE 64
+#define LS_CACHE_SET_SIZE 2
 
 enum OpCode
 {

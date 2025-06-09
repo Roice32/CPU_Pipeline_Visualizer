@@ -193,21 +193,3 @@ void LoadStore::executeModuleLogic()
                               + " regarding #" + convDecToHex(lsReq.data));
   return;
 }
-
-void LoadStore::emptyCacheIntoMemory()
-{
-  std::unordered_map<address, word> updatedWords = cache.getDataToBeStoredInMemory();
-  for (auto entry: updatedWords)
-  {
-    storeAt(entry.first, entry.second >> 8);
-    storeAt(entry.first + 1, entry.second);
-    recorder->recordMemoryChanges({entry.first}, {entry.second});
-  }
-  recorder->addExtraInfo(LS, "Emptied cache contents into physical memory.");
-}
-
-void LoadStore::run()
-{
-  IClockBoundModule::run();
-  emptyCacheIntoMemory();
-}

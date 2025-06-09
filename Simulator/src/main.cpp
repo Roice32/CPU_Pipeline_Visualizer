@@ -1,16 +1,63 @@
 #include "CPU.h"
 #include "ExecutionRecorder.h"
 
+void overloadConfig(char* argv[])
+{
+  std::string arg;
+  byte value;
+  for (int i = 0; argv[i] != nullptr; i += 2)
+  {
+    arg = argv[i];
+    value = std::stoi(argv[i + 1]);
+
+    if (arg == "--clock-period-millis")
+    {
+      CLOCK_PERIOD_MILLIS = value;
+    }
+    else if (arg == "--ic-cycles-per-op")
+    {
+      IC_CYCLES_PER_OP = value;
+    }
+    else if (arg == "--ic-cycles-per-op-with-cache-hit")
+    {
+      IC_CYCLES_PER_OP_WITH_CACHE_HIT = value;
+    }
+    else if (arg == "--ls-cycles-per-op")
+    {
+      LS_CYCLES_PER_OP = value;
+    }
+    else if (arg == "--ls-cycles-per-op-with-cache-hit")
+    {
+      LS_CYCLES_PER_OP_WITH_CACHE_HIT = value;
+    }
+    else if (arg == "--de-cycles-per-op")
+    {
+      DE_CYCLES_PER_OP = value;
+    }
+    else if (arg == "--ex-cycles-per-op")
+    {
+      EX_CYCLES_PER_OP = value;
+    }
+    else 
+    {
+      std::cerr << "Error: Unknown configuration option '" << arg << "'\n";
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
 int main(int argc, char** argv)
 {
+  overloadConfig(argv+3);
+
   std::shared_ptr<Memory> mem;
   try
   {
     mem = std::make_shared<Memory>(argv[1]);
   } catch (const char* ex)
   {
-    std::cout << "Failure: Invalid input file\n";
-    return 1;
+    std::cerr << "Failure: Invalid input file\n";
+    exit(EXIT_FAILURE);
   }
   
   std::shared_ptr<ExecutionRecorder> recorder = std::make_shared<ExecutionRecorder>(mem);
@@ -18,8 +65,7 @@ int main(int argc, char** argv)
   CPU cpu(mem, recorder);
   cpu.runSimulation();
 
-  if (argc >= 3 && argv[2][0] != '\0')
-    recorder->dumpSimulationToJSONs(argv[2]);
+  recorder->dumpSimulationToJSONs(argv[2]);
   
   return 0;
 }

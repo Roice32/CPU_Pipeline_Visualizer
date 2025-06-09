@@ -17,6 +17,15 @@
 
 struct ExecutionState
 {
+  static inline std::unordered_map<address, std::string> EXCEPTION_HANDLER_NAMES =
+  {
+    {DIV_BY_ZERO_HANDL, "\"Division by 0\""},
+    {INVALID_DECODE_HANDL, "\"Invalid decode\""},
+    {MISALIGNED_ACCESS_HANDL, "\"Misaligned memory access\""},
+    {STACK_OVERFLOW_HANDL, "\"Stack overflow\""},
+    {MISALIGNED_IP_HANDL, "\"Misaligned IP\""}
+  };
+
   clock_time cycle = 1;
 
   struct {
@@ -83,16 +92,16 @@ struct ExecutionState
     std::string extra = "";
   } EX;
 
-  inline std::string hexW(const word&        value,
-                          const std::string& prefix = "0x",
-                          const byte&        padToLen = 4,
-                          const bool&        quotes = true) const;
-  inline std::string hexFW(const fetch_window&             value,
-                           const std::string&              divider = "_",
-                           const std::vector<std::string>& margins = {"[ ", " ]"},
-                           const bool&                    quotes = true,
-                           const byte&                     padToLen = 4,
-                           const std::string&              prefix = "") const;
+  static inline std::string hexW(const word&        value,
+                                 const std::string& prefix = "0x",
+                                 const byte&        padToLen = 4,
+                                 const bool&        quotes = true);
+  static inline std::string hexFW(const fetch_window&             value,
+                                  const std::string&              divider = "_",
+                                  const std::vector<std::string>& margins = {"[ ", " ]"},
+                                  const bool&                    quotes = true,
+                                  const byte&                     padToLen = 4,
+                                  const std::string&              prefix = "");
   
   std::string toJSON();
 };

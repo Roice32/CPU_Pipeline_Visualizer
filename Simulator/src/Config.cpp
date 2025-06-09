@@ -1,0 +1,9 @@
+#include "Config.h"
+
+byte CLOCK_PERIOD_MILLIS = 1;
+byte IC_CYCLES_PER_OP = 3;
+byte IC_CYCLES_PER_OP_WITH_CACHE_HIT = 2;
+byte LS_CYCLES_PER_OP = 15;
+byte LS_CYCLES_PER_OP_WITH_CACHE_HIT = 7;
+byte DE_CYCLES_PER_OP = 2;
+byte EX_CYCLES_PER_OP = 5;

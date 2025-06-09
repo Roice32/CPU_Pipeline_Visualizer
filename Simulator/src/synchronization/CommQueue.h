@@ -2,7 +2,7 @@
 
 #include <queue>
 #include <mutex>
-#include <cassert>
+#include <iostream>
 
 template <typename T>
 class CommQueue
@@ -29,7 +29,12 @@ public:
   T pop()
   {
     std::lock_guard<std::mutex> lock(guard);
-    assert(!container.empty() && "Popping from an empty queue");
+    if (container.empty())
+    {
+      std::cerr << "Attempt to pop from an empty queue" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+
     T data = container.front();
     container.pop();
     return data;
@@ -38,7 +43,12 @@ public:
   T peek()
   {
     std::lock_guard<std::mutex> lock(guard);
-    assert(!container.empty() && "Popping from an empty queue");
+    if (container.empty())
+    {
+      std::cerr << "Attempt to peek from an empty queue" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+
     T data = container.front();
     return data;
   }
