@@ -4,10 +4,10 @@ from PyQt5.QtWidgets import (
   QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider,
   QGraphicsScene, QGraphicsView, QGraphicsRectItem, QMessageBox,
   QPushButton, QTableWidget, QTableWidgetItem, QHeaderView, QSplitter,
-  QSpacerItem, QSizePolicy, QScrollArea
+  QScrollArea
 )
 from PyQt5.QtCore import Qt, QEvent, QTimer
-from PyQt5.QtGui import QPainter, QIcon, QColor, QFont, QKeySequence
+from PyQt5.QtGui import QPainter, QIcon, QFont, QKeySequence
 from PyQt5.QtWidgets import QShortcut
 from DiagramComponents import CreateComponent, SpecComponent, ComponentColors
 
@@ -33,7 +33,9 @@ class SimulationTab(QWidget):
   previousState           = None
   currentMemory           = None
   previousMemory          = None
+
   garbageMemoryUsed       = False
+  singleStateMode         = False
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self, parent):
@@ -195,7 +197,7 @@ class SimulationTab(QWidget):
   # ---------------------------------------------------------------------------------------------------------------------------
   def DecreaseCycle(self):
     if self.cycleSlider.value() > self.cycleSlider.minimum():
-      newCycle = self.cycleSlider.value() - 1
+      newCycle = 1 if self.singleStateMode else (self.cycleSlider.value() - 1)
       self.cycleSlider.setValue(newCycle)
       self.currentCycleIndex = newCycle
 
@@ -212,7 +214,7 @@ class SimulationTab(QWidget):
   # ---------------------------------------------------------------------------------------------------------------------------
   def IncreaseCycle(self):
     if self.cycleSlider.value() < self.cycleSlider.maximum():
-      newCycle = self.cycleSlider.value() + 1
+      newCycle = self.totalCycles if self.singleStateMode else (self.cycleSlider.value() + 1)
       self.cycleSlider.setValue(newCycle)
       self.currentCycleIndex = newCycle
     else:
@@ -261,10 +263,10 @@ class SimulationTab(QWidget):
     }
 
     for name, (x, y, w, h) in components.items():
-      component = CreateComponent(name, x, y, w, h, self.diagramScene)
+      component = CreateComponent(self.parent, name, x, y, w, h, self.diagramScene)
       self.componentItems[name] = component
 
-    self.componentItems["Spec"] = SpecComponent("Spec", icX + MODULE_SIDE, 0, MEM_COMP_WIDTH, MEM_COMP_WIDTH, self.diagramScene)
+    self.componentItems["Spec"] = SpecComponent(self.parent, "Spec", icX + MODULE_SIDE, 0, MEM_COMP_WIDTH, MEM_COMP_WIDTH, self.diagramScene)
 
     self.diagramScene.setSceneRect(self.diagramScene.itemsBoundingRect())
     self.diagramView.fitInView(self.diagramScene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
@@ -302,7 +304,8 @@ class SimulationTab(QWidget):
 
     lastMemoryState = 1
 
-    for cycle in range(1, self.totalCycles + 1):
+    step = self.totalCycles - 1 if self.singleStateMode else 1
+    for cycle in range(1, self.totalCycles + 1, step):
       if cycle in memoryStates:
         lastMemoryState = cycle
 
@@ -375,13 +378,15 @@ class SimulationTab(QWidget):
       return False
 
     self.cycleSlider.setMaximum(self.totalCycles)
-    startCycle = self.totalCycles if self.parent.GetConfig().single_state_mode else 1
-    self.cycleSlider.setMinimum(startCycle)
-    self.cycleLabel.setText(str(startCycle))
-    self.currentCycleIndex = startCycle
+    self.cycleSlider.setMinimum(1)
+    self.cycleSlider.setSingleStep(self.totalCycles - 1 if self.singleStateMode else 1)
+    self.cycleLabel.setText("1")
+    self.currentCycleIndex = 1
 
-    self.garbageMemoryUsed = self.parent.GetConfig().garbage_memory
-    self.componentItems["Spec"].SetDetails(self.parent.GetConfig())
+    configUsed = self.parent.GetConfig()
+    self.garbageMemoryUsed = configUsed.garbage_memory
+    self.singleStateMode = configUsed.single_state_mode
+    self.componentItems["Spec"].SetDetails(configUsed)
 
     self.BuildMemoryMapping()
     self.UpdateSimulationView()
@@ -393,9 +398,20 @@ class SimulationTab(QWidget):
     self.cycleLabel.setText(str(currentCycle))
 
     self.currentState = self.LoadStateFile(currentCycle)
-    self.previousState = self.LoadStateFile(currentCycle - 1) if currentCycle > 1 else None
+    if currentCycle == 1:
+      self.previousState = None
+    elif self.singleStateMode:
+      self.previousState = self.LoadStateFile(1)
+    else:
+      self.previousState = self.LoadStateFile(currentCycle - 1)
+
     self.currentMemory = self.GetMemoryForCycle(currentCycle)
-    self.previousMemory = self.GetMemoryForCycle(currentCycle - 1) if currentCycle > 1 else None
+    if currentCycle == 1:
+      self.previousMemory = None
+    elif self.singleStateMode:
+      self.previousMemory = self.GetMemoryForCycle(1)
+    else:
+      self.previousMemory = self.GetMemoryForCycle(currentCycle - 1)
 
     self.UpdateComponentStates()
 
@@ -408,7 +424,7 @@ class SimulationTab(QWidget):
       component.SetSelected(name == self.selectedComponent)
 
       hasChanged = False
-      if name == "Spec":
+      if name == "Spec" or self.singleStateMode:
         pass
       elif self.currentCycleIndex == 1:
         hasChanged = name in ["IC", "Memory"]
@@ -440,8 +456,7 @@ class SimulationTab(QWidget):
 
     component = self.componentItems[self.selectedComponent]
     detailsData = component.GetDetailsText(self.currentState, self.currentMemory,
-                                           self.previousState, self.previousMemory,
-                                           self.garbageMemoryUsed)
+                                           self.previousState, self.previousMemory)
 
     if detailsData:
       detailsFont = QFont()

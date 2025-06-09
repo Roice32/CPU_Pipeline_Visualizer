@@ -176,14 +176,14 @@ public:
 
   void handleException(SynchronizedDataPackage<Instruction> faultyInstr)
   {
-    recorder->setEXException(faultyInstr);
     if (*regs->flags & EXCEPTION)
     {
       refToEX->endSimulation();
-      recorder->modifyModuleState(EX, "Forcefully ended simulation due to double exception");
+      recorder->doubleEXException(faultyInstr);
       return;
     }
 
+    recorder->setEXException(faultyInstr);
     *regs->flags |= EXCEPTION;
     recorder->modifyFlags(*regs->flags);
 

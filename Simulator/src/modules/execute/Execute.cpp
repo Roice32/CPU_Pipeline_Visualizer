@@ -167,12 +167,21 @@ void Execute::executeModuleLogic()
 
   if (currInstr.data.opCode == UNINITIALIZED_MEM)
   {
-    if (currInstr.associatedIP == *registers->IP)
-      *registers->IP += 2;
-    recorder->modifyModuleState(EX, "Awaiting for instruction at #"
-                                    + convDecToHex(*registers->IP));
+    if (IGNORE_UNINITIALIZED_MEM)
+    {
+      if (currInstr.associatedIP == *registers->IP)
+        *registers->IP += 2;
+      recorder->modifyModuleState(EX, "Awaiting for instruction at #"
+                                      + convDecToHex(*registers->IP));
 
-    return;
+      return;
+    }
+    else
+    {
+      currInstr.exceptionTriggered = true;
+      currInstr.excpData = UNINITIALIZED_MEM;
+      currInstr.handlerAddr = INVALID_DECODE_HANDL;
+    }
   }
 
   if (currInstr.associatedIP != *registers->IP)

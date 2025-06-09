@@ -14,13 +14,17 @@ void overloadConfig(char* argv[])
     {
       CLOCK_PERIOD_MILLIS = value;
     }
-    else if (arg == "--ic-cycles-per-op")
+    else if (arg == "--single-state-mode")
     {
-      IC_CYCLES_PER_OP = value;
+      SINGLE_STATE_MODE = value;
     }
-    else if (arg == "--ic-cycles-per-op-with-cache-hit")
+    else if (arg == "--ignore-uninitialized-mem")
     {
-      IC_CYCLES_PER_OP_WITH_CACHE_HIT = value;
+      IGNORE_UNINITIALIZED_MEM = value;
+    }
+    else if (arg == "--garbage-memory")
+    {
+      GARBAGE_MEMORY = value;
     }
     else if (arg == "--ls-cycles-per-op")
     {
@@ -30,6 +34,14 @@ void overloadConfig(char* argv[])
     {
       LS_CYCLES_PER_OP_WITH_CACHE_HIT = value;
     }
+    else if (arg == "--ic-cycles-per-op")
+    {
+      IC_CYCLES_PER_OP = value;
+    }
+    else if (arg == "--ic-cycles-per-op-with-cache-hit")
+    {
+      IC_CYCLES_PER_OP_WITH_CACHE_HIT = value;
+    }
     else if (arg == "--de-cycles-per-op")
     {
       DE_CYCLES_PER_OP = value;
@@ -38,13 +50,17 @@ void overloadConfig(char* argv[])
     {
       EX_CYCLES_PER_OP = value;
     }
-    else if (arg == "--garbage-memory")
+    else if (arg == "--ic-cache-words-size")
     {
-      GARBAGE_MEMORY = value;
+      IC_CACHE_WORDS_SIZE = value;
     }
-    else if (arg == "--single-state-mode")
+    else if (arg == "--ls-cache-words-size")
     {
-      SINGLE_STATE_MODE = value;
+      LS_CACHE_WORDS_SIZE = value;
+    }
+    else if (arg == "--ls-cache-set-entries-count")
+    {
+      LS_CACHE_SET_ENTRIES_COUNT = value;
     }
   }
 }
@@ -63,7 +79,7 @@ int main(int argc, char** argv)
     exit(EXIT_FAILURE);
   }
   
-  std::shared_ptr<ExecutionRecorder> recorder = std::make_shared<ExecutionRecorder>(mem, GARBAGE_MEMORY);
+  std::shared_ptr<ExecutionRecorder> recorder = std::make_shared<ExecutionRecorder>(mem, SINGLE_STATE_MODE);
 
   CPU cpu(mem, recorder);
   cpu.runSimulation();

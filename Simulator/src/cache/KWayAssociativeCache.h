@@ -23,7 +23,7 @@ private:
 public:
   KWayAssociativeCache<DataType>()
   {
-    byte setSize = LS_CACHE_SET_SIZE;
+    byte setSize = LS_CACHE_SET_ENTRIES_COUNT;
     while (setSize > 1)
     {
       if (setSize % 2 != 0)
@@ -34,7 +34,7 @@ public:
       setSize /= 2;
     }
 
-    cacheSize = LS_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(DataType);
+    cacheSize = LS_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(DataType) / LS_CACHE_SET_ENTRIES_COUNT;
 
     offsetSize = 0;
     byte bytesReachable = 1;
@@ -46,7 +46,7 @@ public:
 
     indexSize = 0;
     byte indexReachable = 1;
-    while (indexReachable < cacheSize / LS_CACHE_SET_SIZE)
+    while (indexReachable < cacheSize / LS_CACHE_SET_ENTRIES_COUNT)
     {
       indexReachable *= 2;
       ++indexSize;
@@ -67,12 +67,12 @@ public:
       std::cerr << "Error: Cache index out of bounds" << std::endl;
       exit(EXIT_FAILURE);
     }
-    foundIndex = LS_CACHE_SET_SIZE;
+    foundIndex = LS_CACHE_SET_ENTRIES_COUNT;
   }
 
   bool isAHit()
   {
-    for (byte ind = 0; ind < LS_CACHE_SET_SIZE; ++ind)
+    for (byte ind = 0; ind < LS_CACHE_SET_ENTRIES_COUNT; ++ind)
       if (storage[currReqIndex].storedLines[ind].tag == currReqTag)
       {
         foundIndex = ind;
@@ -83,7 +83,7 @@ public:
 
   DataType get(clock_time hitTime)
   {
-    if (foundIndex == LS_CACHE_SET_SIZE)
+    if (foundIndex == LS_CACHE_SET_ENTRIES_COUNT)
     {
       std::cerr << "Error: Attempt to get from cache when no hit recorded" << std::endl;
       exit(EXIT_FAILURE);
@@ -95,7 +95,7 @@ public:
 
   DiscardedCacheElement<DataType> store(DataType newData, clock_time hitTime, bool isPlainRead = false)
   {
-    if (isAHit() || foundIndex != LS_CACHE_SET_SIZE)
+    if (isAHit() || foundIndex != LS_CACHE_SET_ENTRIES_COUNT)
     {
       CacheLine<DataType>& target = storage[currReqIndex].storedLines[foundIndex];
       if (target.data != newData)
@@ -110,7 +110,7 @@ public:
 
     elimCandidate = 0;
     std::vector<CacheLine<DataType>>& targetSet = storage[currReqIndex].storedLines;
-    for (byte ind = 0; ind < LS_CACHE_SET_SIZE; ++ind)
+    for (byte ind = 0; ind < LS_CACHE_SET_ENTRIES_COUNT; ++ind)
     {
       if (!targetSet[ind].valid)
       {
@@ -143,7 +143,7 @@ public:
     CacheLine<DataType> currElem;
     address currAddr;
     for (byte setInd = 0; setInd < cacheSize; ++setInd)
-      for (byte entryInd = 0; entryInd < LS_CACHE_SET_SIZE; ++entryInd)
+      for (byte entryInd = 0; entryInd < LS_CACHE_SET_ENTRIES_COUNT; ++entryInd)
       {
         currElem = storage[setInd].storedLines[entryInd];
         if (currElem.valid && currElem.modified)
@@ -164,6 +164,6 @@ public:
   }
 
   byte getCurrReqInnerIndex() {
-    return foundIndex != LS_CACHE_SET_SIZE ? foundIndex : elimCandidate;
+    return foundIndex != LS_CACHE_SET_ENTRIES_COUNT ? foundIndex : elimCandidate;
   }
 };

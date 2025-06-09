@@ -28,6 +28,7 @@ using clock_time = uint64_t;
 
 extern bool GARBAGE_MEMORY;
 extern bool SINGLE_STATE_MODE;
+extern bool IGNORE_UNINITIALIZED_MEM;
 
 extern byte CLOCK_PERIOD_MILLIS;
 
@@ -38,9 +39,9 @@ extern byte LS_CYCLES_PER_OP_WITH_CACHE_HIT;
 extern byte DE_CYCLES_PER_OP;
 extern byte EX_CYCLES_PER_OP;
 
-#define IC_CACHE_WORDS_SIZE 64
-#define LS_CACHE_WORDS_SIZE 64
-#define LS_CACHE_SET_SIZE 2
+extern word IC_CACHE_WORDS_SIZE;
+extern word LS_CACHE_WORDS_SIZE;
+extern byte LS_CACHE_SET_ENTRIES_COUNT;
 
 enum OpCode
 {

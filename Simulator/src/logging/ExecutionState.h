@@ -59,7 +59,8 @@ struct ExecutionState
 
     struct {
       unsigned int size = LS_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(word);
-      KWayCacheSet<word> storage[LS_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(word)];
+      std::vector<KWayCacheSet<word>> storage =
+        std::vector<KWayCacheSet<word>>(LS_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(word));
     } cache;
     std::string extra = "";
   } LS;
@@ -69,7 +70,8 @@ struct ExecutionState
     address internalIP = 0xFFF0;
     struct {
       unsigned int size = IC_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(fetch_window);
-      CacheLine<fetch_window> storage[IC_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(fetch_window)];
+      std::vector<CacheLine<fetch_window>> storage =
+        std::vector<CacheLine<fetch_window>>(IC_CACHE_WORDS_SIZE * WORD_BYTES / sizeof(fetch_window));
     } cache;
     std::string extra = "";
   } IC;

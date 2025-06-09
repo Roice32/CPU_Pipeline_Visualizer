@@ -14,6 +14,12 @@ ExecutionRecorder::ExecutionRecorder(std::shared_ptr<Memory> mem, bool singleSta
   {
     states.back().memoryChanges[addr] = value;
   }
+
+  if (singleStateMode)
+  {
+    states.push_back(states.back()); // Duplicate the initial state for the final state
+    states.back().memoryChanges = {};
+  }
 }
 
 void ExecutionRecorder::goToNextState()
@@ -27,6 +33,7 @@ void ExecutionRecorder::goToNextState()
     states.back().EX.extra = "";
     return;
   }
+
   ExecutionState newState = states.back();
   newState.cycle++;
   newState.memoryChanges = {};
@@ -249,7 +256,7 @@ void ExecutionRecorder::setEXException(const SynchronizedDataPackage<Instruction
           exceptionMsg << "Incompatible parameters (mutually / for given operation)";
           break;
         default:
-          exceptionMsg << "Invalid decode handler address";
+          exceptionMsg << "Invalid decode";
       }
       break;
     case MISALIGNED_ACCESS_HANDL:
@@ -265,7 +272,7 @@ void ExecutionRecorder::setEXException(const SynchronizedDataPackage<Instruction
       exceptionMsg << "IP not aligned to 16b";
       break;
     default:
-      exceptionMsg << "Unknown exception handler address";
+      exceptionMsg << "Unknown exception";
   }
   
   exceptionMsg << " at #" + convDecToHex(faultyInstr.associatedIP);
@@ -275,6 +282,17 @@ void ExecutionRecorder::setEXException(const SynchronizedDataPackage<Instruction
 void ExecutionRecorder::clearEXException()
 {
   states.back().EX.activeException = "";
+}
+
+void ExecutionRecorder::doubleEXException(const SynchronizedDataPackage<Instruction> &faultyInstr)
+{
+  std::stringstream statusMsg("");
+  statusMsg << "Forcefully ended simulation due to double exception:"
+            << "\\n1: " << states.back().EX.activeException;
+  setEXException(faultyInstr);
+  statusMsg << "\\n2: " << states.back().EX.activeException;
+  clearEXException();
+  states.back().EX.state = statusMsg.str();
 }
 
 void ExecutionRecorder::dumpSimulationToJSONs(const std::string &outputDirPath)

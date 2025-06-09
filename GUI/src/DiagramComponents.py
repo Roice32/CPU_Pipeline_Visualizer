@@ -17,7 +17,8 @@ class ComponentColors:
 class DiagramComponent:
   """Base class for all CPU diagram components"""
   
-  def __init__(self, name, x, y, width, height, scene):
+  def __init__(self, top_parent, name, x, y, width, height, scene):
+    self.topParent = top_parent
     self.name = name
     self.x = x
     self.y = y
@@ -111,7 +112,7 @@ class DiagramComponent:
 class RegistersComponent(DiagramComponent):
   """Registers component"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
     details = []
     regData = state.get("registers", {})
     prevRegData = previous_state.get("registers", {}) if previous_state else {}
@@ -190,7 +191,7 @@ class RegistersComponent(DiagramComponent):
 class StackComponent(DiagramComponent):
   """Stack component"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
     details = []
     stack = state.get("stack", [])
     prevStack = previous_state.get("stack", []) if previous_state else []
@@ -233,7 +234,7 @@ class StackComponent(DiagramComponent):
 class MemoryComponent(DiagramComponent):
   """Memory component"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
     details = []
     
     details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
@@ -247,14 +248,14 @@ class MemoryComponent(DiagramComponent):
 
       for addr in memory.keys():
         if int(addr, base=16) != prevAddr + 1:
-          memoryTableRows.append(["...", "??" if garbage_memory else "00", "No"])
+          memoryTableRows.append(["...", "??" if self.topParent.GetConfig().garbage_memory else "00", "No"])
         prevAddr = int(addr, base=16)
 
         changed = "Yes" if (previous_memory and (addr not in previous_memory or memory[addr] != previous_memory[addr])) else "No"
         memoryTableRows.append([f"#{addr}", memory[addr].zfill(2), changed])
 
       if prevAddr < 0xFFFF:
-        memoryTableRows.append(["...", "??" if garbage_memory else "00", "No"])
+        memoryTableRows.append(["...", "??" if self.topParent.GetConfig().garbage_memory else "00", "No"])
 
       if memoryTableRows:
           details.append({"type": "table", "headers": memoryTableHeaders, "rows": memoryTableRows})
@@ -272,7 +273,7 @@ class MemoryComponent(DiagramComponent):
 class ModuleComponent(DiagramComponent):
   """Generic module component (EX, DE, LS, IC)"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
     details = []
     componentData = state.get(self.name, {})
     prevComponentData = previous_state.get(self.name, {}) if previous_state else {}
@@ -316,6 +317,12 @@ class ModuleComponent(DiagramComponent):
       if substate != "":
         details.append({"type": "text", "content": f"Substate: {substate}",
                         "changed": previous_state and substate != prevSubstate})
+      
+      activeExcp = componentData.get('activeException', {})
+      prevActiveExcp = prevComponentData.get('activeException', {})
+      if activeExcp:
+        details.append({"type": "text", "content": f"Active Exception: {activeExcp}",
+                        "changed": previous_state and activeExcp != prevActiveExcp})
 
     if componentData.get('extra') != "":
       details.append({"type": "text", "content": f"Extra info: {componentData.get('extra', 'N/A')}",
@@ -338,7 +345,7 @@ class ModuleComponent(DiagramComponent):
 class CacheComponent(DiagramComponent):
   """Cache component (LS_Cache, IC_Cache)"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
     details = []
     
     if self.name == "LS_Cache":
@@ -360,7 +367,7 @@ class CacheComponent(DiagramComponent):
         storageTableHeaders.extend(["Last Hit Time", "Modified"])
 
         for i, entry in enumerate(storage):
-          for j in range(2):  # Two entries per cache line
+          for j in range(self.topParent.GetConfig().ls_cache_set_entries_count):
             changed = "Yes" if (previous_state and (i >= len(prevStorage) or entry[j] != prevStorage[i][j])) else "No"
             storageTableRows.append([
               str(i) + f".{j}",
@@ -406,7 +413,7 @@ class CacheComponent(DiagramComponent):
 class PipelineComponent(DiagramComponent):
   """Pipeline component (EX_to_DE, DE_to_EX, etc.)"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
     details = []
     
     pipes = state.get("pipes", {})
@@ -472,38 +479,45 @@ class SpecComponent(DiagramComponent):
     self.details = []
     self.details.append({"type": "text", "content": "", "changed": False})  # Add a blank line
     self.details.append({"type": "text", "content": "CPU Configuration used for this simulation", "changed": False})
-    self.details.append({"type": "text", "content": "", "changed": False})  # Add a blank line
+    self.details.append({"type": "text", "content": "", "changed": False})
     self.details.append({"type": "text", "content": f"Clock Period: {config.clock_period_millis} ms", "changed": False})
+    self.details.append({"type": "text", "content": "", "changed": False})
+    self.details.append({"type": "text", "content": f"Ignore Uninitialized Memory: {'Yes' if config.ignore_uninitialized_mem else 'No'}", "changed": False})
     self.details.append({"type": "text", "content": f"Garbage Memory: {'Yes' if config.garbage_memory else 'No'}", "changed": False})
+    self.details.append({"type": "text", "content": "", "changed": False})
     self.details.append({"type": "text", "content": f"IC Cycles per Op: {config.ic_cycles_per_op}", "changed": False})
     self.details.append({"type": "text", "content": f"IC Cycles per Op with Cache Hit: {config.ic_cycles_per_op_with_cache_hit}", "changed": False})
     self.details.append({"type": "text", "content": f"LS Cycles per Op: {config.ls_cycles_per_op}", "changed": False})
     self.details.append({"type": "text", "content": f"LS Cycles per Op with Cache Hit: {config.ls_cycles_per_op_with_cache_hit}", "changed": False})
     self.details.append({"type": "text", "content": f"DE Cycles per Op: {config.de_cycles_per_op}", "changed": False})
     self.details.append({"type": "text", "content": f"EX Cycles per Op: {config.ex_cycles_per_op}", "changed": False})
+    self.details.append({"type": "text", "content": "", "changed": False})
+    self.details.append({"type": "text", "content": f"IC Cache Size: {config.ic_cache_words_size} words", "changed": False})
+    self.details.append({"type": "text", "content": f"LS Cache Size: {config.ls_cache_words_size} words", "changed": False})
+    self.details.append({"type": "text", "content": f"Entries per LS Cache Set: {config.ls_cache_set_entries_count}", "changed": False})
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def GetDetailsText(self, _state, _memory, _previous_state=None, _previous_memory=None, garbage_memory=False):
+  def GetDetailsText(self, _state, _memory, _previous_state=None, _previous_memory=None):
     return self.details
 
 
 # -----------------------------------------------------------------------------------------------------------------------------
-def CreateComponent(name, x, y, width, height, scene):
+def CreateComponent(top_parent, name, x, y, width, height, scene):
   """Factory function to create the appropriate component type"""
   if name == "Registers":
-    return RegistersComponent(name, x, y, width, height, scene)
+    return RegistersComponent(top_parent, name, x, y, width, height, scene)
   elif name == "Stack":
-    return StackComponent(name, x, y, width, height, scene)
+    return StackComponent(top_parent, name, x, y, width, height, scene)
   elif name == "Memory":
-    return MemoryComponent(name, x, y, width, height, scene)
+    return MemoryComponent(top_parent, name, x, y, width, height, scene)
   elif name.endswith("Cache"):
-    return CacheComponent(name, x, y, width, height, scene)
+    return CacheComponent(top_parent, name, x, y, width, height, scene)
   elif "to" in name:
-    return PipelineComponent(name, x, y, width, height, scene)
+    return PipelineComponent(top_parent, name, x, y, width, height, scene)
   elif name in ["EX", "DE", "LS", "IC"]:
-    return ModuleComponent(name, x, y, width, height, scene)
+    return ModuleComponent(top_parent, name, x, y, width, height, scene)
   else:
-    return DiagramComponent(name, x, y, width, height, scene)
+    return DiagramComponent(top_parent, name, x, y, width, height, scene)
 
 
 # -----------------------------------------------------------------------------------------------------------------------------

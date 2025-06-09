@@ -100,6 +100,7 @@ public:
 
   void setEXException(const SynchronizedDataPackage<Instruction>& faultyInstr);
   void clearEXException();
+  void doubleEXException(const SynchronizedDataPackage<Instruction>& faultyInstr);
   void setEXSubstate(const std::string& substate)
     { states.back().EX.substate = substate; }
 
