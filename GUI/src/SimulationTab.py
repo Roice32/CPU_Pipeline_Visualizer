@@ -14,25 +14,26 @@ from DiagramComponents import CreateComponent, SpecComponent, ComponentColors
 
 # -----------------------------------------------------------------------------------------------------------------------------
 class SimulationTab(QWidget):
-  parent = None
-  totalCycles = None
-  currentCycleIndex = None
-  selectedComponent = None
-  componentItems = None
-  cycleSlider = None
-  cycleLabel = None
-  diagramScene = None
-  diagramView = None
-  detailsLayout = None
-  playPauseButton = None
-  autoPlayTimer = None
-  isPlaying = False
-  memoryMapping = None
+  parent                  = None
+  totalCycles             = None
+  currentCycleIndex       = None
+  selectedComponent       = None
+  componentItems          = None
+  cycleSlider             = None
+  cycleLabel              = None
+  diagramScene            = None
+  diagramView             = None
+  detailsLayout           = None
+  playPauseButton         = None
+  autoPlayTimer           = None
+  isPlaying               = False
+  memoryMapping           = None
   currentHoveredComponent = None
-  currentState = None
-  previousState = None
-  currentMemory = None
-  previousMemory = None
+  currentState            = None
+  previousState           = None
+  currentMemory           = None
+  previousMemory          = None
+  garbageMemoryUsed       = False
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self, parent):
@@ -378,6 +379,7 @@ class SimulationTab(QWidget):
     self.cycleLabel.setText("1")
     self.currentCycleIndex = 1
 
+    self.garbageMemoryUsed = self.parent.GetConfig().garbage_memory
     self.componentItems["Spec"].SetDetails(self.parent.GetConfig())
 
     self.BuildMemoryMapping()
@@ -437,7 +439,8 @@ class SimulationTab(QWidget):
 
     component = self.componentItems[self.selectedComponent]
     detailsData = component.GetDetailsText(self.currentState, self.currentMemory,
-                                           self.previousState, self.previousMemory)
+                                           self.previousState, self.previousMemory,
+                                           self.garbageMemoryUsed)
 
     if detailsData:
       detailsFont = QFont()

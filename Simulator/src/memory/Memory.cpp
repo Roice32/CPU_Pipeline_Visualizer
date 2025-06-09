@@ -52,7 +52,8 @@ bool Memory::isValidInputLine(std::string inLine)
   return true;
 }
 
-Memory::Memory(const char* hexSourceFilePath)
+Memory::Memory(const char* hexSourceFilePath, bool garbageMemory)
+  : garbageMemory(garbageMemory)
 {
   address currAddr = 0;
   std::string instrString = "";
@@ -83,7 +84,10 @@ byte Memory::getMemoryCell(address addr)
 {
   auto foundMemoryCell = data.find(addr);
   if (foundMemoryCell == data.end())
-    return 0;
+    if (garbageMemory)
+      return byte(rand() % (byte(-1) + 1));
+    else
+      return byte(0);
   return foundMemoryCell->second;
 }
 

@@ -38,6 +38,10 @@ void overloadConfig(char* argv[])
     {
       EX_CYCLES_PER_OP = value;
     }
+    else if (arg == "--garbage-memory")
+    {
+      GARBAGE_MEMORY = value;
+    }
   }
 }
 
@@ -48,7 +52,7 @@ int main(int argc, char** argv)
   std::shared_ptr<Memory> mem;
   try
   {
-    mem = std::make_shared<Memory>(argv[1]);
+    mem = std::make_shared<Memory>(argv[1], GARBAGE_MEMORY);
   } catch (const char* ex)
   {
     std::cerr << "Failure: Invalid input file\n";

@@ -92,7 +92,7 @@ class DiagramComponent:
     self.rect.setBrush(QBrush(fillColor))
   
   # ---------------------------------------------------------------------------------------------------------------------------
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
     """Get detailed text for this component. Override in subclasses.
     Returns a list of dicts:
     - {"type": "text", "content": "...", "changed": False}
@@ -111,7 +111,7 @@ class DiagramComponent:
 class RegistersComponent(DiagramComponent):
   """Registers component"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
     details = []
     regData = state.get("registers", {})
     prevRegData = previous_state.get("registers", {}) if previous_state else {}
@@ -190,7 +190,7 @@ class RegistersComponent(DiagramComponent):
 class StackComponent(DiagramComponent):
   """Stack component"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
     details = []
     stack = state.get("stack", [])
     prevStack = previous_state.get("stack", []) if previous_state else []
@@ -233,7 +233,7 @@ class StackComponent(DiagramComponent):
 class MemoryComponent(DiagramComponent):
   """Memory component"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
     details = []
     
     details.append({"type": "text", "content": "", "changed": False}) # Add a blank line
@@ -247,14 +247,14 @@ class MemoryComponent(DiagramComponent):
 
       for addr in memory.keys():
         if int(addr, base=16) != prevAddr + 1:
-          memoryTableRows.append(["...", "00", "No"])
+          memoryTableRows.append(["...", "??" if garbage_memory else "00", "No"])
         prevAddr = int(addr, base=16)
 
         changed = "Yes" if (previous_memory and (addr not in previous_memory or memory[addr] != previous_memory[addr])) else "No"
         memoryTableRows.append([f"#{addr}", memory[addr].zfill(2), changed])
 
       if prevAddr < 0xFFFF:
-        memoryTableRows.append(["...", "00", "No"])
+        memoryTableRows.append(["...", "??" if garbage_memory else "00", "No"])
 
       if memoryTableRows:
           details.append({"type": "table", "headers": memoryTableHeaders, "rows": memoryTableRows})
@@ -272,7 +272,7 @@ class MemoryComponent(DiagramComponent):
 class ModuleComponent(DiagramComponent):
   """Generic module component (EX, DE, LS, IC)"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
     details = []
     componentData = state.get(self.name, {})
     prevComponentData = previous_state.get(self.name, {}) if previous_state else {}
@@ -338,7 +338,7 @@ class ModuleComponent(DiagramComponent):
 class CacheComponent(DiagramComponent):
   """Cache component (LS_Cache, IC_Cache)"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
     details = []
     
     if self.name == "LS_Cache":
@@ -406,7 +406,7 @@ class CacheComponent(DiagramComponent):
 class PipelineComponent(DiagramComponent):
   """Pipeline component (EX_to_DE, DE_to_EX, etc.)"""
   
-  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None):
+  def GetDetailsText(self, state, memory, previous_state=None, previous_memory=None, garbage_memory=False):
     details = []
     
     pipes = state.get("pipes", {})
@@ -474,6 +474,7 @@ class SpecComponent(DiagramComponent):
     self.details.append({"type": "text", "content": "CPU Configuration used for this simulation", "changed": False})
     self.details.append({"type": "text", "content": "", "changed": False})  # Add a blank line
     self.details.append({"type": "text", "content": f"Clock Period: {config.clock_period_millis} ms", "changed": False})
+    self.details.append({"type": "text", "content": f"Garbage Memory: {'Yes' if config.garbage_memory else 'No'}", "changed": False})
     self.details.append({"type": "text", "content": f"IC Cycles per Op: {config.ic_cycles_per_op}", "changed": False})
     self.details.append({"type": "text", "content": f"IC Cycles per Op with Cache Hit: {config.ic_cycles_per_op_with_cache_hit}", "changed": False})
     self.details.append({"type": "text", "content": f"LS Cycles per Op: {config.ls_cycles_per_op}", "changed": False})
@@ -482,7 +483,7 @@ class SpecComponent(DiagramComponent):
     self.details.append({"type": "text", "content": f"EX Cycles per Op: {config.ex_cycles_per_op}", "changed": False})
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def GetDetailsText(self, _state, _memory, _previous_state=None, _previous_memory=None):
+  def GetDetailsText(self, _state, _memory, _previous_state=None, _previous_memory=None, garbage_memory=False):
     return self.details
 
 

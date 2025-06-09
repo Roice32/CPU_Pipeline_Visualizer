@@ -114,6 +114,7 @@ class CPUSimulator(QMainWindow):
 # -----------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
   app = QApplication(sys.argv)
+  app.setStyle("Fusion")
   window = CPUSimulator()
   window.showMaximized()
   sys.exit(app.exec_())

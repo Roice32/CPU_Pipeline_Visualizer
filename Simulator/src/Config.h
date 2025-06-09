@@ -26,6 +26,8 @@ using clock_time = uint64_t;
 #define SIM_START_ADDR 0xfff0
 #define DUMMY_ADDRESS address (-1)
 
+extern bool GARBAGE_MEMORY;
+
 extern byte CLOCK_PERIOD_MILLIS;
 
 extern byte IC_CYCLES_PER_OP;

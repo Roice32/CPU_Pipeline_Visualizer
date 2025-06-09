@@ -1,5 +1,7 @@
 #include "Config.h"
 
+bool GARBAGE_MEMORY = false;
+
 byte CLOCK_PERIOD_MILLIS = 1;
 byte IC_CYCLES_PER_OP = 3;
 byte IC_CYCLES_PER_OP_WITH_CACHE_HIT = 2;

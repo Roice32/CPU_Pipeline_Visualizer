@@ -356,9 +356,6 @@ class InputTab(QWidget):
       QMessageBox.critical(self, "Error", f"{processError}")
       return
 
-    processOutput = process.readAllStandardOutput().data().decode()
-    print(processOutput)
-
     self.SetStatusText("Processing simulation results...", error=False)
     self.parent.simulationTab.LoadSimulationData()
 
@@ -374,7 +371,7 @@ class InputTab(QWidget):
     params = []
     for arg in vars(config):
       params.append(f"--{arg.replace('_', '-')}")
-      params.append(str(getattr(config, arg)))
+      params.append(str(int(getattr(config, arg))))
     return params
 
   # ---------------------------------------------------------------------------------------------------------------------------

@@ -9,6 +9,7 @@ class Memory
 {
 private:
   std::unordered_map<address, byte> data;
+  bool garbageMemory;
 
   bool isValidInputLine(std::string inLine);
   static byte hexCharToDec(const char digit);
@@ -16,7 +17,7 @@ private:
   void storeData(address& currAddr, const char* instr);
 
 public:
-  Memory(const char* hexSourceFilePath);
+  Memory(const char* hexSourceFilePath, bool garbageMemory);
   byte getMemoryCell(address addr);
   void setMemoryCell(address addr, byte value);
   std::unordered_map<address, byte> getMemory() const;
