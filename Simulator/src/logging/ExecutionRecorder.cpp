@@ -4,7 +4,8 @@
 
 #include "ExecutionRecorder.h"
 
-ExecutionRecorder::ExecutionRecorder(std::shared_ptr<Memory> mem)
+ExecutionRecorder::ExecutionRecorder(std::shared_ptr<Memory> mem, bool singleStateMode)
+  : singleStateMode(singleStateMode)
 {
   states.push_back(ExecutionState());
 
@@ -17,6 +18,15 @@ ExecutionRecorder::ExecutionRecorder(std::shared_ptr<Memory> mem)
 
 void ExecutionRecorder::goToNextState()
 {
+  if (singleStateMode)
+  {
+    states.back().cycle++;
+    states.back().LS.extra = "";
+    states.back().IC.extra = "";
+    states.back().DE.extra = "";
+    states.back().EX.extra = "";
+    return;
+  }
   ExecutionState newState = states.back();
   newState.cycle++;
   newState.memoryChanges = {};

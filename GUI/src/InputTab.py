@@ -354,6 +354,7 @@ class InputTab(QWidget):
       processError = process.readAllStandardError().data().decode()
       self.SetStatusText(f"Simulation failed", error=True)
       QMessageBox.critical(self, "Error", f"{processError}")
+      self.SetAllButtonsEnabled(True)
       return
 
     self.SetStatusText("Processing simulation results...", error=False)
@@ -371,7 +372,10 @@ class InputTab(QWidget):
     params = []
     for arg in vars(config):
       params.append(f"--{arg.replace('_', '-')}")
-      params.append(str(int(getattr(config, arg))))
+      if isinstance(getattr(config, arg), bool):
+        params.append("1" if getattr(config, arg) else "0")
+      else:
+        params.append(str(getattr(config, arg)))
     return params
 
   # ---------------------------------------------------------------------------------------------------------------------------

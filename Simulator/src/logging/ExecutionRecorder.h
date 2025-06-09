@@ -31,13 +31,14 @@ class ExecutionRecorder
 private:
   std::map<address, word> memory = {};
   std::vector<ExecutionState> states = {};
+  bool singleStateMode = false;
 
   void dumpStateToJSON(ExecutionState& state, const std::string& outputDirPath);
   void updateMemory(const std::unordered_map<address, word>& memoryChanges);
   void dumpMemoryToJSON(const clock_time cycle, const std::string& outputDirPath);
 
 public:
-  ExecutionRecorder(std::shared_ptr<Memory> mem);
+  ExecutionRecorder(std::shared_ptr<Memory> mem, bool singleStateMode = false);
   void goToNextState();
   void modifyModuleState(const Modules& moduleName, const std::string& state);
   void addExtraInfo(const Modules& moduleName, const std::string& extraInfo);

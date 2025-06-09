@@ -27,6 +27,7 @@ using clock_time = uint64_t;
 #define DUMMY_ADDRESS address (-1)
 
 extern bool GARBAGE_MEMORY;
+extern bool SINGLE_STATE_MODE;
 
 extern byte CLOCK_PERIOD_MILLIS;
 

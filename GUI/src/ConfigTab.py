@@ -17,6 +17,7 @@ class Config:
   ic_cycles_per_op_with_cache_hit: int
   de_cycles_per_op:                int
   ex_cycles_per_op:                int
+  single_state_mode:               bool
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self) -> None:
@@ -29,6 +30,7 @@ class Config:
     self.ic_cycles_per_op_with_cache_hit = 2
     self.de_cycles_per_op                = 2
     self.ex_cycles_per_op                = 5
+    self.single_state_mode               = False
 
 
 # -----------------------------------------------------------------------------------------------------------------------------
@@ -55,13 +57,14 @@ class ConfigTab(QWidget):
 
   autoPlaySpeedInput             = None
   clockPeriodInput               = None
-  garbageMemory                  = None
+  garbageMemoryInput             = None
   icCyclesPerOpInput             = None
   icCyclesPerOpWithCacheHitInput = None
   lsCyclesPerOpInput             = None
   lsCyclesPerOpWithCacheHitInput = None
   deCyclesPerOpInput             = None
   exCyclesPerOpInput             = None
+  singleStateModeInput           = None
 
   prevSimHadGarbageMemory        = False
 
@@ -125,7 +128,7 @@ class ConfigTab(QWidget):
     """)
 
     # GARBAGE_MEMORY
-    garbageMemoryGridElem, self.garbageMemory = self.GenBooleanConfigElement(
+    garbageMemoryGridElem, self.garbageMemoryInput = self.GenBooleanConfigElement(
       "Garbage Memory",
       "If enabled, when fetching data from a memory location not written to, the value will be random,"
       + " as opposed to 0x00."
@@ -189,10 +192,19 @@ class ConfigTab(QWidget):
       + "\nDoes not include cycles when awaiting data from LS."
     )
 
+    # SINGLE_STATE_MODE
+    singleStateModeGridElem, self.singleStateModeInput = self.GenBooleanConfigElement(
+      "Single State Mode",
+      "If enabled, only the last state of the CPU will be displayed in the Simulation tab."
+      + "\nThis does not affect the execution time of the simulation, but the post-processing time will"
+      + " be significantly reduced."
+    )
+
     for ind, elem in enumerate([clockPeriodGridElem, garbageMemoryGridElem,
                                 lsCyclesPerOpGridElem, lsCyclesPerOpWithCacheHitGridElem,
                                 icCyclesPerOpGridElem, icCyclesPerOpWithCacheHitGridElem,
-                                deCyclesPerOpGridElem, exCyclesPerOpGridElem]):
+                                deCyclesPerOpGridElem, exCyclesPerOpGridElem,
+                                singleStateModeGridElem]):
       gridLayout.addWidget(elem, ind // 2, ind % 2)
 
     gridWidget.setLayout(gridLayout)
@@ -286,25 +298,27 @@ class ConfigTab(QWidget):
 
     self.autoPlaySpeedInput.setValue(self.currConfig.autoplay_speed_millis)
     self.clockPeriodInput.setValue(self.currConfig.clock_period_millis)
-    self.garbageMemory.setChecked(self.currConfig.garbage_memory)
+    self.garbageMemoryInput.setChecked(self.currConfig.garbage_memory)
     self.lsCyclesPerOpInput.setValue(self.currConfig.ls_cycles_per_op)
     self.lsCyclesPerOpWithCacheHitInput.setValue(self.currConfig.ls_cycles_per_op_with_cache_hit)
     self.icCyclesPerOpInput.setValue(self.currConfig.ic_cycles_per_op)
     self.icCyclesPerOpWithCacheHitInput.setValue(self.currConfig.ic_cycles_per_op_with_cache_hit)
     self.deCyclesPerOpInput.setValue(self.currConfig.de_cycles_per_op)
     self.exCyclesPerOpInput.setValue(self.currConfig.ex_cycles_per_op)
+    self.singleStateModeInput.setChecked(self.currConfig.single_state_mode)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def Save(self) -> None:
     self.currConfig.autoplay_speed_millis           = self.autoPlaySpeedInput.value()
     self.currConfig.clock_period_millis             = self.clockPeriodInput.value()
-    self.currConfig.garbage_memory                  = self.garbageMemory.isChecked()
+    self.currConfig.garbage_memory                  = self.garbageMemoryInput.isChecked()
     self.currConfig.ls_cycles_per_op                = self.lsCyclesPerOpInput.value()
     self.currConfig.ls_cycles_per_op_with_cache_hit = self.lsCyclesPerOpWithCacheHitInput.value()
     self.currConfig.ic_cycles_per_op                = self.icCyclesPerOpInput.value()
     self.currConfig.ic_cycles_per_op_with_cache_hit = self.icCyclesPerOpWithCacheHitInput.value()
     self.currConfig.de_cycles_per_op                = self.deCyclesPerOpInput.value()
     self.currConfig.ex_cycles_per_op                = self.exCyclesPerOpInput.value()
+    self.currConfig.single_state_mode               = self.singleStateModeInput.isChecked()
 
     self.parent.simulationTab.autoPlayTimer.setInterval(self.currConfig.autoplay_speed_millis)
 

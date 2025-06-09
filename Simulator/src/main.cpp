@@ -42,6 +42,10 @@ void overloadConfig(char* argv[])
     {
       GARBAGE_MEMORY = value;
     }
+    else if (arg == "--single-state-mode")
+    {
+      SINGLE_STATE_MODE = value;
+    }
   }
 }
 
@@ -59,8 +63,8 @@ int main(int argc, char** argv)
     exit(EXIT_FAILURE);
   }
   
-  std::shared_ptr<ExecutionRecorder> recorder = std::make_shared<ExecutionRecorder>(mem);
-  
+  std::shared_ptr<ExecutionRecorder> recorder = std::make_shared<ExecutionRecorder>(mem, GARBAGE_MEMORY);
+
   CPU cpu(mem, recorder);
   cpu.runSimulation();
 

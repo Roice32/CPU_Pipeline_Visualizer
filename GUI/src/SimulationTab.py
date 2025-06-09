@@ -375,9 +375,10 @@ class SimulationTab(QWidget):
       return False
 
     self.cycleSlider.setMaximum(self.totalCycles)
-    self.cycleSlider.setValue(1)
-    self.cycleLabel.setText("1")
-    self.currentCycleIndex = 1
+    startCycle = self.totalCycles if self.parent.GetConfig().single_state_mode else 1
+    self.cycleSlider.setMinimum(startCycle)
+    self.cycleLabel.setText(str(startCycle))
+    self.currentCycleIndex = startCycle
 
     self.garbageMemoryUsed = self.parent.GetConfig().garbage_memory
     self.componentItems["Spec"].SetDetails(self.parent.GetConfig())

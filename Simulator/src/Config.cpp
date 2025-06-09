@@ -1,6 +1,7 @@
 #include "Config.h"
 
 bool GARBAGE_MEMORY = false;
+bool SINGLE_STATE_MODE = false;
 
 byte CLOCK_PERIOD_MILLIS = 1;
 byte IC_CYCLES_PER_OP = 3;
