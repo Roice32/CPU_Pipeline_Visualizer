@@ -31,7 +31,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     # Declaration format (lines starting with dw or dblock)
     declarationFormat = QTextCharFormat()
     declarationFormat.setForeground(QColor(255, 165, 0))  # Orange
-    self.highlightingRules.append((QRegExp("^(dw|dblock)\\s+"), declarationFormat))
+    self.highlightingRules.append((QRegExp("^\\s*(dw|dblock)\\s+"), declarationFormat))
 
     # Label format (word followed by colon)
     labelFormat = QTextCharFormat()
@@ -78,11 +78,13 @@ class InputTab(QWidget):
     }
 """
   statusStyle = "font-weight: bold; color: #333; margin: 5px; padding: 5px; border-radius: 4px; background-color: #f8f8f8;"
-  parent = None
-  asmText = None
-  hexText = None
-  syntaxHighlighter = None
-  statusLabel = None
+  parent              = None
+  asmText             = None
+  hexText             = None
+  syntaxHighlighter   = None
+  statusLabel         = None
+  runningProcess      = None
+  simulationCancelled = False
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self, parent):
@@ -167,6 +169,14 @@ class InputTab(QWidget):
     executeBtn.setStyleSheet(InputTab.buttonStyleSheet)
     executeBtn.clicked.connect(self.ExecuteSimulation)
     middleLayout.addWidget(executeBtn, 0, Qt.AlignCenter)
+
+    cancelBtn = QPushButton("Cancel")
+    cancelBtn.setFixedWidth(80)
+    cancelBtn.setFixedHeight(30)
+    cancelBtn.setStyleSheet(InputTab.buttonStyleSheet)
+    cancelBtn.clicked.connect(self.CancelSimulation)
+    cancelBtn.setEnabled(False)
+    middleLayout.addWidget(cancelBtn, 0, Qt.AlignCenter)
 
     middleLayout.addStretch()
     middleWidget.setLayout(middleLayout)
@@ -323,7 +333,7 @@ class InputTab(QWidget):
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def ExecuteSimulation(self):
-    self.SetAllButtonsEnabled(False)
+    self.SetAllButtonsEnabled(False, True)
     # Save HEX to temp file
     self.SetStatusText("Saving hex source file...", error=False)
     hexPath = os.path.join(self.parent.GetTempDir(), "input.hex")
@@ -331,10 +341,22 @@ class InputTab(QWidget):
       file.write(self.hexText.toPlainText())
 
     simulationPath = self.parent.GetSimulationDir()
+    self.parent.SetSimulationTabEnabled(False)
+
+    self.parent.configTab.Save()
+    self.SetStatusText("Executing simulation...", error=False)
+    process = QProcess(self)
+    process.finished.connect(lambda _: self.PostExecuteSimulation(process))
+    process.start(os.path.join(self.parent.GetDependenciesPath(), "CPU_Pipeline_Simulator.exe"),
+                  [hexPath, simulationPath] + self.GenerateConfigOverloadParams())
+    
+    self.runningProcess = process
+    self.simulationCancelled = False
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CleanUpSimulationDir(self):
     cpuStatesPath = self.parent.GetSimulationCpuStatesDir()
     memoryPath = self.parent.GetSimulationMemoryDir()
-
-    self.parent.SetSimulationTabEnabled(False)
 
     # Delete all files in cpuStatesPath and memoryPath directories
     for path in [cpuStatesPath, memoryPath]:
@@ -344,21 +366,23 @@ class InputTab(QWidget):
           if os.path.isfile(file_path):
             os.remove(file_path)
 
-    self.parent.configTab.Save()
-    self.SetStatusText("Executing simulation...", error=False)
-    process = QProcess(self)
-    process.finished.connect(lambda _: self.PostExecuteSimulation(process))
-    process.start(os.path.join(self.parent.GetDependenciesPath(), "CPU_Pipeline_Simulator.exe"),
-                  [hexPath, simulationPath] + self.GenerateConfigOverloadParams())
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def PostExecuteSimulation(self, process: QProcess):
     # Check if the execution was successful
-    if process.exitCode() != 0:
+    if process.exitCode() != 0 and not self.simulationCancelled:
       processError = process.readAllStandardError().data().decode()
       self.SetStatusText(f"Simulation failed", error=True)
       QMessageBox.critical(self, "Error", f"{processError}")
+      self.CleanUpSimulationDir()
+      self.parent.SetSimulationTabEnabled(False)
       self.SetAllButtonsEnabled(True)
+      return
+
+    self.runningProcess = None
+
+    if self.simulationCancelled:
+      self.simulationCancelled = False
       return
 
     self.SetStatusText("Processing simulation results...", error=False)
@@ -369,6 +393,14 @@ class InputTab(QWidget):
     self.parent.SetSimulationTabEnabled(True)
     self.SetAllButtonsEnabled(True)
     self.parent.SwitchToSimulationTab()
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def CancelSimulation(self):
+    self.runningProcess.kill()
+    self.runningProcess = None
+    self.simulationCancelled = True
+    self.SetStatusText("Simulation cancelled.", error=True)
+    self.SetAllButtonsEnabled(True)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GenerateConfigOverloadParams(self):
@@ -383,10 +415,13 @@ class InputTab(QWidget):
     return params
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def SetAllButtonsEnabled(self, enabled):
+  def SetAllButtonsEnabled(self, enabled, cancel_enabled=False):
     """Enable or disable all buttons in the InputTab."""
     for widget in self.findChildren(QPushButton):
-      widget.setEnabled(enabled)
+      if widget.text() != "Cancel":
+        widget.setEnabled(enabled)
+      else:
+        widget.setEnabled(cancel_enabled)  # Cancel button is enabled only when a simulation is running
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def GetAsmText(self):

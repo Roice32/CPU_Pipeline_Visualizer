@@ -68,31 +68,31 @@ div_zero_handler:
 .data
 
 var_1:
-dw 0x0001
+  dw 0x0001
 
 var_2:
-dw 0x0002
+  dw 0x0002
 
 counter:
-dw 0x0000
+  dw 0x0000
 
 batch_addr:
-dblock 0xffff, 4
+  dblock 0xffff, 4
 
 data_0:
-dw 0x0002
+  dw 0x0002
 data_1:
-dw 0x0006
+  dw 0x0006
 data_2:
-dw 0x003e
+  dw 0x003e
 data_3:
-dw 0x0afa
+  dw 0x0afa
 
 coeffs:
-dblock 0x000f, 4
+  dblock 0x000f, 4
 
 exceptions_count:
-dw 0x0000
+  dw 0x0000
 
 .vector_0
-dw div_zero_handler
+  dw div_zero_handler

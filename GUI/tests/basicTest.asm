@@ -16,4 +16,4 @@ loop:
 
 .data ; this is where we can define data to be used by the program
 status:
-dw 0x0000 ; this defines a 16bit word in memory with the value 0
+  dw 0x0000 ; this defines a 16bit word in memory with the value 0

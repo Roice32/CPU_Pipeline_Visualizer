@@ -132,16 +132,6 @@ class CPUSimulator(QMainWindow):
 
 # -----------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-  try:  # Imports needed by pyasm.py
-    import pyparsing
-    import yaml
-    import pathlib
-    import pydantic
-    import enum
-    import typer
-  except ImportError:
-    pass
-
   app = QApplication(sys.argv)
   app.setStyle("Fusion")
   window = CPUSimulator()
