@@ -35,8 +35,8 @@ class CPUSimulator(QMainWindow):
 
     try:
       tempExecPath = sys._MEIPASS
-    except Exception as e:
-      raise RuntimeError("Failed to determine runtime temporary execution path. Error: " + str(e))
+    except Exception:
+      tempExecPath = os.path.dirname(os.path.abspath(__file__))
 
     self.resourcesPath = os.path.join(tempExecPath, "resources")
     self.dependenciesPath = os.path.join(tempExecPath, "dependencies")
