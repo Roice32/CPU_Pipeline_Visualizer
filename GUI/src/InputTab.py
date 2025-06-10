@@ -211,7 +211,7 @@ class InputTab(QWidget):
     mainLayout.addWidget(splitter)
     self.setLayout(mainLayout)
 
-    with open("./dependencies/example.asm", 'r') as defaultAsm:
+    with open(os.path.join(self.parent.GetDependenciesPath(), "example.asm"), 'r') as defaultAsm:
       self.asmText.setText(defaultAsm.read())
 
   # ---------------------------------------------------------------------------------------------------------------------------
@@ -294,8 +294,8 @@ class InputTab(QWidget):
       file.write(self.asmText.toPlainText())
 
     hexPath = os.path.join(tempDir, "input.hex")
-    parseScript = os.path.join(".", "dependencies", "pyasm.py")
-    configFile = os.path.join(".", "dependencies", "asm_cfg.yml")
+    parseScript = os.path.join(self.parent.GetDependenciesPath(), "pyasm.py")
+    configFile = os.path.join(self.parent.GetDependenciesPath(), "asm_cfg.yml")
 
     try:
       # Run parsing script
@@ -306,6 +306,9 @@ class InputTab(QWidget):
       processOutput = process.readAllStandardOutput().data().decode()
       if processOutput != "":
         raise Exception(processOutput)
+      processError = process.readAllStandardError().data().decode()
+      if processError != "":
+        raise Exception(processError)
 
       # Load the generated hex file
       if os.path.exists(hexPath):
@@ -345,7 +348,8 @@ class InputTab(QWidget):
     self.SetStatusText("Executing simulation...", error=False)
     process = QProcess(self)
     process.finished.connect(lambda _: self.PostExecuteSimulation(process))
-    process.start("dependencies/CPU_Pipeline_Simulator.exe", [hexPath, simulationPath] + self.GenerateConfigOverloadParams())
+    process.start(os.path.join(self.parent.GetDependenciesPath(), "CPU_Pipeline_Simulator.exe"),
+                  [hexPath, simulationPath] + self.GenerateConfigOverloadParams())
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def PostExecuteSimulation(self, process: QProcess):

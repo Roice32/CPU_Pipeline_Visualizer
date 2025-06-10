@@ -71,12 +71,13 @@ class SimulationTab(QWidget):
     buttonLayout.setAlignment(Qt.AlignCenter)
 
     # Button icons
-    toStartIcon = QIcon("resources/icons/toStart.png")
-    previousIcon = QIcon("resources/icons/previous.png")
-    playIcon = QIcon("resources/icons/play.png")
-    pauseIcon = QIcon("resources/icons/pause.png")
-    nextIcon = QIcon("resources/icons/next.png")
-    toEndIcon = QIcon("resources/icons/toEnd.png")
+    iconsPath = os.path.join(parent.GetResourcesPath(), "icons")
+    toStartIcon = QIcon(os.path.join(iconsPath, "toStart.png"))
+    previousIcon = QIcon(os.path.join(iconsPath, "previous.png"))
+    playIcon = QIcon(os.path.join(iconsPath, "play.png"))
+    pauseIcon = QIcon(os.path.join(iconsPath, "pause.png"))
+    nextIcon = QIcon(os.path.join(iconsPath, "next.png"))
+    toEndIcon = QIcon(os.path.join(iconsPath, "toEnd.png"))
 
     # Create buttons
     toStartButton = QPushButton(toStartIcon, "")
@@ -203,12 +204,13 @@ class SimulationTab(QWidget):
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def TogglePlayPause(self):
+    iconsPath = os.path.join(self.parent.GetResourcesPath(), "icons")
     if self.isPlaying:
       self.autoPlayTimer.stop()
-      self.playPauseButton.setIcon(QIcon("resources/icons/play.png"))
+      self.playPauseButton.setIcon(QIcon(os.path.join(iconsPath, "play.png")))
     else:
       self.autoPlayTimer.start()
-      self.playPauseButton.setIcon(QIcon("resources/icons/pause.png"))
+      self.playPauseButton.setIcon(QIcon(os.path.join(iconsPath, "pause.png")))
     self.isPlaying = not self.isPlaying
 
   # ---------------------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import sys
 import os
 import shutil
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTabWidget
 from PyQt5.QtCore import QProcess
 
@@ -13,7 +14,9 @@ from HelpTab import HelpTab
 
 # -----------------------------------------------------------------------------------------------------------------------------
 class CPUSimulator(QMainWindow):
-  tempDir: os.path
+  tempDir:          os.path
+  resourcesPath:    os.path
+  dependenciesPath: os.path
 
   clockPeriod:   int
   deWorkMemory:  int
@@ -30,8 +33,16 @@ class CPUSimulator(QMainWindow):
   def __init__(self):
     super().__init__()
 
+    try:
+      tempExecPath = sys._MEIPASS
+    except Exception as e:
+      raise RuntimeError("Failed to determine runtime temporary execution path. Error: " + str(e))
+
+    self.resourcesPath = os.path.join(tempExecPath, "resources")
+    self.dependenciesPath = os.path.join(tempExecPath, "dependencies")
+
     # Create temp directory
-    self.tempDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "CPU_PV.temp")
+    self.tempDir = os.path.join(os.getenv("TEMP"), "CPU_PV.temp")
     if not os.path.exists(self.tempDir):
       os.makedirs(self.tempDir)
     simulationCpuStatesDir = os.path.join(self.tempDir, "simulation", "cpu_states")
@@ -77,6 +88,14 @@ class CPUSimulator(QMainWindow):
     return self.configTab.currConfig
 
   # ---------------------------------------------------------------------------------------------------------------------------
+  def GetResourcesPath(self):
+    return self.resourcesPath
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def GetDependenciesPath(self):
+    return self.dependenciesPath
+
+  # ---------------------------------------------------------------------------------------------------------------------------
   def GetTempDir(self):
     return self.tempDir
 
@@ -113,6 +132,16 @@ class CPUSimulator(QMainWindow):
 
 # -----------------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
+  try:  # Imports needed by pyasm.py
+    import pyparsing
+    import yaml
+    import pathlib
+    import pydantic
+    import enum
+    import typer
+  except ImportError:
+    pass
+
   app = QApplication(sys.argv)
   app.setStyle("Fusion")
   window = CPUSimulator()

@@ -2,6 +2,8 @@
 .vscode/*
 .cache/*
 GUI/src/__pycache__/*
+GUI/src/build/*
+GUI/src/dist/*
 GUI/src/dependencies/CPU_Pipeline_Simulator*.exe
 **/CPU_PV.temp/*
 GUI/tests/*.hex
@@ -16,6 +18,11 @@ Simulator/tests/outputs/*
 # To be kept
 !GUI/src/*
 !GUI/src/dependencies/CPU_Pipeline_Simulator.exe
+!GUI/src/dist/CPU\ Pipeline\ Visualizer.exe
 !Simulator/build/CMakeLists.txt
 !Simulator/release/CMakeLists.txt
 !Simulator/release/mingw-w64-toolchain.cmake
+GUI/src/GUI.spec
+# ^ Won't ignore this file if this line is not *exactly* here???
+GUI/src/CPU Pipeline Visualizer.spec
+GUI/src/dist/CPU Pipeline Visualizer.exe
