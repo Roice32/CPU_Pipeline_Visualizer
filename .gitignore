@@ -26,3 +26,4 @@ GUI/src/GUI.spec
 # ^ Won't ignore this file if this line is not *exactly* here???
 GUI/src/CPU Pipeline Visualizer.spec
 GUI/src/dist/CPU Pipeline Visualizer.exe
+/GUI/src/dependencies/__pycache__

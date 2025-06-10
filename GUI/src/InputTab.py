@@ -1,11 +1,12 @@
 import os
-from time import sleep
+from pathlib import Path
 from PyQt5.QtWidgets import (
   QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, QPushButton, QFileDialog, QSplitter, QMessageBox
 )
 from PyQt5.QtCore import Qt, QProcess, QRegExp
 from PyQt5.QtGui import QFont, QTextCharFormat, QColor, QSyntaxHighlighter
 
+from dependencies.pyasm import Assembler
 
 # -----------------------------------------------------------------------------------------------------------------------------
 class SyntaxHighlighter(QSyntaxHighlighter):
@@ -78,6 +79,9 @@ class InputTab(QWidget):
     }
 """
   statusStyle = "font-weight: bold; color: #333; margin: 5px; padding: 5px; border-radius: 4px; background-color: #f8f8f8;"
+  
+  asmParser           = None
+
   parent              = None
   asmText             = None
   hexText             = None
@@ -90,6 +94,9 @@ class InputTab(QWidget):
   def __init__(self, parent):
     super().__init__()
     self.parent = parent
+
+    configFile = os.path.join(self.parent.GetDependenciesPath(), "asm_cfg.yml")
+    self.asmParser = Assembler(Path(configFile))
 
     # Main layout
     mainLayout = QVBoxLayout()
@@ -295,7 +302,6 @@ class InputTab(QWidget):
   # ---------------------------------------------------------------------------------------------------------------------------
   def ConvertAsmToHex(self):
     self.SetAllButtonsEnabled(False)
-    # Save ASM to temp file
     self.SetStatusText("Converting .asm to .hex...", error=False)
 
     tempDir = self.parent.GetTempDir()
@@ -304,21 +310,11 @@ class InputTab(QWidget):
       file.write(self.asmText.toPlainText())
 
     hexPath = os.path.join(tempDir, "input.hex")
-    parseScript = os.path.join(self.parent.GetDependenciesPath(), "pyasm.py")
-    configFile = os.path.join(self.parent.GetDependenciesPath(), "asm_cfg.yml")
 
     try:
       # Run parsing script
-      process = QProcess()
-      process.start("python.exe", [parseScript, "--config-file", configFile, "--in-file", asmPath, "--out-file", hexPath])
-      process.waitForFinished(-1)
-
-      processOutput = process.readAllStandardOutput().data().decode()
-      if processOutput != "":
-        raise Exception(processOutput)
-      processError = process.readAllStandardError().data().decode()
-      if processError != "":
-        raise Exception(processError)
+      self.asmParser.Reset()
+      self.asmParser.assemble(Path(asmPath), Path(hexPath), False)
 
       # Load the generated hex file
       if os.path.exists(hexPath):

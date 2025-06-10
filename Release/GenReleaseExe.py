@@ -8,7 +8,6 @@ resources = [
 ]
 
 dependencies = [
-  ('dependencies/pyasm.py', 'dependencies'),
   ('dependencies/asm_cfg.yml', 'dependencies'),
   ('dependencies/example.asm', 'dependencies'),
   ('dependencies/CPU_Pipeline_Simulator.exe', 'dependencies'),

@@ -304,19 +304,19 @@ class ConfigTab(QWidget):
 
     rangeLabel = QLabel(f"[{range[0]} - {range[1]}]")
     rangeLabel.setWordWrap(True)
-    rangeLabel.setStyleSheet("font-size: 9pt;")
+    rangeLabel.setStyleSheet("font-size: 9pt; margin: 5px;")
     layout.addWidget(rangeLabel)
 
     descriptionLabel = QLabel(f"{description}")
     descriptionLabel.setWordWrap(True)
-    descriptionLabel.setStyleSheet("font-size: 10pt;")
+    descriptionLabel.setStyleSheet("font-size: 10pt; margin: 5px;")
     layout.addWidget(descriptionLabel)
 
     inputField = QSpinBox()
     inputField.setRange(range[0], range[1])
     inputField.setButtonSymbols(QSpinBox.NoButtons)
     inputField.setMaximumWidth(int(self.parent.width() * 0.05 * 1.2))
-    inputField.setStyleSheet("font-size: 11pt;")
+    inputField.setStyleSheet("font-size: 11pt; margin: 5px;")
     layout.addWidget(inputField)
 
     groupBox.setLayout(layout)
@@ -332,7 +332,7 @@ class ConfigTab(QWidget):
 
     descriptionLabel = QLabel(f"{description}")
     descriptionLabel.setWordWrap(True)
-    descriptionLabel.setStyleSheet("font-size: 10pt;")
+    descriptionLabel.setStyleSheet("font-size: 10pt; margin: 5px;")
     layout.addWidget(descriptionLabel)
 
     inputField = QCheckBox()

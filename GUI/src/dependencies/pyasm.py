@@ -372,6 +372,14 @@ class Assembler:
         output.write(f"#{self.labelDict[label]:04x} ({label}):\n")
         for instr in self.midInstrDict[label]:
           self._handleInstr(output, instr)
+    
+  def Reset(self):
+    self.sectionDict.clear()
+    self.midInstrDict.clear()
+    self.bootInstructions.clear()
+    self.excpVectors.clear()
+    self.currentLabel = "0"
+    self.bootLabel = "1"
 
 
 app = Typer(no_args_is_help=True, add_completion=False, pretty_exceptions_show_locals=False)
