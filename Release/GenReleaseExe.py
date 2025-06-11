@@ -22,7 +22,7 @@ pyInstallerCommand = [
   "GUI.py",
   '--onefile',
   '--name', 'CPU Pipeline Visualizer',
-  '--icon', 'resources/CPU_PV.ico'
+  '--icon', 'resources/CPU_PV_Icon.ico'
 ]
 
 for src, dest in resources:

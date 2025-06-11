@@ -53,7 +53,7 @@ class CPUSimulator(QMainWindow):
       os.makedirs(simulationMemoryDir)
     
     # Initialize UI
-    self.setWindowTitle("CPU Simulator")
+    self.setWindowTitle("CPU Pipeline Visualizer")
     self.setGeometry(100, 100, 1000, 600)
 
     # Initialize config values

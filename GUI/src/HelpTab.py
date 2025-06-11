@@ -141,7 +141,96 @@ class HelpTab(QWidget):
       layout,
       "Modules",
       tableHeaders,
-      data
+      data,
+      line_after=False
+    )
+
+    self.GenTextSection(
+      layout,
+      None,
+      "\tThe modules communicate with eachother via pipes. All pipes send Synchronized Data Packages, composed of:\n"
+      "> data specific to each pipe\n"
+      "> cycle it was sent at\n"
+      "> IP that data / request is from / referring to\n"
+      "> if an exception was triggered by the data / request\n"
+      "> the exception data, if applicable\n"
+      "> the address of the handler for the exception, if applicable\n",
+      line_after=False
+    )
+
+    tableHeaders = ["From", "To", "Data Type", "Purpose"]
+    data = [
+      ("IC",
+       "LS",
+       "Address",
+       "Request a fetch window from memory"),
+      ("LS",
+       "IC",
+       "Fetch window",
+       "Deliver the requested fetch window\n"
+       "Signal a write from EX to an address possibly cached in IC\n"
+       "(uses only lower 16 bits of fetch window)"),
+      ("IC",
+       "DE",
+       "Fetch window",
+       "Deliver the fetch window for decoding"),
+      ("DE",
+       "IC",
+       "Address",
+       "Forward IP change signal from EX"),
+      ("DE",
+       "EX",
+       "Instruction",
+       "Deliver decoded instructions for execution\n"
+       "Signal MISALIGNED_IP exception\n"
+       "Signal INVALID_DECODE exception"),
+      ("EX",
+       "DE",
+       "Address",
+       "Signal IP change"),
+      ("EX",
+       "LS",
+       "Word array",
+       "Request fetch of data from memory (empty data sent)\n"
+       "Request store of data to memory\n"),
+      ("LS",
+       "EX",
+       "Word array",
+       "Deliver requested data from memory\n"
+       "Confirm store of data to memory (empty data sent)\n"
+       "Signal MISALIGNED_ACCESS exception")
+    ]
+
+    self.GenTableSection(
+      layout,
+      None,
+      tableHeaders,
+      data,
+      line_after=False
+    )
+
+    self.GenTextSection(
+      layout,
+      "Caches",
+      "\tThe IC has a Direct-Mapping Cache, storing fetch windows.\n"
+      "Let X be the size of the cache in words. The cache will hold X/4 entries. Let lX = log2(X/4)\n"
+      "Each entry has an index and a tag. Each address of a fetch window is split into 3 parts:\n"
+      "1. Unused bits (bits [2:0], least-significant), since fetch windows always start at addresses multiple of 8\n"
+      "2. Index bits (next lX bits), which are used to find the entry index in the cache\n"
+      "3. Tag bits (remaining, most-significant bits), which locate the entry as belonging to a certain page of memory "
+      "(the 64KB address space is split into as many regions as the tag bits allow).\n"
+      "This strategy makes cache swapping easier, as a the index directly points to the entry in the cache to be replaced, "
+      "skipping the need to search through all entries for the oldest one, in a LRU (Least Recently Used) strategy.\n\n"
+
+      "\tThe LS has a K-Way Set-Associative Cache, storing words.\n"
+      "Let X be the size of the cache in words, and K the number of ways (elements in each set). The cache will hold X entries, "
+      "grouped into X / K sets. Let lXK = log2(X / K) and lK = log2(K)\n"
+      "Each entry has an index, a sub-index, and a tag. The address of a word is split similarly to how IC does the splitting, "
+      "with the difference that there is only one unused bit (0), and the index is lXK bits long. The sub-index is the lower "
+      "lK bits of the index.\n"
+      "This strategy allows the LS to store multiple words with same index (localized address within page), but from different "
+      "pages (different tags), whilst still maintinging fast search and replacement of entries, checking the tag of only K entries "
+      "to find a hit / the oldest entry to replace."
     )
 
     self.GenTextSection(
@@ -174,7 +263,7 @@ class HelpTab(QWidget):
                  "X = 0|2|4|6|8", "[(2*X) - (2*X+1)]\n", "Hold the handlers' addresses for exceptions\n", "No",
         "Only one .vector_X section is allowed per exceptions\n"
         "May only hold a 'dw' instruction with the handler's label from .code"),
-      ("Save State", "N/A", "[#0010 - #0027]", "Area where {IP, SP_REG, FLAGS, R0-7} are saved when an exception occurs", "N/A",
+      ("Save State", "N/A", "[#0010 - #0027]", "Area where {IP, SP_REG, FLAGS, ExcpData, R0-7} are saved when an exception occurs", "N/A",
        "Not a user-defined section\n")
     ]
 
@@ -192,7 +281,7 @@ class HelpTab(QWidget):
       line_after=False
     )
 
-    tableHeaders = ["Type", "Mnemonic(s)", "Value(s)", "Description"]
+    tableHeaders = ["Type", "Mnemonic(s)", "Hex Value(s)", "Description"]
     data = [
       ("null", " ", "0x0", "Src not present"),
       ("imm", "0 - ffff\n"
@@ -216,32 +305,168 @@ class HelpTab(QWidget):
       None,
       tableHeaders,
       data,
-      False
+      line_after=False
     )
 
-    tableHeaders = ["Mnemonic", "OpCode", "Src1", "Src2", "Description", "Affected Flags", "Invalid Src1 + Src2\nCombinations"]
+    self.GenTextSection(
+      layout,
+      None,
+      "\tIn the table below, the following notations are used:\n"
+      "simd-comp = {simd, addr, addr_reg}; non-simd-comp = SrcTypes \\ simd-comp\n"
+      "stack = {sp, stack_base, stack_size};\n"
+      "stack-comp = {reg, imm, addr, addr_reg}; non-stack-comp = SrcTypes \\ stack-comp",
+      line_after=False
+    )
+
+    tableHeaders = ["Mnemonic", "OpCode", "Src1", "Src2", "Outcome", "Affected Flags", "Invalid Src1, Src2\nCombinations"]
     data = [
-      ("add", "0x1", "reg, addr, addr_reg, simd", "reg, imm, addr, addr_reg, simd", "Addition operation", "WIP", "simd+reg, simd+imm"),
-      ("sub", "0x2", "reg, addr, addr_reg, simd", "reg, imm, addr, addr_reg, simd", "Subtraction operation", "WIP", "simd+reg, simd+imm"),
-      ("mov", "0x3", "reg, addr, addr_reg, sp, stack_base, stack_size, simd", "reg, addr, addr_reg, imm, sp, stack_base, stack_size, simd", "Move operation", "WIP", "sp+imm, stack_base+imm, stack_size+imm, simd+reg, simd+imm"),
-      ("mul", "0x4", "reg, addr, addr_reg, imm, simd", "reg, addr, addr_reg, imm, simd", "Multiplication operation", "WIP", "simd+reg, simd+imm"),
-      ("div", "0x5", "reg, addr, addr_reg, imm, simd", "reg, addr, addr_reg, imm, simd", "Division operation", "WIP", "simd+reg, simd+imm"),
-      ("cmp", "0x6", "reg, imm, addr_reg, addr, sp, stack_base, stack_size", "reg, imm, addr_reg, addr, sp, stack_base, stack_size", "Compare operation", "WIP", "sp+reg, sp+addr, sp+addr_reg, sp+imm, stack_base+reg, stack_base+addr, stack_base+addr_reg, stack_base+imm, stack_size+reg, stack_size+addr, stack_size+addr_reg, stack_size+imm"),
-      ("jmp", "0x7", "reg, imm, addr, addr_reg", "-", "Unconditional jump", "WIP", ""),
-      ("je", "0x9", "reg, imm, addr, addr_reg", "-", "Jump if equal", "WIP", ""),
-      ("jl", "0xA", "reg, imm, addr, addr_reg", "-", "Jump if less", "WIP", ""),
-      ("jg", "0xB", "reg, imm, addr, addr_reg", "-", "Jump if greater", "WIP", ""),
-      ("jz", "0xC", "reg, imm, addr, addr_reg", "-", "Jump if zero", "WIP", ""),
-      ("call", "0xD", "reg, imm, addr, addr_reg", "-", "Function call", "WIP", ""),
-      ("ret", "0xE", "-", "-", "Return from function", "WIP", ""),
-      ("end_sim", "0xF", "-", "-", "End simulation", "WIP", ""),
-      ("push", "0x10", "reg, addr, imm, addr_reg", "-", "Push to stack", "WIP", ""),
-      ("pop", "0x11", "reg, addr, addr_reg, null", "-", "Pop from stack", "WIP", ""),
-      ("dw", "null", "imm", "-", "Define word", "WIP", ""),
-      ("dblock", "null", "imm", "imm", "Define block", "WIP", ""),
-      ("excp_exit", "0x12", "-", "-", "Exception exit", "WIP", ""),
-      ("gather", "0x16", "simd", "simd", "SIMD gather operation", "WIP", ""),
-      ("scatter", "0x17", "simd", "simd", "SIMD scatter operation", "WIP", "")
+      ("add",
+       "0x1",
+       "reg\naddr\naddr_reg\nsimd",
+       "reg\nimm\naddr\naddr_reg\nsimd",
+       "Src1 = Src1 + Src2",
+       "ZERO = 1 if result is 0",
+       "simd, non-simd-comp\nnon-simd-comp, simd"),
+      ("sub",
+       "0x2",
+       "reg\naddr\naddr_reg\nsimd",
+       "reg\nimm\naddr\naddr_reg\nsimd",
+       "Src1 = Src1 - Src2",
+       "ZERO = 1 if result is 0",
+       "simd, non-simd-comp\nnon-simd-comp, simd"),
+      ("mov",
+       "0x3",
+       "reg\naddr\naddr_reg\nsp\nstack_base\nstack_size\nsimd",
+       "reg\naddr\naddr_reg\nimm\nsp\nstack_base\nstack_size\nsimd",
+       "Src1 = Src2",
+       "-",
+       "stack, stack\nsimd, non-simd-comp\nnon-simd-comp, simd\n"),
+      ("mul",
+       "0x4",
+       "reg\naddr\naddr_reg\nimm\nsimd",
+       "reg\naddr\naddr_reg\nimm\nsimd",
+       "For non-SIMD:\n[R0:R1] = Src1 * Src2\nFor SIMD:\n[Z0_X:Z1_X] =\nSrc1_X * Src2_X\n(X = 0..3)",
+       "ZERO = 1 if result (any X for SIMD) is 0",
+       "simd, non-simd-comp\nnon-simd-comp, simd"),
+      ("div",
+       "0x5",
+       "reg\naddr\naddr_reg\nimm\nsimd",
+       "reg\naddr\naddr_reg\nimm\nsimd",
+       "For non-SIMD:\nR0 = Src1 / Src2\nR1 = Src1 % Src2\nFor SIMD:\nZ0_X = Src1_X / Src2_X,\nZ1_X = Src1_X % Src2_X\n(X = 0..3)",
+       "ZERO = 1 if result (any X for SIMD) is 0",
+       "simd, non-simd-comp\nnon-simd-comp, simd"),
+      ("cmp",
+       "0x6",
+       "reg\nimm\naddr_reg\naddr\nsp\nstack_base\nstack_size",
+       "reg\nimm\naddr_reg\naddr\nsp\nstack_base\nstack_size",
+       "Updates the Flags based on Src1 ? Src2",
+       "ZERO = 1 if\nSrc1 == Src2 == 0\nEQUAL = 1 if\nSrc1 == Src2\nGREATER = 1 if\nSrc1 > Src2",
+       "stack, stack\nsimd, non-simd-comp\nnon-simd-comp, simd"),
+      ("jmp",
+       "0x7",
+       "reg\nimm\naddr\naddr_reg",
+       "null",
+       "IP = Src1",
+       "-",
+       "-"),
+      ("je",
+       "0x9",
+       "reg\nimm\naddr\naddr_reg",
+       "null",
+       "IP = Src1 if\nFlags.EQUAL == 1",
+       "-",
+       "-"),
+      ("jl",
+       "0xa",
+       "reg\nimm\naddr\naddr_reg",
+       "null",
+       "IP = Src1 if\nFlags.GREATER == 0 and Flags.EQUAL == 0",
+       "-",
+       "-"),
+      ("jg",
+       "0xb",
+       "reg\nimm\naddr\naddr_reg",
+       "null",
+       "IP = Src1 if\nFlags.GREATER == 1",
+       "-",
+       "-"),
+      ("jz",
+       "0xc",
+       "reg\nimm\naddr\naddr_reg",
+       "null",
+       "IP = Src1 if\nFlags.ZERO == 1",
+       "-",
+       "-"),
+      ("call",
+       "0xd",
+       "reg\nimm\naddr\naddr_reg",
+       "null",
+       "R7-R0, Flags, IP+0x2 pushed to stack\nIP = Src1",
+       "-",
+       "-"),
+      ("ret",
+       "0xe",
+       "null",
+       "null",
+       "IP, Flags, R0-R7 popped from stack in order",
+       "-",
+       "-"),
+      ("end_sim",
+       "0xf",
+       "null",
+       "null",
+       "End simulation",
+       "-",
+       "-"),
+      ("push",
+       "0x10",
+       "reg, addr, imm, addr_reg",
+       "null",
+       "Src1 pushed to stack",
+       "-",
+       "-"),
+      ("pop",
+       "0x11",
+       "reg, addr, addr_reg, null",
+       "null",
+       "Pop 1 word from stack\nIf Src1 != null, write it to Src1",
+       "-",
+       "-"),
+      ("dw",
+       "null",
+       "imm",
+       "null",
+       "Declare 16-bit word\nInitial value = Src1",
+       "-",
+       "-"),
+      ("dblock",
+       "null",
+       "imm",
+       "imm",
+       "Declare Src2 contiguous words\nInitial value = Src1",
+       "-",
+       "-"),
+      ("excp_exit",
+       "0x12",
+       "null",
+       "null",
+       "Restore IP, SP_REG, Flags, ExcpData, R0-R7\nfrom Save State area",
+       "EXCEPTION = 0",
+       "-"),
+      ("gather",
+       "0x16",
+       "simd",
+       "simd",
+       "Src1_X = [Src2_X]\nfor X = 0..3\n",
+       "-",
+       "-"),
+      ("scatter",
+       "0x17",
+       "simd",
+       "simd",
+       "[Src1_X] = Src2_X\nfor X = 0..3\n",
+       "-",
+       "-")
     ]
 
     self.GenTableSection(
@@ -251,24 +476,79 @@ class HelpTab(QWidget):
       data,
     )
 
+    tableHeaders = ["Exception", "Exception Data", "Vector Entry", "Generated in", "Caused by"]
+
+    data = [
+      ("DIV_BY_ZERO",
+       "0x0000",
+       ".vector_0",
+       "EX",
+       "Src2 of 'div' (or any Src2_X for SIMD) is 0"),
+      ("UNKNOWN_UP_CODE",
+       "0x0001",
+       ".vector_2",
+       "DE",
+       "Value of first 6 bits in a decoded word is not a valid OpCode"),
+      ("NULL_SRC",
+       "0x0002",
+       ".vector_2",
+       "DE",
+       "Src1 or Src2 is null when null is not expected"),
+      ("NON_NULL_SRC",
+       "0x0004",
+       ".vector_2",
+       "DE",
+       "Src1 or Src2 is not null when null is expected"),
+      ("INCOMPATIBLE_PARAMS",
+       "0x0008",
+       ".vector_2",
+       "DE",
+       "Src1 and Src2 are incompatible for the given OpCode"),
+      ("PUSH_OVERFLOW",
+       "0x0000",
+       ".vector_4",
+       "EX",
+       "Pushing to the stack when it is full (SP_REG == 0x0)"),
+      ("POP_OVERFLOW",
+       "0xffff",
+       ".vector_4",
+       "EX",
+       "Popping from the stack when it is empty (SP_REG == STACK_SIZE)"),
+      ("MISALIGNED_ACCESS",
+       "Address of requested data",
+       ".vector_6",
+       "LS",
+       "A memory access was made to an odd address"),
+      ("MISALIGNED_IP",
+       "0x0000",
+       ".vector_8",
+       "DE",
+       "A call / jump was made to an odd address")
+    ]
+
     self.GenTableSection(
       layout,
       "Exceptions",
-      [],
-      []
-    )
-
-    self.GenTextSection(
-      layout,
-      "Interpreting the Output",
-      "Content for Interpreting the Output section will be added here..."
+      tableHeaders,
+      data
     )
 
     self.GenTextSection(
       layout,
       "Configuring the CPU",
-      "Content for Configuring the CPU section will be added here...",
-      line_after=False
+      "\tThe 'Config' tab is dedicated to parameterizing the CPU's architecture.\n"
+      "\tThe configuration options fall into 4 categories:\n"
+      "1. Modules' cycles count per operation: How many cycles each module to execute one operation "
+      "(e.g., the Decode module stays busy for 2 cycles to turn 1-3 words into an instruction).\n"
+      "2. Caches' settings: Controls the size of the Instruction Cache (IC) and Load/Store Cache (LS), "
+      "as well as the lowered cycle count for these modules when a cache hit occurs and no physical memory "
+      "access is needed.\n"
+      "3. Memory-related settings: If the EX module should consider OpCode 0x0 as a 'NOP' or "
+      "trigger an INVALID_DECODE exception, and if reads from memory locations not initialized / written to "
+      "should return 0x00 or a random value, simulating garbage data.\n"
+      "4. Simulation settings, which do not affect the outcome of the simulation: The clock's period (in ms), "
+      "whether to display all cycles of the simulation or only the first and last, and the speed of the autoplay "
+      "of the simulation (in ms)."
     )
 
     # Add stretch to push content to top
