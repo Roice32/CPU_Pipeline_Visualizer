@@ -329,6 +329,10 @@ class InputTab(QWidget):
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def ExecuteSimulation(self):
+    if self.hexText.toPlainText().strip() == "":
+      QMessageBox.warning(self, "Warning", "No hex code to execute.")
+      return
+
     self.SetAllButtonsEnabled(False, True)
     # Save HEX to temp file
     self.SetStatusText("Saving hex source file...", error=False)

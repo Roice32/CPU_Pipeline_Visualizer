@@ -218,7 +218,7 @@ class HelpTab(QWidget):
       "1. Unused bits (bits [2:0], least-significant), since fetch windows always start at addresses multiple of 8\n"
       "2. Index bits (next lX bits), which are used to find the entry index in the cache\n"
       "3. Tag bits (remaining, most-significant bits), which locate the entry as belonging to a certain page of memory "
-      "(the 64KB address space is split into as many regions as the tag bits allow).\n"
+      "(the 64KB address space is split into as many regions as the tag bits allow).\n\n"
       "This strategy makes cache swapping easier, as a the index directly points to the entry in the cache to be replaced, "
       "skipping the need to search through all entries for the oldest one, in a LRU (Least Recently Used) strategy.\n\n"
 
@@ -227,10 +227,12 @@ class HelpTab(QWidget):
       "grouped into X / K sets. Let lXK = log2(X / K) and lK = log2(K)\n"
       "Each entry has an index, a sub-index, and a tag. The address of a word is split similarly to how IC does the splitting, "
       "with the difference that there is only one unused bit (0), and the index is lXK bits long. The sub-index is the lower "
-      "lK bits of the index.\n"
+      "lK bits of the index.\n\n"
       "This strategy allows the LS to store multiple words with same index (localized address within page), but from different "
       "pages (different tags), whilst still maintinging fast search and replacement of entries, checking the tag of only K entries "
-      "to find a hit / the oldest entry to replace."
+      "to find a hit / the oldest entry to replace.\n"
+      "Note that the LS does not cache the words of fetch windows, as they would quickly fill the cache, "
+      "leaving little to no room for words needed by EX. Besides, it would be redundant, as the IC already caches them."
     )
 
     self.GenTextSection(
@@ -484,7 +486,7 @@ class HelpTab(QWidget):
        ".vector_0",
        "EX",
        "Src2 of 'div' (or any Src2_X for SIMD) is 0"),
-      ("UNKNOWN_UP_CODE",
+      ("UNKNOWN_OP_CODE",
        "0x0001",
        ".vector_2",
        "DE",
