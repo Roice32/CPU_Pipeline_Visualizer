@@ -10,55 +10,69 @@ from dependencies.pyasm import Assembler
 
 # -----------------------------------------------------------------------------------------------------------------------------
 class SyntaxHighlighter(QSyntaxHighlighter):
-  highlightingRules = []
+  highlightingRules: list[tuple[QRegExp, QTextCharFormat]] = []
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self, parent=None):
     super(SyntaxHighlighter, self).__init__(parent)
     
+    instructions = ["add", "sub", "mov", "mul", "div", "cmp", "jmp", "je", "jl", "jg", "jz",
+                    "call", "ret", "end_sim", "push", "pop", "excp_exit", "gather", "scatter"]
+
     # Define highlighting rules
     self.highlightingRules = []
-    
+
     # Segment format (lines starting with .)
     segmentFormat = QTextCharFormat()
-    segmentFormat.setForeground(QColor(255, 0, 0))  # Red
-    self.highlightingRules.append((QRegExp("^\\.[^\n]*"), segmentFormat))
+    segmentFormat.setForeground(QColor(0, 255, 0))  # Green
+    segmentFormat.setFontWeight(QFont.Bold)
+    self.highlightingRules.append((QRegExp("^\\s*\\.[^\n]+$"), segmentFormat))
 
     # Instruction format (first word of line)
     instructionFormat = QTextCharFormat()
     instructionFormat.setForeground(QColor(0, 0, 255))  # Blue
-    self.highlightingRules.append((QRegExp("^\\s*\\w+"), instructionFormat))
+    self.highlightingRules.append((QRegExp("^\\s*(" + "|".join(instructions) + ")\\s+"), instructionFormat))
 
     # Declaration format (lines starting with dw or dblock)
     declarationFormat = QTextCharFormat()
     declarationFormat.setForeground(QColor(255, 165, 0))  # Orange
-    self.highlightingRules.append((QRegExp("^\\s*(dw|dblock)\\s+"), declarationFormat))
+    self.highlightingRules.append((QRegExp("^\\s*(dw)|(dblock)\\s+"), declarationFormat))
 
     # Label format (word followed by colon)
     labelFormat = QTextCharFormat()
     labelFormat.setForeground(QColor(128, 0, 128))  # Purple
     labelFormat.setFontItalic(True)
-    self.highlightingRules.append((QRegExp("^\\w+:"), labelFormat))
+    self.highlightingRules.append((QRegExp("^\\s*\\w+:"), labelFormat))
 
     # Comment format (semicolon and everything after)
     commentFormat = QTextCharFormat()
     commentFormat.setForeground(QColor(0, 100, 0))  # Dark Green
     self.highlightingRules.append((QRegExp(";.*$"), commentFormat))
 
-    # Address format (in .hex textbox)
-    addressFormat = QTextCharFormat()
-    addressFormat.setForeground(QColor(128, 0, 128)) # Purple
-    self.highlightingRules.append((QRegExp("^#[0-9a-f]{4}$"), addressFormat))
+    # Error format (lines that trigger parsing to fail)
+    errorFormat = QTextCharFormat()
+    errorFormat.setBackground(QColor(255, 182, 193))  # Light red
+    errorFormat.setForeground(QColor(139, 0, 0))  # Dark Red
+    self.highlightingRules.append((None, errorFormat))  # Placeholder for invalid lines
 
   # ---------------------------------------------------------------------------------------------------------------------------
-  def highlightBlock(self, text):
+  def SetInvalidLine(self, invalidLine: str):
+    self.highlightingRules[-1] = (QRegExp(invalidLine), self.highlightingRules[-1][1])
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def ClearInvalidLine(self):
+    self.highlightingRules[-1] = (None, self.highlightingRules[-1][1])
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def highlightBlock(self, text: str):
     for pattern, format in self.highlightingRules:
+      if pattern is None:
+        continue
+
       expression = QRegExp(pattern)
       index = expression.indexIn(text)
-      while index >= 0:
-        length = expression.matchedLength()
-        self.setFormat(index, length, format)
-        index = expression.indexIn(text, index + length)
+      length = expression.matchedLength()
+      self.setFormat(index, length, format)
 
 
 # -----------------------------------------------------------------------------------------------------------------------------
@@ -81,6 +95,7 @@ class InputTab(QWidget):
   statusStyle = "font-weight: bold; color: #333; margin: 5px; padding: 5px; border-radius: 4px; background-color: #f8f8f8;"
   
   asmParser           = None
+  parseErrorRegexes   = None
 
   parent              = None
   asmText             = None
@@ -130,9 +145,10 @@ class InputTab(QWidget):
     tab_width = 2 * metrics.horizontalAdvance(' ')
     self.asmText.setTabStopDistance(tab_width)
     leftLayout.addWidget(self.asmText)
-    
+
     # Apply syntax highlighter to ASM text
     self.syntaxHighlighter = SyntaxHighlighter(self.asmText.document())
+    self.SetupErrorHighlightRules()
 
     # ASM Buttons layout
     asmBtnLayout = QHBoxLayout()
@@ -232,6 +248,17 @@ class InputTab(QWidget):
       self.asmText.setText(defaultAsm.read())
 
   # ---------------------------------------------------------------------------------------------------------------------------
+  def SetupErrorHighlightRules(self):
+    # These need to be kept in sync with the exceptions raised by pyasm.py
+    self.parseErrorRegexes = []
+    
+    generalErrorCatchRgx = QRegExp("Error when attempting to parse line \\d+: ([^\n]+)")
+    self.parseErrorRegexes.append(generalErrorCatchRgx)
+    
+    undefinedLabelRgx = QRegExp("Label (\\S+) could not be solved properly. Did you define it?")
+    self.parseErrorRegexes.append(undefinedLabelRgx)
+
+  # ---------------------------------------------------------------------------------------------------------------------------
   def SetStatusText(self, text, error=False):
     """Set the status text and make it visible with appropriate styling."""
     if error:
@@ -321,11 +348,23 @@ class InputTab(QWidget):
         with open(hexPath, 'r') as file:
           self.hexText.setText(file.read())
         self.SetStatusText(".asm to .hex conversion successful.", error=False)
+        self.syntaxHighlighter.ClearInvalidLine()
 
     except Exception as e:
+      self.MarkInvalidAsmLine(e)
       self.SetStatusText(f"Error converting .asm to .hex", error=True)
-      QMessageBox.critical(self, "Error", str(e))
+      self.hexText.setText(str(e))
+
     self.SetAllButtonsEnabled(True)
+
+  # ---------------------------------------------------------------------------------------------------------------------------
+  def MarkInvalidAsmLine(self, error: Exception):
+    for rgx in self.parseErrorRegexes:
+      index = rgx.indexIn(str(error))
+      if index >= 0:
+        self.syntaxHighlighter.SetInvalidLine(rgx.cap(1))
+        self.syntaxHighlighter.rehighlight()
+        break
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def ExecuteSimulation(self):

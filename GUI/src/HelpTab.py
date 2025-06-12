@@ -99,7 +99,7 @@ class HelpTab(QWidget):
       "\tThe CPU works with 16-bit unsigned integers & addresses, called 'words'. 4 words make a 'fetch_window' "
       "(equivalent to qword in other languages). All 3 of them must be written (in 'Input') and are represented (in 'Simulation') "
       "as BIG-ENDIAN hex (most significant bits first, \"to the left\"). Values preceded by '0x' are words; '#' marks addresses.\n"
-      "The address space is 64KB, so your code can be up to 64KB in size. Addresses point to bytes, so they must always be even, "
+      "The address space is 64kB, so your code can be up to 64kB in size. Addresses point to bytes, so they must always be even, "
       "otherwise a MISALIGNED_IP / MISALIGNED_ACCESS exception will be raised.\n"
 
       "\tThe CPU has 8 general-purpose registers (R0-R7), an Instruction Pointer (IP), a Flags register (Flags), "
@@ -119,7 +119,7 @@ class HelpTab(QWidget):
     tableHeaders = ["Name", "Purpose", "Communicates with"]
     data = [
       ("Clock", "Generates clock signals for synchronizing the other modules", "All"),
-      ("Memory", "Holds the 64KB of physical memory\n"
+      ("Memory", "Holds the 64kB of physical memory\n"
                  "External to the CPU", "Load/Store"),
       ("Load/Store (LS)", "Delivers fetch windows from memory to IC\n"
                           "Delivers data from memory to EX\n"
@@ -129,8 +129,8 @@ class HelpTab(QWidget):
                                  "Delivers fetch windows to DE\n"
                                  "Keeps an internal IP to maintain constant delivery of fetch windows to DE\n"
                                  "Starts simulation from #fff0", "Load/Store\nDecode"),
-      ("Decode (DE)", "Decodes raw words from fetch windows into OpCode, Src1, Scr2, Param1, Param2\n"
-                      "Delivers decoded instructions to Execute"
+      ("Decode (DE)", "Decodes raw words from fetch windows into OpCode, Src1, Src2, Param1, Param2\n"
+                      "Delivers decoded instructions to Execute\n"
                       "Forwards IP change signals to the Instruction Cache\n"
                       "Keeps internal storage of at most 2 fetch windows", "Instruction Cache\nExecute"),
       ("Execute (EX)", "Performs arithmetic/logic operations\n"
@@ -218,7 +218,7 @@ class HelpTab(QWidget):
       "1. Unused bits (bits [2:0], least-significant), since fetch windows always start at addresses multiple of 8\n"
       "2. Index bits (next lX bits), which are used to find the entry index in the cache\n"
       "3. Tag bits (remaining, most-significant bits), which locate the entry as belonging to a certain page of memory "
-      "(the 64KB address space is split into as many regions as the tag bits allow).\n\n"
+      "(the 64kB address space is split into as many regions as the tag bits allow).\n\n"
       "This strategy makes cache swapping easier, as a the index directly points to the entry in the cache to be replaced, "
       "skipping the need to search through all entries for the oldest one, in a LRU (Least Recently Used) strategy.\n\n"
 
@@ -229,7 +229,7 @@ class HelpTab(QWidget):
       "with the difference that there is only one unused bit (0), and the index is lXK bits long. The sub-index is the lower "
       "lK bits of the index.\n\n"
       "This strategy allows the LS to store multiple words with same index (localized address within page), but from different "
-      "pages (different tags), whilst still maintinging fast search and replacement of entries, checking the tag of only K entries "
+      "pages (different tags), whilst still maintaining fast search and replacement of entries, checking the tag of only K entries "
       "to find a hit / the oldest entry to replace.\n"
       "Note that the LS does not cache the words of fetch windows, as they would quickly fill the cache, "
       "leaving little to no room for words needed by EX. Besides, it would be redundant, as the IC already caches them."
@@ -264,7 +264,7 @@ class HelpTab(QWidget):
        "Vector", ".vector_X\n"
                  "X = 0|2|4|6|8", "[(2*X) - (2*X+1)]\n", "Hold the handlers' addresses for exceptions\n", "No",
         "Only one .vector_X section is allowed per exceptions\n"
-        "May only hold a 'dw' instruction with the handler's label from .code"),
+        "May only hold a 'dw' with the handler's label from .code"),
       ("Save State", "N/A", "[#0010 - #0027]", "Area where {IP, SP_REG, FLAGS, ExcpData, R0-7} are saved when an exception occurs", "N/A",
        "Not a user-defined section\n")
     ]
@@ -279,7 +279,7 @@ class HelpTab(QWidget):
     self.GenTextSection(
       layout,
       "Available Instructions",
-      "\tSource types acceptes by the instructions are:\n",
+      "\tSource types accepted by the instructions are:\n",
       line_after=False
     )
 
@@ -434,20 +434,6 @@ class HelpTab(QWidget):
        "Pop 1 word from stack\nIf Src1 != null, write it to Src1",
        "-",
        "-"),
-      ("dw",
-       "null",
-       "imm",
-       "null",
-       "Declare 16-bit word\nInitial value = Src1",
-       "-",
-       "-"),
-      ("dblock",
-       "null",
-       "imm",
-       "imm",
-       "Declare Src2 contiguous words\nInitial value = Src1",
-       "-",
-       "-"),
       ("excp_exit",
        "0x12",
        "null",
@@ -476,6 +462,14 @@ class HelpTab(QWidget):
       "Available Instructions",
       tableHeaders,
       data,
+    )
+
+    self.GenTextSection(
+      layout,
+      None,
+      "\tThere are also two pre-assembler directives (usually used immediately after a label):\n"
+      "dw <val> - Declares a 16-bit word with initial value = <val>\n"
+      "dblock <val>, <count> - Declares a contiguous block of <count> words, all with initial value = <val>\n"
     )
 
     tableHeaders = ["Exception", "Exception Data", "Vector Entry", "Generated in", "Caused by"]
