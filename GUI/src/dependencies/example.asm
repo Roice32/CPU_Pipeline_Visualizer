@@ -1,9 +1,9 @@
-; Example assembly code utilizing most instructions, features, and paramter combinations
-.boot
+; Example assembly code utilizing most instructions, features, and parameter combinations
+.boot ; the execution starts here
 
   jmp main ; jumps to the 'main' label in the code segment
 
-.code
+.code ; the code instructions should be placed here
 
 main:
   mov r0, [var_1] ; r0 = 1
@@ -13,7 +13,7 @@ main:
   push r0         ; push r0 (2) onto stack
   cmp r0, 0x0     ; flags.Z = flags.E = 0, flags.G = 1
   jg post_jg      ; taken
-  end_sim         ; skipped
+  end_sim         ; discarded
 
 post_jg:
   mov r1, var_1     ; r1 = address of var_1
@@ -21,7 +21,7 @@ post_jg:
   push [r1]         ; push var_1 (4) onto stack
   cmp [var_1], 0x3  ; flags.Z = flags.G = 0, flags.E = 1
   je post_je        ; taken
-  end_sim           ; skipped
+  end_sim           ; discarded
 
 post_je:
   pop         ; pop 4 from stack, don't save it anywhere
@@ -30,7 +30,7 @@ post_je:
   mul r2, r3  ; r0 = 0, r1 = 30
   cmp 0x0, r1 ; flags.Z = flags.E = flags.G = 0
   jl post_jl  ; taken
-  end_sim     ; skipped
+  end_sim     ; discarded
 
 post_jl:
   div 0x0021, [var_2] ; r0 = 33 / 2 = 16, r1 = 33 % 2 = 1
@@ -63,10 +63,10 @@ loop_step:
 
 div_zero_handler:
   mov [exceptions_count], 1 ; set exception count to 1
-  add [0x0010], 4           ; return ip in save state region += 4 (sizeof "div r0, 0x0")
+  add [0x0010], 4           ; return ip in save state region += 4 (size of "div r0, 0x0")
   excp_exit                 ; exit exception handler, return to ip saved at 0x0010
 
-.data
+.data ; variables and constants should be placed here
 
 var_1:
   dw 0x0001
@@ -95,5 +95,5 @@ coeffs:
 exceptions_count:
   dw 0x0000
 
-.vector_0
+.vector_0 ; fixed location for exception handler address
   dw div_zero_handler

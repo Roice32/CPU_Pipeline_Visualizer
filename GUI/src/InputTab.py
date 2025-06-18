@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from PyQt5.QtWidgets import (
   QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, QPushButton, QFileDialog, QSplitter, QMessageBox
@@ -57,7 +58,9 @@ class SyntaxHighlighter(QSyntaxHighlighter):
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def SetInvalidLine(self, invalidLine: str):
-    self.highlightingRules[-1] = (QRegExp(invalidLine), self.highlightingRules[-1][1])
+    lineWithoutComment = invalidLine.split(';')[0].strip()  # Remove comment part
+    escapedLine = re.escape(lineWithoutComment)
+    self.highlightingRules[-1] = (QRegExp(escapedLine), self.highlightingRules[-1][1])
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def ClearInvalidLine(self):
@@ -349,6 +352,7 @@ class InputTab(QWidget):
           self.hexText.setText(file.read())
         self.SetStatusText(".asm to .hex conversion successful.", error=False)
         self.syntaxHighlighter.ClearInvalidLine()
+        self.syntaxHighlighter.rehighlight()
 
     except Exception as e:
       self.MarkInvalidAsmLine(e)
