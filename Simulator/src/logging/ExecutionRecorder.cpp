@@ -297,8 +297,12 @@ void ExecutionRecorder::doubleEXException(const SynchronizedDataPackage<Instruct
 
 void ExecutionRecorder::dumpSimulationToJSONs(const std::string &outputDirPath)
 {
+  determineFinalCycle();
   for (auto& state: states) 
   {
+    if (state.cycle > finalCycle) {
+      break;
+    }
     if (!state.memoryChanges.empty())
     {
       state.memoryUnchangedSinceCycle = state.cycle;
@@ -309,7 +313,40 @@ void ExecutionRecorder::dumpSimulationToJSONs(const std::string &outputDirPath)
   }
 }
 
-void ExecutionRecorder::dumpStateToJSON(ExecutionState& state, const std::string& outputDirPath)
+void ExecutionRecorder::determineFinalCycle()
+{
+  if (singleStateMode)
+  {
+    finalCycle = states.back().cycle;
+    return;
+  }
+
+  switch (endReason)
+  {
+    case NORMAL:
+      for (int i = states.size() - 1; i >= 0; --i)
+      {
+        if (states[i].EX.extra.find("Ended") != std::string::npos)
+        {
+          finalCycle = states[i].cycle;
+          return;
+        }
+      }
+      break;
+    case DOUBLE_EXCEPTION:
+      for (int i = states.size() - 1; i >= 0; --i)
+      {
+        if (states[i].EX.state.find("Forcefully") != std::string::npos)
+        {
+          finalCycle = states[i].cycle;
+          return;
+        }
+      }
+      break;
+  }
+}
+
+void ExecutionRecorder::dumpStateToJSON(ExecutionState &state, const std::string &outputDirPath)
 {
   std::string stateJsonFilePath = outputDirPath + std::to_string(state.cycle) + ".json";
   std::ofstream file(stateJsonFilePath);

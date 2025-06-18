@@ -26,13 +26,23 @@ enum Pipes
   LStoEX
 };
 
+enum SimEndReason
+{
+  NORMAL,
+  DOUBLE_EXCEPTION,
+  CYCLE_LIMIT
+};
+
 class ExecutionRecorder
 {
 private:
+  unsigned int finalCycle = 1;
+  SimEndReason endReason;
   std::map<address, word> memory = {};
   std::vector<ExecutionState> states = {};
   bool singleStateMode = false;
 
+  void determineFinalCycle();
   void dumpStateToJSON(ExecutionState& state, const std::string& outputDirPath);
   void updateMemory(const std::unordered_map<address, word>& memoryChanges);
   void dumpMemoryToJSON(const clock_time cycle, const std::string& outputDirPath);
@@ -40,6 +50,8 @@ private:
 public:
   ExecutionRecorder(std::shared_ptr<Memory> mem, bool singleStateMode = false);
   void goToNextState();
+  void setSimEndReason(SimEndReason reason)
+    { endReason = reason; }
   void modifyModuleState(const Modules& moduleName, const std::string& state);
   void addExtraInfo(const Modules& moduleName, const std::string& extraInfo);
 

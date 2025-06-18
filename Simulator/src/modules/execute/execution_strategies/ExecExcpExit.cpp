@@ -26,5 +26,6 @@ void ExecExcpExit::executeInstruction(SynchronizedDataPackage<Instruction> instr
   clock_time lastTick = refToEX->waitTillLastTick();
   mssgToDE.sentAt = lastTick;
   fromDEtoMe->sendB(mssgToDE);
+  recorder->clearEXException();
   recorder->pushEXtoDEData(mssgToDE);
 }

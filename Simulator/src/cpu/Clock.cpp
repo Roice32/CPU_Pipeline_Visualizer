@@ -18,7 +18,10 @@ void Clock::run()
     {
       std::lock_guard<std::mutex> lockdown(clockSyncVars->updateLock);
       ++clockSyncVars->cycleCount;
-      recorder->goToNextState();
+      if (clockSyncVars->running)
+      {
+        recorder->goToNextState();
+      }
     }
     clockSyncVars->update.notify_all();
   }

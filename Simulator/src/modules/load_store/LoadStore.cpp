@@ -69,6 +69,8 @@ std::vector<word> LoadStore::handleRequestFromEX(MemoryAccessRequest req)
 
       SynchronizedDataPackage<fetch_window> fwInvalidationPckg;
       fwInvalidationPckg.data = currAddr;
+      fwInvalidationPckg.associatedIP = currAddr;
+      fwInvalidationPckg.sentAt = getCurrTime();
       fwInvalidationPckg.exceptionTriggered = true;
       fromICtoMe->sendB(fwInvalidationPckg);
       recorder->pushLStoICData(fwInvalidationPckg);
@@ -143,6 +145,7 @@ void LoadStore::executeModuleLogic()
     {
       responseForEX = handleRequestFromEX(exReq.data);
       syncResponse.data = responseForEX;
+      syncResponse.associatedIP = exReq.associatedIP;
     }
 
     if (!physicalMemoryAccessHappened)

@@ -7,4 +7,5 @@ void ExecEndSim::executeInstruction(SynchronizedDataPackage<Instruction> instrPa
   clock_time lastTick = refToEX->waitTillLastTick();
   refToEX->endSimulation();
   recorder->addExtraInfo(EX, "Ended simulation");
+  recorder->setSimEndReason(NORMAL);
 }

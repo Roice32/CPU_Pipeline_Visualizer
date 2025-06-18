@@ -180,6 +180,7 @@ public:
     {
       refToEX->endSimulation();
       recorder->doubleEXException(faultyInstr);
+      recorder->setSimEndReason(DOUBLE_EXCEPTION);
       return;
     }
 

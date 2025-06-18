@@ -110,7 +110,7 @@ class ConfigTab(QWidget):
     # Autoplay Speed
     autoPlaySpeedGridElem, self.autoPlaySpeedInput = self.GenNumericConfigElement(
       "Autoplay Speed",
-      (10, 10_000),
+      (50, 10_000),
       "Sets the speed of the autoplay in Simulation tab, in milliseconds."
       + "\nCan be changed at any time, without affecting the current simulation."
     )
