@@ -386,6 +386,9 @@ class InputTab(QWidget):
     simulationPath = self.parent.GetSimulationDir()
     self.parent.SetSimulationTabEnabled(False)
 
+    self.SetStatusText("Cleaning up previous simulation results...", error=False)
+    self.CleanUpSimulationDir()  # Clean up previous simulation results
+
     self.parent.configTab.Save()
     self.SetStatusText("Executing simulation...", error=False)
     process = QProcess(self)
@@ -431,8 +434,10 @@ class InputTab(QWidget):
     self.SetStatusText("Processing simulation results...", error=False)
     self.parent.simulationTab.LoadSimulationData()
 
+    endSimMsg = process.readAllStandardOutput().data().decode()
+    self.SetStatusText(endSimMsg[1:], error=(endSimMsg[0] == '1'))
+
     # Switch to simulation tab
-    self.SetStatusText("Simulation complete.", error=False)
     self.parent.SetSimulationTabEnabled(True)
     self.SetAllButtonsEnabled(True)
     self.parent.SwitchToSimulationTab()

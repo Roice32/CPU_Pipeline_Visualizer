@@ -113,6 +113,7 @@ class CPUSimulator(QMainWindow):
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def SwitchToSimulationTab(self):
+    self.simulationTab.GoToFirstCycle()
     self.tabs.setCurrentIndex(2)  # Index 2 is the Simulation tab
 
   # ---------------------------------------------------------------------------------------------------------------------------

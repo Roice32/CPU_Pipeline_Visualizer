@@ -295,7 +295,7 @@ void ExecutionRecorder::doubleEXException(const SynchronizedDataPackage<Instruct
   states.back().EX.state = statusMsg.str();
 }
 
-void ExecutionRecorder::dumpSimulationToJSONs(const std::string &outputDirPath)
+void ExecutionRecorder::dumpSimulation(const std::string &outputDirPath)
 {
   determineFinalCycle();
   for (auto& state: states) 
@@ -311,12 +311,17 @@ void ExecutionRecorder::dumpSimulationToJSONs(const std::string &outputDirPath)
     }
     dumpStateToJSON(state, outputDirPath + "/cpu_states/");
   }
+  printSimEndStatus();
 }
 
 void ExecutionRecorder::determineFinalCycle()
 {
-  if (singleStateMode)
+  if (singleStateMode) 
   {
+    if (endReason == CYCLE_LIMIT_EXCEEDED)
+    {
+      states.back().cycle = CYCLES_LIMIT;
+    }
     finalCycle = states.back().cycle;
     return;
   }
@@ -342,6 +347,9 @@ void ExecutionRecorder::determineFinalCycle()
           return;
         }
       }
+      break;
+    case CYCLE_LIMIT_EXCEEDED:
+      finalCycle = CYCLES_LIMIT;
       break;
   }
 }
@@ -385,4 +393,20 @@ void ExecutionRecorder::dumpMemoryToJSON(const clock_time cycle, const std::stri
   }
   file << "}";
   file.close();
+}
+
+void ExecutionRecorder::printSimEndStatus()
+{
+  switch (endReason)
+  {
+    case NORMAL:
+      std::cout << "0Simulation ended via end_sim at cycle " << finalCycle << ".";
+      break;
+    case DOUBLE_EXCEPTION:
+      std::cout << "1Simulation ended due to double exception at cycle " << finalCycle << ".";
+      break;
+    case CYCLE_LIMIT_EXCEEDED:
+      std::cout << "1Simulation exceeded limit of " << finalCycle << " cycles.";
+      break;
+  }
 }

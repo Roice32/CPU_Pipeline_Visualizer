@@ -22,6 +22,7 @@ class Config:
   ic_cache_words_size:             int
   ls_cache_words_size:             int
   ls_cache_set_entries_count:      int
+  cycles_limit:                    int
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def __init__(self) -> None:
@@ -39,6 +40,7 @@ class Config:
     self.ic_cache_words_size             = 64
     self.ls_cache_words_size             = 64
     self.ls_cache_set_entries_count      = 2
+    self.cycles_limit                    = 5000
 
 
 # -----------------------------------------------------------------------------------------------------------------------------
@@ -77,6 +79,7 @@ class ConfigTab(QWidget):
   icCacheWordsSizeInput          = None
   lsCacheWordsSizeInput          = None
   lsCacheSetEntriesCountInput    = None
+  cyclesLimitInput               = None
 
   prevSimHadGarbageMemory        = False
 
@@ -258,13 +261,20 @@ class ConfigTab(QWidget):
       + "\nMust be a power of 2."
     )
 
+    # CYCLES_LIMIT
+    cyclesLimitGridElem, self.cyclesLimitInput = self.GenNumericConfigElement(
+      "Cycles Limit",
+      (100, 50_000),
+      "The maximum number of cycles the simulation will run for."
+    )
+
     for ind, elem in enumerate([clockPeriodGridElem, singleStateModeGridElem,
                                 ignoreUninitializedMemGridElem, garbageMemoryGridElem,
                                 lsCyclesPerOpGridElem, lsCyclesPerOpWithCacheHitGridElem,
                                 icCyclesPerOpGridElem, icCyclesPerOpWithCacheHitGridElem,
                                 deCyclesPerOpGridElem, exCyclesPerOpGridElem,
                                 lsCacheWordsSizeGridElem, lsCacheSetEntriesCountGridElem,
-                                icCacheWordsSizeGridElem]):
+                                icCacheWordsSizeGridElem, cyclesLimitGridElem]):
       gridLayout.addWidget(elem, ind // 2, ind % 2)
 
     gridWidget.setLayout(gridLayout)
@@ -315,7 +325,7 @@ class ConfigTab(QWidget):
     inputField = QSpinBox()
     inputField.setRange(range[0], range[1])
     inputField.setButtonSymbols(QSpinBox.NoButtons)
-    inputField.setMaximumWidth(int(self.parent.width() * 0.05 * 1.2))
+    inputField.setMaximumWidth(int(self.parent.width() * 0.08))
     inputField.setStyleSheet("font-size: 11pt; margin: 5px;")
     layout.addWidget(inputField)
 
@@ -362,6 +372,7 @@ class ConfigTab(QWidget):
     self.icCacheWordsSizeInput.setValue(self.currConfig.ic_cache_words_size)
     self.lsCacheWordsSizeInput.setValue(self.currConfig.ls_cache_words_size)
     self.lsCacheSetEntriesCountInput.setValue(self.currConfig.ls_cache_set_entries_count)
+    self.cyclesLimitInput.setValue(self.currConfig.cycles_limit)
 
   # ---------------------------------------------------------------------------------------------------------------------------
   def Save(self) -> None:
@@ -379,6 +390,7 @@ class ConfigTab(QWidget):
     self.currConfig.ic_cache_words_size             = self.icCacheWordsSizeInput.value()
     self.currConfig.ls_cache_words_size             = self.lsCacheWordsSizeInput.value()
     self.currConfig.ls_cache_set_entries_count      = self.lsCacheSetEntriesCountInput.value()
+    self.currConfig.cycles_limit                    = self.cyclesLimitInput.value()
 
     self.parent.simulationTab.autoPlayTimer.setInterval(self.currConfig.autoplay_speed_millis)
 

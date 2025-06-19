@@ -30,7 +30,7 @@ enum SimEndReason
 {
   NORMAL,
   DOUBLE_EXCEPTION,
-  CYCLE_LIMIT
+  CYCLE_LIMIT_EXCEEDED
 };
 
 class ExecutionRecorder
@@ -46,6 +46,7 @@ private:
   void dumpStateToJSON(ExecutionState& state, const std::string& outputDirPath);
   void updateMemory(const std::unordered_map<address, word>& memoryChanges);
   void dumpMemoryToJSON(const clock_time cycle, const std::string& outputDirPath);
+  void printSimEndStatus();
 
 public:
   ExecutionRecorder(std::shared_ptr<Memory> mem, bool singleStateMode = false);
@@ -116,5 +117,5 @@ public:
   void setEXSubstate(const std::string& substate)
     { states.back().EX.substate = substate; }
 
-  void dumpSimulationToJSONs(const std::string& outputDirPath);
+  void dumpSimulation(const std::string& outputDirPath);
 };

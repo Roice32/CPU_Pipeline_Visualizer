@@ -18,7 +18,12 @@ void Clock::run()
     {
       std::lock_guard<std::mutex> lockdown(clockSyncVars->updateLock);
       ++clockSyncVars->cycleCount;
-      if (clockSyncVars->running)
+      if (clockSyncVars->cycleCount > CYCLES_LIMIT)
+      {
+        recorder->setSimEndReason(CYCLE_LIMIT_EXCEEDED);
+        clockSyncVars->running = false;
+      }
+      else if (clockSyncVars->running)
       {
         recorder->goToNextState();
       }

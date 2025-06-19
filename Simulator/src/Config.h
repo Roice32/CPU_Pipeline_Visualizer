@@ -31,6 +31,7 @@ extern bool SINGLE_STATE_MODE;
 extern bool IGNORE_UNINITIALIZED_MEM;
 
 extern byte CLOCK_PERIOD_MILLIS;
+extern clock_time CYCLES_LIMIT;
 
 extern byte IC_CYCLES_PER_OP;
 extern byte IC_CYCLES_PER_OP_WITH_CACHE_HIT;

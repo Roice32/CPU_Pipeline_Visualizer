@@ -4,7 +4,7 @@
 void overloadConfig(char* argv[])
 {
   std::string arg;
-  byte value;
+  uint64_t value;
   for (int i = 0; argv[i] != nullptr; i += 2)
   {
     arg = argv[i];
@@ -62,6 +62,10 @@ void overloadConfig(char* argv[])
     {
       LS_CACHE_SET_ENTRIES_COUNT = value;
     }
+    else if (arg == "--cycles-limit")
+    {
+      CYCLES_LIMIT = value;
+    }
   }
 }
 
@@ -84,7 +88,7 @@ int main(int argc, char** argv)
   CPU cpu(mem, recorder);
   cpu.runSimulation();
 
-  recorder->dumpSimulationToJSONs(argv[2]);
+  recorder->dumpSimulation(argv[2]);
   
   return 0;
 }
