@@ -27,3 +27,5 @@ GUI/src/GUI.spec
 GUI/src/CPU Pipeline Visualizer.spec
 GUI/src/dist/CPU Pipeline Visualizer.exe
 /GUI/src/dependencies/__pycache__
+#GUI/src/dependencies/CPU_Pipeline_Simulator.exe
+#Release/CPU Pipeline Visualizer.exe
