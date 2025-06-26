@@ -1,7 +1,38 @@
 ; Example assembly code utilizing most instructions, features, and parameter combinations
-.boot ; the execution starts here
 
-  jmp main ; jumps to the 'main' label in the code segment
+.vector_0 ; fixed location for exception handler address
+  dw div_zero_handler
+
+
+.data ; variables and constants should be placed here
+
+var_1:
+  dw 0x0001
+
+var_2:
+  dw 0x0002
+
+counter:
+  dw 0x0000
+
+batch_addr:
+  dblock 0xffff, 4
+
+data_0:
+  dw 0x0002
+data_1:
+  dw 0x0006
+data_2:
+  dw 0x003e
+data_3:
+  dw 0x0afa
+
+coeffs:
+  dblock 0x000f, 4
+
+exceptions_count:
+  dw 0x0000
+
 
 .code ; the code instructions should be placed here
 
@@ -66,34 +97,7 @@ div_zero_handler:
   add [0x0010], 4           ; return ip in save state region += 4 (size of "div r0, 0x0")
   excp_exit                 ; exit exception handler, return to ip saved at 0x0010
 
-.data ; variables and constants should be placed here
 
-var_1:
-  dw 0x0001
+.boot ; the execution starts here
 
-var_2:
-  dw 0x0002
-
-counter:
-  dw 0x0000
-
-batch_addr:
-  dblock 0xffff, 4
-
-data_0:
-  dw 0x0002
-data_1:
-  dw 0x0006
-data_2:
-  dw 0x003e
-data_3:
-  dw 0x0afa
-
-coeffs:
-  dblock 0x000f, 4
-
-exceptions_count:
-  dw 0x0000
-
-.vector_0 ; fixed location for exception handler address
-  dw div_zero_handler
+  jmp main ; jumps to the 'main' label in the code segment

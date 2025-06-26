@@ -12,22 +12,26 @@ void Clock::run()
 {
   while(!clockSyncVars->ICReady)
     std::this_thread::sleep_for(std::chrono::milliseconds(CLOCK_PERIOD_MILLIS));
-  while (*selfRunning)
+
+  while (*selfRunning)  // The Clock is still meant to run
   {
     std::this_thread::sleep_for(std::chrono::milliseconds(CLOCK_PERIOD_MILLIS));
-    {
+    { // clockSyncVars holds the mutex and condition variable for synchronization, shared by the threads
+      // Place a lock to prevent other threads from reading the cycle count while it is being updated
       std::lock_guard<std::mutex> lockdown(clockSyncVars->updateLock);
-      ++clockSyncVars->cycleCount;
+      ++(clockSyncVars->cycleCount);
+
       if (clockSyncVars->cycleCount > CYCLES_LIMIT)
       {
         recorder->setSimEndReason(CYCLE_LIMIT_EXCEEDED);
-        clockSyncVars->running = false;
+        clockSyncVars->running = false;  // Stop the simulation for all threads
       }
-      else if (clockSyncVars->running)
+      else if (clockSyncVars->running)  // No end_sim or Double Exception encountered yet
       {
-        recorder->goToNextState();
+        recorder->goToNextState();  // Record the transition to the next simulation state
       }
     }
+    // Wake up all threads waiting for the clock signal
     clockSyncVars->update.notify_all();
   }
 }

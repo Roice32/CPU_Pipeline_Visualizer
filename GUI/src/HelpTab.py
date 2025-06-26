@@ -70,7 +70,7 @@ class HelpTab(QWidget):
       layout,
       "What language does it use?",
       "\tThe app is able to emulate a CISC architecture using a custom assembly language. "
-      "It is designed to encapsulate most of the features present everyday-use assembly languages.\n"
+      "It is designed to encapsulate most of the features present in everyday-use assembly languages.\n"
       "More on how the code is structured and what instructions are available, down below."
     )
 

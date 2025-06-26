@@ -54,15 +54,8 @@ class CPUSimulator(QMainWindow):
     
     # Initialize UI
     self.setWindowTitle("CPU Pipeline Visualizer")
-    self.setGeometry(100, 100, 1000, 600)
+    self.setMinimumSize(800, 600)
 
-    # Initialize config values
-    self.clockPeriod = 1
-    self.deWorkMemory = 2
-    self.icCacheSize = 64
-    self.lsCacheSize = 64
-    self.exCyclesPerOp = 5
-    
     # Create process for handling external commands
     self.process = QProcess()
     
